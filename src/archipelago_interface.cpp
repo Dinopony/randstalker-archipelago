@@ -1,0 +1,96 @@
+#include "archipelago_interface.hpp"
+
+#include "game_state.hpp"
+
+ArchipelagoInterface::ArchipelagoInterface(const std::string& uri, GameState* game_state) :
+    _game_state(game_state)
+{
+    std::string uuid = ap_get_uuid(UUID_FILE);
+    std::cout << "UUID is " << uuid << std::endl;
+
+    _client = new APClient(uuid, GAME_NAME, uri);
+//        try {
+//            _client->set_data_package_from_file(DATAPACKAGE_CACHE_FILE);
+//        } catch (std::exception&) { /* ignore */ }
+
+    this->init_handlers();
+}
+
+ArchipelagoInterface::~ArchipelagoInterface()
+{
+    std::cout << "Disconnecting..." << std::endl;
+    delete _client;
+}
+
+void ArchipelagoInterface::poll()
+{
+    if(!_client)
+        return;
+
+    _client->poll();
+
+    if(_game_state->server_must_know_checked_locations() && _client->get_state() == APClient::State::SLOT_CONNECTED)
+    {
+        this->send_checked_locations_to_server(_game_state->checked_locations());
+        _game_state->clear_server_must_know_checked_locations();
+    }
+}
+
+void ArchipelagoInterface::send_checked_locations_to_server(const std::set<uint16_t>& checked_locations)
+{
+    if(!_client || _client->get_state() != APClient::State::SLOT_CONNECTED)
+    {
+        std::cerr << "[ERROR] Attempting to send checked locations to server, but there is no connection." << std::endl;
+        return;
+    }
+
+    std::cout << "[SEND] New checked locations = [";
+    std::list<int64_t> checked_locations_typed;
+    for(uint16_t loc_id : checked_locations)
+    {
+        std::cout << loc_id << " ";
+        checked_locations_typed.emplace_back(static_cast<int64_t>(loc_id));
+    }
+    std::cout << "]" << std::endl;
+
+    _client->LocationChecks(checked_locations_typed);
+}
+
+void ArchipelagoInterface::on_slot_connected(const json& slot_data)
+{
+    std::cout << "Connected to slot : " << slot_data.dump(4) << std::endl;
+
+    json preset = build_preset_json(slot_data, _player_name);
+    std::ofstream outfile("./presets/_ap_preset.json");
+    outfile << preset.dump(4);
+    outfile.close();
+
+    _game_state->expected_seed(preset["seed"]);
+
+    std::cout << "Invoking randstalker using preset..." << std::endl;
+
+    char command[] = "randstalker.exe --outputrom=./seeds/ --preset=_ap_preset --nopause";
+    invoke(command);
+}
+
+void ArchipelagoInterface::on_items_received(const std::list<APClient::NetworkItem>& items)
+{
+    // TODO: Handle datapackage?
+    // if (!_client->is_data_package_valid())
+    // {
+    //     // NOTE: this should not happen since we ask for data package before connecting
+    //     if (!ap_sync_queued) _client->Sync();
+    //     ap_sync_queued = true;
+    //     return;
+    // }
+
+    for (const auto& item: items)
+    {
+        std::string item_name = _client->get_item_name(item.item);
+        std::string sender = _client->get_player_alias(item.player);
+        std::string location = _client->get_location_name(item.location);
+
+        std::cout << "[PACKET] Received " << item_name << " from " << sender << " (" << location << ") [#" << item.index << "]" << std::endl;
+        _game_state->set_received_item(item.index, item.item);
+    }
+}
