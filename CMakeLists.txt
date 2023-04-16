@@ -55,18 +55,27 @@ endmacro()
 wrapped_dependency(TEXT src/data/locations.json LOCATIONS_JSON)
 
 set(SOURCES
-        "src/main.cpp"
-        "src/game_state.hpp"
-        "src/game_state.cpp"
-        "src/archipelago_interface.hpp"
-        "src/archipelago_interface.cpp"
-        "src/preset_builder.hpp"
-        "src/preset_builder.cpp"
-        "src/randstalker_invoker.cpp"
-        "src/randstalker_invoker.hpp"
-        "src/retroarch_interface.cpp"
-        "src/retroarch_interface.hpp"
-        "src/data/locations.json.hxx" src/location.hpp src/location.cpp)
+        extlibs/imgui/imgui.cpp
+        extlibs/imgui/imgui_draw.cpp
+        extlibs/imgui/imgui_widgets.cpp
+        extlibs/imgui/imgui_tables.cpp
+        extlibs/imgui/imgui-SFML.cpp
+        extlibs/imgui/imgui_demo.cpp
+
+        src/main.cpp
+        src/game_state.hpp
+        src/game_state.cpp
+        src/archipelago_interface.hpp
+        src/archipelago_interface.cpp
+        src/preset_builder.hpp
+        src/preset_builder.cpp
+        src/randstalker_invoker.cpp
+        src/randstalker_invoker.hpp
+        src/retroarch_interface.cpp
+        src/retroarch_interface.hpp
+        src/data/locations.json.hxx
+        src/location.hpp
+        src/location.cpp)
 
 add_executable(randstalker_archipelago "${SOURCES}")
 target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32)

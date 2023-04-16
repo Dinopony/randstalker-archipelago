@@ -1,6 +1,5 @@
 #include <iostream>
 #include <cmath>
-#include <limits>
 
 #include "archipelago_interface.hpp"
 #include "retroarch_interface.hpp"
@@ -15,22 +14,35 @@
 #endif
 
 // TODO: Handle the following on ASM side:
-//      - Set flag 0xFF106A:0 when Gola is beaten to mark endgame
-// TODO: Handle game completion on client
+//      - Set 0x21.b to 0x93 when Gola is beaten to mark endgame
 
 // TODO: Improve ground item handling
 //      - Add a unique ID (similar to chest ID) to each ground item
 //      - Make a flag field being set every time a ground item is taken
 //          + Add an option to make ground items takeable only once using this flag (allowing any ground item)
 
-// TODO: Implement imGui UI
+// TODO: ImGui UI
+//      - Deport logging to console + ImGui console
+//      - Enable typing commands & chat
+//      - Enable rich hint handling
+//      - Handle session mutex on actions that matter
+//      - Set input ROM path for generation
+//      - Set Retroarch path to launch automatically (checkbox?)
+//      - Follow ROM generation status on UI
+
+// TODO: Handle hints
+//      - Oracle Stone (currently empty)
+//      - Lithograph   (currently empty)
+//      - Fortune Teller? (seems to work)
+//      - Foxies?
+
+// TODO: Handle deathlink
 
 // TODO: Handle collection from server (make check flags match with game state at all times)
 //      - The problem is that if we reload, local items won't be reobtainable anymore
 //      - We need to enforce this only for checks containing non-local items
 
-// TODO: Handle deathlink
-// TODO: Ensure resilience to disconnects (keeping GameState intact in the meantime)
+// FIXME: Item reception textbox bug after reading Kazalt TP rejection msg?
 
 std::mutex session_mutex;
 
@@ -41,11 +53,63 @@ RetroarchInterface* emulator = nullptr;
 constexpr uint16_t ADDR_RECEIVED_ITEM = 0x20;
 constexpr uint16_t ADDR_IS_IN_GAME = 0x1200;
 constexpr uint16_t ADDR_SEED = 0x22;
+constexpr uint16_t ADDR_IS_GOLA_BEATEN = 0x21;
 constexpr uint16_t ADDR_CURRENT_RECEIVED_ITEM_INDEX = 0x107E;
+
+
+// =============================================================================================
+//      GLOBAL FUNCTIONS (Callable from UI)
+// =============================================================================================
+
+void connect_ap(std::string host, const std::string& slot_name, const std::string& password)
+{
+    if(host.empty())
+    {
+        std::cerr << "Cannot connect with an empty URI" << std::endl;
+        return;
+    }
+
+    if(archipelago)
+    {
+        std::cerr << "Cannot connect when there is an active connection going on. Please use /disconnect first." << std::endl;
+        return;
+    }
+
+    if(!host.empty() && host.find("ws://") != 0 && host.find("wss://") != 0)
+        host = "ws://" + host;
+
+    std::cout << "Attempting to connect to Archipelago server at '" << host << "'..." << std::endl;
+
+    archipelago = new ArchipelagoInterface(host, slot_name, password, &game_state);
+}
+
+void disconnect_ap()
+{
+    delete archipelago;
+    archipelago = nullptr;
+}
+
+void connect_emu()
+{
+    try
+    {
+        if(!emulator)
+            emulator = new RetroarchInterface();
+    }
+    catch(EmulatorException& ex)
+    {
+        std::cerr << "[ERROR] Connection to emulator failed: " << ex.message() << std::endl;
+    }
+}
+
+void disconnect_emu()
+{
+    delete emulator;
+    emulator = nullptr;
+}
 
 void poll_emulator()
 {
-    // TODO: Enforce this only being called every 1 sec?
     if(!emulator)
         return;
 
@@ -75,100 +139,162 @@ void poll_emulator()
                 std::cout << "Location '" << location.name() << "' is checked!" << std::endl;
             }
         }
-
-        // TODO: Collect in-game locations marked as collected inside GameState
     }
 
     // If there are received items that are not yet processed, send the next pending one to the player
     uint16_t current_item_index_in_game = emulator->read_game_word(ADDR_CURRENT_RECEIVED_ITEM_INDEX);
     if(game_state.current_item_index() > current_item_index_in_game)
     {
-        // TODO: See how local items are handled when checking a location.
-        //       If server sends local items to client, some filtering needs to be done based on the player who
-        //       sent the item (ignore if self).
         if(emulator->read_game_byte(ADDR_RECEIVED_ITEM) == 0xFF)
         {
             emulator->write_game_byte(ADDR_RECEIVED_ITEM, game_state.item_with_index(current_item_index_in_game));
             emulator->write_game_word(ADDR_CURRENT_RECEIVED_ITEM_INDEX, current_item_index_in_game + 1);
         }
     }
-}
 
-void connect_ap(std::string uri)
-{
-    if(uri.empty())
+    // Check goal completion
+    if(archipelago->is_connected() && emulator->read_game_byte(ADDR_IS_GOLA_BEATEN) == 0x93)
     {
-        std::cerr << "Cannot connect with an empty URI" << std::endl;
-        return;
-    }
-
-    if(archipelago)
-    {
-        std::cerr << "Cannot connect when there is an active connection going on. Please use /disconnect first." << std::endl;
-        return;
-    }
-
-    if(!uri.empty() && uri.find("ws://") != 0 && uri.find("wss://") != 0)
-        uri = "ws://" + uri;
-
-    std::cout << "Attempting to connect to Archipelago server at '" << uri << "'..." << std::endl;
-
-    archipelago = new ArchipelagoInterface(uri, &game_state);
-}
-
-void disconnect_ap()
-{
-    delete archipelago;
-    archipelago = nullptr;
-}
-
-void try_retroarch_read()
-{
-    try
-    {
-        if(!emulator)
-            emulator = new RetroarchInterface();
-    }
-    catch(EmulatorException& ex)
-    {
-        std::cerr << "[ERROR] Connection to emulator failed: " << ex.message() << std::endl;
+        archipelago->notify_game_completed();
+        emulator->write_game_byte(ADDR_IS_GOLA_BEATEN, 0x00);
     }
 }
 
-void on_command(const std::string& command)
+
+// =============================================================================================
+//      UI HANDLING
+// =============================================================================================
+
+#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
+#include <imgui-SFML.h>
+
+namespace uiglobals {
+char host[512] = "localhost:25565"; //"archipelago.gg:12345";
+char slot_name[256];
+char password[256];
+std::vector<std::string> message_log;
+}
+
+static void draw_archipelago_connection_window()
 {
-    if (command == "/help") {
-        printf("Available commands:\n"
-               "  /connect [addr[:port]] - connect to AP server\n"
-               "  /disconnect - disconnect from AP server\n");
-               // TODO: "  /force-send - send missing items to game, ignoring locks\n"
-               // TODO: "  /force-resend - resend all items to game\n"
-               // TODO: "  /sync - resync items/locations with AP server\n");
-    } else if (command.starts_with("/connect")) {
-        connect_ap(command.substr(9));
-    } else if (command == "/disconnect") {
-        disconnect_ap();
-    } else if (command == "/md") {
-        try_retroarch_read();
-    } else if (command.starts_with("/give")) {
-        try
+    ImGui::SetNextWindowPos(ImVec2(10,10));
+    ImGui::SetNextWindowSize(ImVec2(340,200));
+    ImGui::Begin("AP Connection", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    {
+        ImGui::PushItemWidth(-1);
+        ImGui::Text("Host");
+        ImGui::InputText("##Host", uiglobals::host, IM_ARRAYSIZE(uiglobals::host));
+        ImGui::Text("Slot name");
+        ImGui::InputText("##Slot name", uiglobals::slot_name, IM_ARRAYSIZE(uiglobals::slot_name));
+        ImGui::Text("Password");
+        ImGui::InputText("##Password", uiglobals::password, IM_ARRAYSIZE(uiglobals::password));
+        ImGui::PopItemWidth();
+
+        ImGui::Separator(); // ------------------------------------------------------------
+
+        if(archipelago && archipelago->is_connected())
         {
-            uint16_t index = game_state.current_item_index();
-            game_state.set_received_item(index, std::stoul(command.substr(6)));
-        } catch(std::exception&) {
-            std::cerr << "Invalid item given" << std::endl;
+            ImGui::Text("Connection status: Connected");
+            ImGui::Separator(); // ------------------------------------------------------------
+
+            if(ImGui::Button("Disconnect"))
+                disconnect_ap();
         }
-    } else if (command.find('/') == 0) {
-        printf("Unknown command: %s\n", command.c_str());
-    } else if (archipelago) {
-        archipelago->say(command);
+        else if(archipelago)
+        {
+            ImGui::Text("Connection status: Attempting to connect...");
+            ImGui::Separator(); // ------------------------------------------------------------
+
+            if(ImGui::Button("Stop"))
+                disconnect_ap();
+        }
+        else
+        {
+            ImGui::Text("Connection status: Disconnected");
+            ImGui::Separator(); // ------------------------------------------------------------
+
+            if(ImGui::Button("Connect"))
+                connect_ap(uiglobals::host, uiglobals::slot_name, uiglobals::password);
+        }
     }
+    ImGui::End();
+}
+
+static void draw_emulator_connection_window()
+{
+    ImGui::SetNextWindowPos(ImVec2(10,220));
+    ImGui::SetNextWindowSize(ImVec2(340,100));
+    ImGui::Begin("Emulator Connection", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    {
+        if(emulator)
+        {
+            ImGui::Text("Connected to Retroarch");
+            ImGui::Separator(); // ------------------------------------------------------------
+            if(ImGui::Button("Disconnect"))
+                disconnect_emu();
+        }
+        else
+        {
+            ImGui::Text("Not connected to Retroarch");
+            ImGui::Separator(); // ------------------------------------------------------------
+            if(ImGui::Button("Connect"))
+                connect_emu();
+        }
+    }
+    ImGui::End();
+}
+
+static void draw_console_window()
+{
+    ImGui::SetNextWindowPos(ImVec2(360,10));
+    ImGui::SetNextWindowSize(ImVec2(910,700));
+    ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    {
+        for(const std::string& msg : uiglobals::message_log)
+            ImGui::Text("%s", msg.c_str());
+    }
+    ImGui::End();
+}
+
+void open_ui()
+{
+    sf::VideoMode video_settings(1280, 720, 32);
+    sf::ContextSettings context_settings;
+    context_settings.depthBits = 24;
+    context_settings.stencilBits = 8;
+
+    sf::RenderWindow window(video_settings, "Landstalker Archipelago Client", sf::Style::Default, context_settings);
+    window.setVerticalSyncEnabled(true);
+    ImGui::SFML::Init(window);
+
+    sf::Clock delta_clock;
+    while(window.isOpen())
+    {
+        sf::Event event {};
+        while(window.pollEvent(event))
+        {
+            ImGui::SFML::ProcessEvent(window, event);
+            if(event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::Black);
+        ImGui::SFML::Update(window, delta_clock.restart());
+
+        draw_archipelago_connection_window();
+        draw_emulator_connection_window();
+        draw_console_window();
+
+        ImGui::SFML::Render(window);
+        window.display();
+    }
+
+    ImGui::SFML::Shutdown();
 }
 
 int main(int argc, char** argv)
 {
-    printf("use /connect [<host>] to connect to an AP server\n");
-
     // Network + game handling thread
     bool keep_working = true;
     std::thread process_thread([&keep_working]() {
@@ -195,21 +321,27 @@ int main(int argc, char** argv)
         }
     });
 
-    // Console (main) thread
-    std::string input;
-    do
-    {
-        std::getline(std::cin, input);
-        session_mutex.lock();
-        {
-            on_command(input);
-        }
-        session_mutex.unlock();
-    }
-    while(input != "/exit");
+    // UI thread
+    open_ui();
 
+    // When UI is closed, tell the other thread to stop working
     keep_working = false;
     process_thread.join();
-
-    return 0;
+    return EXIT_SUCCESS;
 }
+
+/*
+void on_command(const std::string& command)
+{
+    if (command == "/help") {
+        printf("Available commands:\n"
+               "  /connect [addr[:port]] - connect to AP server\n"
+               "  /disconnect - disconnect from AP server\n");
+               // TODO: "  /force-send - send missing items to game, ignoring locks\n"
+               // TODO: "  /force-resend - resend all items to game\n"
+               // TODO: "  /sync - resync items/locations with AP server\n");
+    } else if (archipelago) {
+        archipelago->say(command);
+    }
+}
+*/

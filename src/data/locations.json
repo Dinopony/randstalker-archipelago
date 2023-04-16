@@ -1422,7 +1422,7 @@
     {
         "name": "Mountainous Area: Zak reward after fighting",
         "type": "reward",
-        "flag": { "byte": "0x1024", "bit": 4 }
+        "flag": { "byte": "0x1027", "bit": 0 }
     },
     {
         "name": "Route between Gumi and Ryuma: Swordsman Kado reward",

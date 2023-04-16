@@ -22,11 +22,11 @@ private:
     bool _connected = false;
     bool ap_sync_queued = false;
     bool ap_connect_sent = false;
-    std::string _player_name = "Dinopony";
+    std::string _slot_name;
     std::string _password;
 
 public:
-    explicit ArchipelagoInterface(const std::string& uri, GameState* game_state);
+    explicit ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password, GameState* game_state);
     virtual ~ArchipelagoInterface();
 
     void poll();
@@ -40,6 +40,8 @@ public:
             return;
         }
     }
+    bool is_connected() const { return _client && _client->get_state() == APClient::State::SLOT_CONNECTED; }
+    void notify_game_completed();
 
 private:
     void init_handlers()
@@ -63,38 +65,9 @@ private:
         });
     }
 
-    void on_socket_connected()
-    {
-        // if the socket (re)connects we actually don't know the server's state. clear game's cache to not desync
-        // TODO: in future set game's location cache from AP's checked_locations instead
-        //        if (game) game->clear_cache();
-
-        _connected = true;
-        std::cout << "Connected!" << std::endl;
-    }
-
-    void on_socket_disconnected()
-    {
-        _connected = false;
-        std::cout << "Disconnected from server." << std::endl;
-    }
-
-    void on_room_info()
-    {
-//        // compare seeds and error out if it's the wrong one, and then (try to) connect with games's slot
-//        if (!game || game->get_seed().empty() || game->get_slot().empty())
-//            printf("Waiting for game ...\n");
-//        else if (strncmp(game->get_seed().c_str(), ap->get_seed().c_str(), GAME::MAX_SEED_LENGTH) != 0)
-//            bad_seed(ap->get_seed(), game->get_seed());
-//        else {
-//            std::list<std::string> tags;
-//            if (game->want_deathlink()) tags.push_back("DeathLink");
-//            ap->ConnectSlot(game->get_slot(), password, game->get_items_handling(), tags, VERSION_TUPLE);
-//            ap_connect_sent = true; // TODO: move to APClient::State ?
-//        }
-        _client->ConnectSlot(_player_name, _password, 1, {}, {0, 3, 8});
-    }
-
+    void on_socket_connected();
+    void on_socket_disconnected();
+    void on_room_info();
     void on_slot_connected(const json& slot_data);
 
     void on_slot_disconnected()

@@ -3,7 +3,7 @@
 #include <iostream>
 #include "retroarch_interface.hpp"
 
-constexpr uint16_t BASE_LOCATION_ID = 2000;
+constexpr uint16_t BASE_LOCATION_ID = 4000;
 constexpr uint16_t BASE_GROUND_LOCATION_ID = BASE_LOCATION_ID + 256;
 constexpr uint16_t BASE_REWARD_LOCATION_ID = BASE_LOCATION_ID + 340;
 
