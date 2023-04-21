@@ -23,6 +23,7 @@ Location::Location(nlohmann::json& location_data, uint8_t& cur_reward_id)
     else if(type == "ground" || type == "shop")
     {
         uint8_t ground_id = location_data["groundFlag"];
+        ground_id += 1;
         _checked_flag_byte = 0x1060 + (ground_id / 8);
         _checked_flag_bit = ground_id % 8;
         _id = BASE_GROUND_LOCATION_ID + ground_id;

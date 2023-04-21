@@ -16,11 +16,6 @@
 // TODO: Handle the following on ASM side:
 //      - Set 0x21.b to 0x93 when Gola is beaten to mark endgame
 
-// TODO: Improve ground item handling
-//      - Add a unique ID (similar to chest ID) to each ground item
-//      - Make a flag field being set every time a ground item is taken
-//          + Add an option to make ground items takeable only once using this flag (allowing any ground item)
-
 // TODO: ImGui UI
 //      - Deport logging to console + ImGui console
 //      - Enable typing commands & chat
@@ -41,8 +36,6 @@
 // TODO: Handle collection from server (make check flags match with game state at all times)
 //      - The problem is that if we reload, local items won't be reobtainable anymore
 //      - We need to enforce this only for checks containing non-local items
-
-// FIXME: Item reception textbox bug after reading Kazalt TP rejection msg?
 
 std::mutex session_mutex;
 
