@@ -40,6 +40,9 @@ void ArchipelagoInterface::poll()
         this->send_checked_locations_to_server(_game_state->checked_locations());
         _game_state->clear_server_must_know_checked_locations();
     }
+
+    if(_game_state->has_won())
+        this->notify_game_completed();
 }
 
 void ArchipelagoInterface::send_checked_locations_to_server(const std::set<uint16_t>& checked_locations)

@@ -8,8 +8,6 @@
 #include "game_state.hpp"
 #include "user_interface.hpp"
 
-// TODO: Signature 2 problem
-
 // TODO: Add a setting to enforce one EkeEke in shops?
 // TODO: "Ignored placement of Sword of Gaia after crossing path because there are no more instances of it inside the item pool."
 
@@ -141,11 +139,10 @@ void poll_emulator()
     }
 
     // Check goal completion
-    if(archipelago->is_connected() && emulator->read_game_byte(ADDR_EQUIPPED_SWORD_EFFECT) == 0x05)
+    if(emulator->read_game_byte(ADDR_EQUIPPED_SWORD_EFFECT) == 0x05)
     {
         // Right after beating Gola, the game uses a unique "coin fall" equipped sword effect that is used
         // to detect that we are in the endgame cutscene
-        archipelago->notify_game_completed();
         game_state.has_won(true);
     }
 }

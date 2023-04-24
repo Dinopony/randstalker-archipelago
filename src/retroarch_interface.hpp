@@ -37,7 +37,8 @@ public:
     void write_game_long(uint16_t address, uint32_t value);
 
 private:
-    uint32_t read_int(uint64_t address);
+    uint32_t read_uint32(uint64_t address);
+    uint64_t read_uint64(uint64_t address);
     void write_byte(uint64_t address, char value);
     uint64_t find_signature(const std::vector<uint16_t>& signature);
     bool read_module_information(HANDLE processHandle, const std::string& module_name);

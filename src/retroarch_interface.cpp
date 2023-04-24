@@ -179,10 +179,23 @@ bool RetroarchInterface::read_module_information(HANDLE processHandle, const std
     return found;
 }
 
-uint32_t RetroarchInterface::read_int(uint64_t address)
+uint32_t RetroarchInterface::read_uint32(uint64_t address)
 {
     uint32_t buffer = 0;
     SIZE_T NumberOfBytesToRead = sizeof(buffer); //this is equal to 4
+    SIZE_T NumberOfBytesActuallyRead;
+
+    BOOL success = ReadProcessMemory(_process_handle, reinterpret_cast<LPCVOID>(address), &buffer, NumberOfBytesToRead, &NumberOfBytesActuallyRead);
+    if (!success || NumberOfBytesActuallyRead != NumberOfBytesToRead)
+        throw EmulatorException("read_int failed");
+
+    return buffer;
+}
+
+uint64_t RetroarchInterface::read_uint64(uint64_t address)
+{
+    uint64_t buffer = 0;
+    SIZE_T NumberOfBytesToRead = sizeof(buffer); //this is equal to 8
     SIZE_T NumberOfBytesActuallyRead;
 
     BOOL success = ReadProcessMemory(_process_handle, reinterpret_cast<LPCVOID>(address), &buffer, NumberOfBytesToRead, &NumberOfBytesActuallyRead);
@@ -254,8 +267,8 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     {
         addr += 16;
         std::cout << "Found signature 1 -> 0x" << std::hex << addr << std::dec << std::endl;
-        uint32_t offset = this->read_int(addr);
-        return this->read_int(addr + 4 + offset);
+        uint32_t offset = this->read_uint32(addr);
+        return this->read_uint64(addr + 4 + offset);
     }
 
     // Signature 2
@@ -267,8 +280,8 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     {
         addr += 13;
         std::cout << "Found signature 2 -> 0x" << std::hex << addr << std::dec << std::endl;
-        uint32_t offset = this->read_int(addr);
-        return this->read_int(addr + 4 + offset);
+        uint32_t offset = this->read_uint32(addr);
+        return this->read_uint64(addr + 4 + offset);
     }
 
     // Signature 3
@@ -280,8 +293,8 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     {
         addr += 17;
         std::cout << "Found signature 3 -> 0x" << std::hex << addr << std::dec << std::endl;
-        uint32_t offset = this->read_int(addr);
-        return this->read_int(addr + 4 + offset);
+        uint32_t offset = this->read_uint32(addr);
+        return this->read_uint32(addr + 4 + offset);
     }
 
     return UINT64_MAX;
