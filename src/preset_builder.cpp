@@ -57,6 +57,7 @@ static json build_world_json(const json& slot_data, const std::string& player_na
 {
     json world = json::object();
 
+    world["darkRegion"] = slot_data.at("dark_region");
     world["itemSources"] = json::object();
 
     std::map<std::string, json> locations = slot_data.at("locations");

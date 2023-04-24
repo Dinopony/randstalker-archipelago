@@ -9,7 +9,6 @@
 #include "user_interface.hpp"
 
 // TODO: Improve AP server logic
-//      - Lantern bug?
 //      - Shuffled trees logic (and all dynamic logic)
 //      - Prevent duplicates in shops if in rebuy mode
 
