@@ -8,10 +8,9 @@
 #include "game_state.hpp"
 #include "user_interface.hpp"
 
-// TODO: Improve AP server logic
-//      - Shuffled trees logic (and all dynamic logic)
-//      - Prevent duplicates in shops if in rebuy mode
+// TODO: Signature 2 problem
 
+// TODO: Add a setting to enforce one EkeEke in shops?
 // TODO: "Ignored placement of Sword of Gaia after crossing path because there are no more instances of it inside the item pool."
 
 // TODO: Handle hints
@@ -19,6 +18,8 @@
 //      - Lithograph        (currently empty)
 //      - Fortune Teller?   (seems to work..ish)
 //      - Foxies?
+
+// TODO: Shorten some item source names
 
 // TODO: Handle deathlink
 
@@ -179,7 +180,7 @@ int main()
             }
             session_mutex.unlock();
 
-            uint32_t millis = (game_state.has_won()) ? 1000 : 250;
+            uint32_t millis = (game_state.has_won()) ? 500 : 150;
             std::this_thread::sleep_for(std::chrono::milliseconds(millis));
         }
     });
