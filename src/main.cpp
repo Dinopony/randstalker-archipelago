@@ -18,9 +18,6 @@
 //      - Shuffled trees logic (and all dynamic logic)
 //      - Prevent duplicates in shops if in rebuy mode
 
-// TODO: Save while received index has changed but item was not yet received?
-//      - Make the game increment the counter itself when getting the item
-
 // TODO: "Ignored placement of Sword of Gaia after crossing path because there are no more instances of it inside the item pool."
 
 // TODO: Handle hints
@@ -139,7 +136,6 @@ void poll_emulator()
         if(emulator->read_game_byte(ADDR_RECEIVED_ITEM) == 0xFF)
         {
             emulator->write_game_byte(ADDR_RECEIVED_ITEM, game_state.item_with_index(current_item_index_in_game));
-            emulator->write_game_word(ADDR_CURRENT_RECEIVED_ITEM_INDEX, current_item_index_in_game + 1);
         }
     }
 
