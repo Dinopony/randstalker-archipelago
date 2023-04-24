@@ -1,4 +1,3 @@
-#include <iostream>
 #include <cmath>
 #include <chrono>
 #include <thread>
@@ -7,6 +6,7 @@
 #include "retroarch_interface.hpp"
 #include "game_state.hpp"
 #include "user_interface.hpp"
+#include "logger.hpp"
 
 // TODO: Add a setting to enforce one EkeEke in shops?
 // TODO: "Ignored placement of Sword of Gaia after crossing path because there are no more instances of it inside the item pool."
@@ -45,13 +45,13 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
 {
     if(host.empty())
     {
-        std::cerr << "Cannot connect with an empty URI" << std::endl;
+        Logger::error("Cannot connect with an empty URI");
         return;
     }
 
     if(archipelago)
     {
-        std::cerr << "Cannot connect when there is an active connection going on. Please use /disconnect first." << std::endl;
+        Logger::error("Cannot connect when there is an active connection going on. Please disconnect first.");
         return;
     }
 
@@ -59,7 +59,7 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
         host = "ws://" + host;
 
     session_mutex.lock();
-    std::cout << "Attempting to connect to Archipelago server at '" << host << "'..." << std::endl;
+    Logger::info("Attempting to connect to Archipelago server at '" + host + "'...");
     archipelago = new ArchipelagoInterface(host, slot_name, password, &game_state);
     session_mutex.unlock();
 }
@@ -82,7 +82,7 @@ void connect_emu()
     }
     catch(EmulatorException& ex)
     {
-        std::cerr << "[ERROR] Connection to emulator failed: " << ex.message() << std::endl;
+        Logger::error("Connection to emulator failed: " + ex.message());
     }
     session_mutex.unlock();
 }
@@ -121,10 +121,9 @@ void poll_emulator()
     {
         if(location.was_checked(*emulator))
         {
-            if(game_state.set_location_checked_by_player(location.id()))
-            {
-                std::cout << "Location '" << location.name() << "' is checked!" << std::endl;
-            }
+            bool location_was_new = game_state.set_location_checked_by_player(location.id());
+            if(location_was_new)
+                Logger::debug("You checked location " + location.name() + ".");
         }
     }
 
@@ -167,7 +166,7 @@ int main()
                 }
                 catch(EmulatorException& ex)
                 {
-                    std::cerr << "[ERROR] " << ex.message() << std::endl;
+                    Logger::error(ex.message());
                     delete emulator;
                     emulator = nullptr;
                 }

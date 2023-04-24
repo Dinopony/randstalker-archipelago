@@ -2,7 +2,9 @@
 
 #include <utility>
 
+#include "client.hpp"
 #include "game_state.hpp"
+#include "logger.hpp"
 
 constexpr uint16_t ITEM_BASE_ID = 4000;
 
@@ -12,19 +14,19 @@ ArchipelagoInterface::ArchipelagoInterface(const std::string& uri, std::string s
     _password   (std::move(password))
 {
     std::string uuid = ap_get_uuid(UUID_FILE);
-    std::cout << "UUID is " << uuid << std::endl;
+    Logger::debug("UUID is " + uuid);
 
     _client = new APClient(uuid, GAME_NAME, uri);
-//        try {
-//            _client->set_data_package_from_file(DATAPACKAGE_CACHE_FILE);
-//        } catch (std::exception&) { /* ignore */ }
+     try {
+         _client->set_data_package_from_file(DATAPACKAGE_CACHE_FILE);
+     } catch (std::exception&) { /* ignore */ }
 
     this->init_handlers();
 }
 
 ArchipelagoInterface::~ArchipelagoInterface()
 {
-    std::cout << "Disconnecting..." << std::endl;
+    Logger::info("Disconnecting from Archipelago server...");
     delete _client;
 }
 
@@ -49,18 +51,13 @@ void ArchipelagoInterface::send_checked_locations_to_server(const std::set<uint1
 {
     if(!_client || _client->get_state() != APClient::State::SLOT_CONNECTED)
     {
-        std::cerr << "[ERROR] Attempting to send checked locations to server, but there is no connection." << std::endl;
+        Logger::warning("Attempting to send checked locations to server, but there is no connection.");
         return;
     }
 
-    std::cout << "[SEND] New checked locations = [";
     std::list<int64_t> checked_locations_typed;
     for(uint16_t loc_id : checked_locations)
-    {
-        std::cout << loc_id << " ";
         checked_locations_typed.emplace_back(static_cast<int64_t>(loc_id));
-    }
-    std::cout << "]" << std::endl;
 
     _client->LocationChecks(checked_locations_typed);
 }
@@ -69,14 +66,12 @@ void ArchipelagoInterface::notify_game_completed()
 {
     if(!_client || _client->get_state() != APClient::State::SLOT_CONNECTED)
     {
-        std::cerr << "[ERROR] Attempting to send goal completed, but there is no connection." << std::endl;
+        Logger::warning("Attempting to send goal completed, but there is no connection.");
         return;
     }
 
     _client->StatusUpdate(APClient::ClientStatus::GOAL);
 }
-
-
 
 void ArchipelagoInterface::on_socket_connected()
 {
@@ -85,13 +80,13 @@ void ArchipelagoInterface::on_socket_connected()
     //        if (game) game->clear_cache();
 
     _connected = true;
-    std::cout << "Connected!" << std::endl;
+    Logger::info("Established connection to Archipelago server.");
 }
 
 void ArchipelagoInterface::on_socket_disconnected()
 {
     _connected = false;
-    std::cout << "Disconnected from server." << std::endl;
+    Logger::info("Disconnected from Archipelago server.");
 }
 
 void ArchipelagoInterface::on_room_info()
@@ -112,7 +107,7 @@ void ArchipelagoInterface::on_room_info()
 
 void ArchipelagoInterface::on_slot_connected(const json& slot_data)
 {
-    std::cout << "Connected to slot : " << slot_data.dump(4) << std::endl;
+    Logger::info("Connected to slot, building ROM...");
 
     json preset = build_preset_json(slot_data, _slot_name);
     std::ofstream outfile("./presets/_ap_preset.json");
@@ -121,10 +116,11 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
 
     _game_state->expected_seed(preset["seed"]);
 
-    std::cout << "Invoking randstalker using preset..." << std::endl;
-
     char command[] = "randstalker.exe --outputrom=./seeds/ --preset=_ap_preset --nopause";
-    invoke(command);
+    if(invoke(command))
+        Logger::info("ROM built successfully.");
+    else
+        Logger::error("ROM failed to build.");
 }
 
 void ArchipelagoInterface::on_items_received(const std::list<APClient::NetworkItem>& items)
@@ -144,7 +140,7 @@ void ArchipelagoInterface::on_items_received(const std::list<APClient::NetworkIt
         std::string sender = _client->get_player_alias(item.player);
         std::string location = _client->get_location_name(item.location);
 
-        std::cout << "[PACKET] Received " << item_name << " from " << sender << " (" << location << ") [#" << item.index << "]" << std::endl;
+        Logger::info("Received " + item_name + " from " + sender + " (" + location + ")");
         _game_state->set_received_item(item.index, item.item - ITEM_BASE_ID);
     }
 }

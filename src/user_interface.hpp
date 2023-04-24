@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include "logger.hpp"
 
 class UserInterface {
 private:
@@ -9,11 +10,10 @@ private:
     char _slot_name[256] = "";
     char _password[256] = "";
 
-    std::vector<std::string> _message_log;
+    uint32_t _window_width = 800;
+    uint32_t _window_height = 600;
 
 public:
-    UserInterface() = default;
-
     void open();
 
 private:

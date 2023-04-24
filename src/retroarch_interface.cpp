@@ -1,6 +1,8 @@
 #include "retroarch_interface.hpp"
 
 #include <iostream>
+#include <sstream>
+#include "logger.hpp"
 
 RetroarchInterface::RetroarchInterface()
 {
@@ -16,12 +18,21 @@ RetroarchInterface::RetroarchInterface()
         throw EmulatorException("Could not find Genesis Plus GX core running.");
     }
 
-    std::cout << "Hooked on Genesis Plus GX core." << std::endl;
-    std::cout << "Addr = 0x" << std::hex << _base_address << std::dec << std::endl;
-    std::cout << "Size = 0x" << std::hex << _module_size << std::dec << std::endl;
+    Logger::debug("Hooked on Genesis Plus GX core.");
+
+    std::ostringstream oss;
+    oss << "Addr = 0x" << std::hex << _base_address;
+    Logger::debug(oss.str());
+
+    std::ostringstream oss2;
+    oss2 << "Size = 0x" << std::hex << _module_size;
+    Logger::debug(oss2.str());
 
     _game_ram_base_address = this->find_gpgx_ram_base_addr();
-    std::cout << "Game RAM = 0x" << std::hex << _game_ram_base_address << std::dec << std::endl;
+
+    std::ostringstream oss3;
+    oss3 << "Game RAM = 0x" << std::hex << _game_ram_base_address;
+    Logger::debug(oss3.str());
 }
 
 RetroarchInterface::~RetroarchInterface()
@@ -266,7 +277,7 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     if(addr != UINT64_MAX)
     {
         addr += 16;
-        std::cout << "Found signature 1 -> 0x" << std::hex << addr << std::dec << std::endl;
+        Logger::debug("Found signature 1");
         uint32_t offset = this->read_uint32(addr);
         return this->read_uint64(addr + 4 + offset);
     }
@@ -279,7 +290,7 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     if(addr != UINT64_MAX)
     {
         addr += 13;
-        std::cout << "Found signature 2 -> 0x" << std::hex << addr << std::dec << std::endl;
+        Logger::debug("Found signature 2");
         uint32_t offset = this->read_uint32(addr);
         return this->read_uint64(addr + 4 + offset);
     }
@@ -292,7 +303,7 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     if(addr != UINT64_MAX)
     {
         addr += 17;
-        std::cout << "Found signature 3 -> 0x" << std::hex << addr << std::dec << std::endl;
+        Logger::debug("Found signature 3");
         uint32_t offset = this->read_uint32(addr);
         return this->read_uint32(addr + 4 + offset);
     }

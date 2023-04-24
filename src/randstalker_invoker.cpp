@@ -20,7 +20,10 @@ bool invoke(char* command)
     // Wait until child process exits
     WaitForSingleObject(pi.hProcess, INFINITE);
 
+    DWORD ec;
+    GetExitCodeProcess(pi.hProcess, &ec);
+
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
-    return true;
+    return ec == 0;
 }

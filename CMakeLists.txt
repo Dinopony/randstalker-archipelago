@@ -65,6 +65,7 @@ set(SOURCES
         src/data/item_source.json.hxx
 
         src/main.cpp
+        src/client.hpp
         src/game_state.hpp
         src/game_state.cpp
         src/archipelago_interface.hpp
@@ -79,7 +80,8 @@ set(SOURCES
         src/location.cpp
         src/user_interface.hpp
         src/user_interface.cpp
-        src/client.hpp)
+        src/logger.hpp
+        src/logger.cpp)
 
 add_executable(randstalker_archipelago "${SOURCES}")
 target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32)

@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "data/item_source.json.hxx"
+#include "logger.hpp"
 
 using nlohmann::json;
 
@@ -21,7 +22,7 @@ uint8_t GameState::item_with_index(uint16_t received_item_index) const
     if(received_item_index < _received_items.size())
         return _received_items[received_item_index];
 
-    std::cerr << "[WARNING] Attempting to fetch received item #" << received_item_index << " whereas it was never received." << std::endl;
+    Logger::warning("Tried fetching item #" + std::to_string(received_item_index) + " whereas it was never received.");
     return 0xFF;
 }
 
@@ -42,8 +43,7 @@ void GameState::set_received_item(uint16_t index, uint8_t item)
     if(_received_items.size() <= index)
         _received_items.resize(index+1, 0xFF);
     else
-        std::cerr << "[WARNING] Setting a received item without resizing received items array." << std::endl;
+        Logger::warning("Setting a received item without resizing received items array.");
 
     _received_items[index] = item;
-    std::cout << "Received " << (uint16_t)item << " from ??? [#" << index << "]" << std::endl;
 }

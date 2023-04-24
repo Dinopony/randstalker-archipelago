@@ -6,13 +6,19 @@
 #include "client.hpp"
 
 // TODO: ImGui UI
-//      - Deport logging to console + ImGui console
 //      - Enable typing commands & chat
 //      - Enable rich hint handling
-//      - Handle session mutex on actions that matter
 //      - Set input ROM path for generation
 //      - Set Retroarch path to launch automatically (checkbox?)
 //      - Follow ROM generation status on UI
+
+constexpr uint32_t MIN_WINDOW_WIDTH = 800;
+constexpr uint32_t MIN_WINDOW_HEIGHT = 600;
+
+constexpr uint32_t MARGIN = 6;
+constexpr uint32_t LEFT_PANEL_WIDTH = 340;
+constexpr uint32_t AP_WINDOW_HEIGHT = 200;
+constexpr uint32_t EMU_WINDOW_HEIGHT = 100;
 
 #include <commdlg.h>
 static std::string ask_for_file()
@@ -40,8 +46,9 @@ static std::string ask_for_file()
 
 void UserInterface::draw_archipelago_connection_window()
 {
-    ImGui::SetNextWindowPos(ImVec2(10,10));
-    ImGui::SetNextWindowSize(ImVec2(340,200));
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, AP_WINDOW_HEIGHT));
+
     ImGui::Begin("AP Connection", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     {
         ImGui::PushItemWidth(-1);
@@ -85,8 +92,8 @@ void UserInterface::draw_archipelago_connection_window()
 
 void UserInterface::draw_emulator_connection_window()
 {
-    ImGui::SetNextWindowPos(ImVec2(10,220));
-    ImGui::SetNextWindowSize(ImVec2(340,100));
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, AP_WINDOW_HEIGHT + 2*MARGIN));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, EMU_WINDOW_HEIGHT));
     ImGui::Begin("Emulator Connection", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     {
         if(emulator)
@@ -109,20 +116,43 @@ void UserInterface::draw_emulator_connection_window()
 
 void UserInterface::draw_console_window()
 {
-    ImGui::SetNextWindowPos(ImVec2(360,10));
-    ImGui::SetNextWindowSize(ImVec2(910,700));
+    ImGui::SetNextWindowPos(ImVec2(LEFT_PANEL_WIDTH + 2*MARGIN, MARGIN));
+    ImGui::SetNextWindowSize(ImVec2((float)_window_width-(LEFT_PANEL_WIDTH+3*MARGIN), (float)_window_height-(2*MARGIN)));
 
     ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysVerticalScrollbar);
     {
-        for(const std::string& msg : _message_log)
-            ImGui::Text("%s", msg.c_str());
+        for(const Logger::Message& msg : Logger::get().messages())
+        {
+            std::string prefix;
+            switch(msg.level) {
+                case Logger::LOG_DEBUG:
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(120,120,120,255));
+                    prefix = "DEBUG";
+                    break;
+                case Logger::LOG_INFO:
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(230,230,255,255));
+                    prefix = "INFO";
+                    break;
+                case Logger::LOG_WARNING:
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
+                    prefix = "WARNING";
+                    break;
+                case Logger::LOG_ERROR:
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,60,60,255));
+                    prefix = "ERROR";
+                    break;
+            }
+
+            ImGui::TextWrapped("[%s] %s", prefix.c_str(), msg.text.c_str());
+            ImGui::PopStyleColor();
+        }
     }
     ImGui::End();
 }
 
 void UserInterface::open()
 {
-    sf::VideoMode video_settings(1280, 720, 32);
+    sf::VideoMode video_settings(_window_width, _window_height, 32);
     sf::ContextSettings context_settings;
     context_settings.depthBits = 24;
     context_settings.stencilBits = 8;
@@ -139,7 +169,21 @@ void UserInterface::open()
         {
             ImGui::SFML::ProcessEvent(window, event);
             if(event.type == sf::Event::Closed)
+            {
                 window.close();
+            }
+            else if(event.type == sf::Event::Resized)
+            {
+                _window_width = event.size.width;
+                if(_window_width < MIN_WINDOW_WIDTH)
+                    _window_width = MIN_WINDOW_WIDTH;
+
+                _window_height = event.size.height;
+                if(_window_height < MIN_WINDOW_HEIGHT)
+                    _window_height = MIN_WINDOW_HEIGHT;
+
+                window.setSize(sf::Vector2u(_window_width, _window_height));
+            }
         }
 
         window.clear(sf::Color::Black);
