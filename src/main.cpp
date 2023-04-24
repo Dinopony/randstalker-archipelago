@@ -27,11 +27,10 @@
 //      - The problem is that if we reload, local items won't be reobtainable anymore
 //      - We need to enforce this only for checks containing non-local items
 
-std::mutex session_mutex;
-
 GameState game_state;
 ArchipelagoInterface* archipelago = nullptr;
 RetroarchInterface* emulator = nullptr;
+std::mutex session_mutex;
 
 constexpr uint16_t ADDR_RECEIVED_ITEM = 0x20;
 constexpr uint16_t ADDR_IS_IN_GAME = 0x1200;
@@ -61,19 +60,23 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
     if(!host.empty() && host.find("ws://") != 0 && host.find("wss://") != 0)
         host = "ws://" + host;
 
+    session_mutex.lock();
     std::cout << "Attempting to connect to Archipelago server at '" << host << "'..." << std::endl;
-
     archipelago = new ArchipelagoInterface(host, slot_name, password, &game_state);
+    session_mutex.unlock();
 }
 
 void disconnect_ap()
 {
+    session_mutex.lock();
     delete archipelago;
     archipelago = nullptr;
+    session_mutex.unlock();
 }
 
 void connect_emu()
 {
+    session_mutex.lock();
     try
     {
         if(!emulator)
@@ -83,12 +86,15 @@ void connect_emu()
     {
         std::cerr << "[ERROR] Connection to emulator failed: " << ex.message() << std::endl;
     }
+    session_mutex.unlock();
 }
 
 void disconnect_emu()
 {
+    session_mutex.lock();
     delete emulator;
     emulator = nullptr;
+    session_mutex.unlock();
 }
 
 void poll_emulator()
@@ -149,7 +155,7 @@ void poll_emulator()
 //      ENTRY POINT
 // =============================================================================================
 
-int main(int argc, char** argv)
+int main()
 {
     // Network + game handling thread
     bool keep_working = true;
