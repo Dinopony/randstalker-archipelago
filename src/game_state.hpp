@@ -13,6 +13,7 @@ private:
     std::vector<uint8_t> _received_items;
     bool _server_must_know_checked_locations = false;
     uint32_t _expected_seed = 0xFFFFFFFF;
+    bool _has_won = false;
 
 public:
     GameState();
@@ -30,4 +31,7 @@ public:
 
     [[nodiscard]] uint32_t expected_seed() const { return _expected_seed; }
     void expected_seed(uint32_t seed) { _expected_seed = seed; }
+
+    [[nodiscard]] bool has_won() const { return _has_won; }
+    void has_won(bool val) { _has_won = true; }
 };

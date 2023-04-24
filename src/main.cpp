@@ -7,11 +7,6 @@
 #include "retroarch_interface.hpp"
 #include "game_state.hpp"
 #include "user_interface.hpp"
-#include <landstalker_lib/constants/item_codes.hpp>
-
-#if !defined WIN32 && !defined _WIN32
-#include <poll.h>
-#endif
 
 // TODO: Improve AP server logic
 //      - Lantern bug?
@@ -145,7 +140,7 @@ void poll_emulator()
         // Right after beating Gola, the game uses a unique "coin fall" equipped sword effect that is used
         // to detect that we are in the endgame cutscene
         archipelago->notify_game_completed();
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        game_state.has_won(true);
     }
 }
 
@@ -178,7 +173,9 @@ int main(int argc, char** argv)
                     archipelago->poll();
             }
             session_mutex.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            uint32_t millis = (game_state.has_won()) ? 1000 : 250;
+            std::this_thread::sleep_for(std::chrono::milliseconds(millis));
         }
     });
 
