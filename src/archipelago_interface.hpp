@@ -48,7 +48,7 @@ private:
     {
         _client->set_socket_connected_handler([this](){ this->on_socket_connected(); });
         _client->set_socket_disconnected_handler([this](){ this->on_socket_disconnected(); });
-        _client->set_room_info_handler([this](){ this->on_room_info(); });                      /* TODO: Better name? */
+        _client->set_room_info_handler([this](){ this->on_room_info(); });
 
         _client->set_slot_connected_handler([this](const json& j){ this->on_slot_connected(j); });
         _client->set_slot_disconnected_handler([this](){ this->on_slot_disconnected(); });

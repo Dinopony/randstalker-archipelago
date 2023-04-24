@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 #include <fstream>
-#include "data/locations.json.hxx"
+#include "data/item_source.json.hxx"
 
 using nlohmann::json;
 
@@ -11,18 +11,9 @@ GameState::GameState()
     _received_items.reserve(256);
 
     uint8_t cur_reward_id = 0;
-    json input_json = json::parse(LOCATIONS_JSON);
-    json output_json = json::array();
+    json input_json = json::parse(ITEM_SOURCES_JSON);
     for(json& location_data : input_json)
-    {
-        Location loc(location_data, cur_reward_id);
-        _locations.emplace_back(loc);
-        output_json.emplace_back(loc.to_json());
-    }
-
-    std::ofstream file("output_locations.json");
-    file << output_json.dump(4);
-    file.close();
+        _locations.emplace_back(Location(location_data, cur_reward_id));
 }
 
 uint8_t GameState::item_with_index(uint16_t received_item_index) const

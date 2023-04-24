@@ -52,7 +52,7 @@ macro(WRAPPED_DEPENDENCY)
 endmacro()
 
 # Wrap JSON model files and assets into automated .hxx headers
-wrapped_dependency(TEXT src/data/locations.json LOCATIONS_JSON)
+wrapped_dependency(TEXT src/data/item_source.json ITEM_SOURCES_JSON)
 
 set(SOURCES
         extlibs/imgui/imgui.cpp
@@ -61,6 +61,8 @@ set(SOURCES
         extlibs/imgui/imgui_tables.cpp
         extlibs/imgui/imgui-SFML.cpp
         extlibs/imgui/imgui_demo.cpp
+
+        src/data/item_source.json.hxx
 
         src/main.cpp
         src/game_state.hpp
@@ -73,9 +75,11 @@ set(SOURCES
         src/randstalker_invoker.hpp
         src/retroarch_interface.cpp
         src/retroarch_interface.hpp
-        src/data/locations.json.hxx
         src/location.hpp
-        src/location.cpp)
+        src/location.cpp
+        src/user_interface.hpp
+        src/user_interface.cpp
+        src/client.hpp)
 
 add_executable(randstalker_archipelago "${SOURCES}")
 target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32)

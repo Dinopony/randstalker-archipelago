@@ -43,11 +43,7 @@ static json build_randomizer_settings_json(const json& slot_data)
 
     rando_settings["allowSpoilerLog"] = false;
 
-    std::string spawn_location = slot_data["spawn_region"][0];
-    std::transform(spawn_location.begin(), spawn_location.end(), spawn_location.begin(),
-                   [](unsigned char c){ return std::tolower(c); });
-    rando_settings["spawnLocation"] = spawn_location;
-
+    rando_settings["spawnLocation"] = slot_data["spawn_region"];
     rando_settings["shuffleTrees"] = (slot_data["shuffle_trees"] == 1);
     rando_settings["enemyJumpingInLogic"] = (slot_data["handle_enemy_jumping_in_logic"] == 1);
     rando_settings["damageBoostingInLogic"] = (slot_data["handle_damage_boosting_in_logic"] == 1);

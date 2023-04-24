@@ -1,34 +1,32 @@
 #include <iostream>
 #include <cmath>
+#include <chrono>
+#include <thread>
 
 #include "archipelago_interface.hpp"
 #include "retroarch_interface.hpp"
 #include "game_state.hpp"
+#include "user_interface.hpp"
 #include <landstalker_lib/constants/item_codes.hpp>
-
-#include <chrono>
-#include <thread>
 
 #if !defined WIN32 && !defined _WIN32
 #include <poll.h>
 #endif
 
-// TODO: Handle the following on ASM side:
-//      - Set 0x21.b to 0x93 when Gola is beaten to mark endgame
+// TODO: Improve AP server logic
+//      - Lantern bug?
+//      - Shuffled trees logic (and all dynamic logic)
+//      - Prevent duplicates in shops if in rebuy mode
 
-// TODO: ImGui UI
-//      - Deport logging to console + ImGui console
-//      - Enable typing commands & chat
-//      - Enable rich hint handling
-//      - Handle session mutex on actions that matter
-//      - Set input ROM path for generation
-//      - Set Retroarch path to launch automatically (checkbox?)
-//      - Follow ROM generation status on UI
+// TODO: Save while received index has changed but item was not yet received?
+//      - Make the game increment the counter itself when getting the item
+
+// TODO: "Ignored placement of Sword of Gaia after crossing path because there are no more instances of it inside the item pool."
 
 // TODO: Handle hints
-//      - Oracle Stone (currently empty)
-//      - Lithograph   (currently empty)
-//      - Fortune Teller? (seems to work)
+//      - Oracle Stone      (currently empty)
+//      - Lithograph        (currently empty)
+//      - Fortune Teller?   (seems to work..ish)
 //      - Foxies?
 
 // TODO: Handle deathlink
@@ -46,8 +44,8 @@ RetroarchInterface* emulator = nullptr;
 constexpr uint16_t ADDR_RECEIVED_ITEM = 0x20;
 constexpr uint16_t ADDR_IS_IN_GAME = 0x1200;
 constexpr uint16_t ADDR_SEED = 0x22;
-constexpr uint16_t ADDR_IS_GOLA_BEATEN = 0x21;
 constexpr uint16_t ADDR_CURRENT_RECEIVED_ITEM_INDEX = 0x107E;
+constexpr uint16_t ADDR_EQUIPPED_SWORD_EFFECT = 0x114E;
 
 
 // =============================================================================================
@@ -146,145 +144,19 @@ void poll_emulator()
     }
 
     // Check goal completion
-    if(archipelago->is_connected() && emulator->read_game_byte(ADDR_IS_GOLA_BEATEN) == 0x93)
+    if(archipelago->is_connected() && emulator->read_game_byte(ADDR_EQUIPPED_SWORD_EFFECT) == 0x05)
     {
+        // Right after beating Gola, the game uses a unique "coin fall" equipped sword effect that is used
+        // to detect that we are in the endgame cutscene
         archipelago->notify_game_completed();
-        emulator->write_game_byte(ADDR_IS_GOLA_BEATEN, 0x00);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
 
 // =============================================================================================
-//      UI HANDLING
+//      ENTRY POINT
 // =============================================================================================
-
-#include <SFML/Window.hpp>
-#include <SFML/Graphics.hpp>
-#include <imgui-SFML.h>
-
-namespace uiglobals {
-char host[512] = "localhost:25565"; //"archipelago.gg:12345";
-char slot_name[256];
-char password[256];
-std::vector<std::string> message_log;
-}
-
-static void draw_archipelago_connection_window()
-{
-    ImGui::SetNextWindowPos(ImVec2(10,10));
-    ImGui::SetNextWindowSize(ImVec2(340,200));
-    ImGui::Begin("AP Connection", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    {
-        ImGui::PushItemWidth(-1);
-        ImGui::Text("Host");
-        ImGui::InputText("##Host", uiglobals::host, IM_ARRAYSIZE(uiglobals::host));
-        ImGui::Text("Slot name");
-        ImGui::InputText("##Slot name", uiglobals::slot_name, IM_ARRAYSIZE(uiglobals::slot_name));
-        ImGui::Text("Password");
-        ImGui::InputText("##Password", uiglobals::password, IM_ARRAYSIZE(uiglobals::password));
-        ImGui::PopItemWidth();
-
-        ImGui::Separator(); // ------------------------------------------------------------
-
-        if(archipelago && archipelago->is_connected())
-        {
-            ImGui::Text("Connection status: Connected");
-            ImGui::Separator(); // ------------------------------------------------------------
-
-            if(ImGui::Button("Disconnect"))
-                disconnect_ap();
-        }
-        else if(archipelago)
-        {
-            ImGui::Text("Connection status: Attempting to connect...");
-            ImGui::Separator(); // ------------------------------------------------------------
-
-            if(ImGui::Button("Stop"))
-                disconnect_ap();
-        }
-        else
-        {
-            ImGui::Text("Connection status: Disconnected");
-            ImGui::Separator(); // ------------------------------------------------------------
-
-            if(ImGui::Button("Connect"))
-                connect_ap(uiglobals::host, uiglobals::slot_name, uiglobals::password);
-        }
-    }
-    ImGui::End();
-}
-
-static void draw_emulator_connection_window()
-{
-    ImGui::SetNextWindowPos(ImVec2(10,220));
-    ImGui::SetNextWindowSize(ImVec2(340,100));
-    ImGui::Begin("Emulator Connection", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    {
-        if(emulator)
-        {
-            ImGui::Text("Connected to Retroarch");
-            ImGui::Separator(); // ------------------------------------------------------------
-            if(ImGui::Button("Disconnect"))
-                disconnect_emu();
-        }
-        else
-        {
-            ImGui::Text("Not connected to Retroarch");
-            ImGui::Separator(); // ------------------------------------------------------------
-            if(ImGui::Button("Connect"))
-                connect_emu();
-        }
-    }
-    ImGui::End();
-}
-
-static void draw_console_window()
-{
-    ImGui::SetNextWindowPos(ImVec2(360,10));
-    ImGui::SetNextWindowSize(ImVec2(910,700));
-    ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    {
-        for(const std::string& msg : uiglobals::message_log)
-            ImGui::Text("%s", msg.c_str());
-    }
-    ImGui::End();
-}
-
-void open_ui()
-{
-    sf::VideoMode video_settings(1280, 720, 32);
-    sf::ContextSettings context_settings;
-    context_settings.depthBits = 24;
-    context_settings.stencilBits = 8;
-
-    sf::RenderWindow window(video_settings, "Landstalker Archipelago Client", sf::Style::Default, context_settings);
-    window.setVerticalSyncEnabled(true);
-    ImGui::SFML::Init(window);
-
-    sf::Clock delta_clock;
-    while(window.isOpen())
-    {
-        sf::Event event {};
-        while(window.pollEvent(event))
-        {
-            ImGui::SFML::ProcessEvent(window, event);
-            if(event.type == sf::Event::Closed)
-                window.close();
-        }
-
-        window.clear(sf::Color::Black);
-        ImGui::SFML::Update(window, delta_clock.restart());
-
-        draw_archipelago_connection_window();
-        draw_emulator_connection_window();
-        draw_console_window();
-
-        ImGui::SFML::Render(window);
-        window.display();
-    }
-
-    ImGui::SFML::Shutdown();
-}
 
 int main(int argc, char** argv)
 {
@@ -315,26 +187,11 @@ int main(int argc, char** argv)
     });
 
     // UI thread
-    open_ui();
+    UserInterface ui;
+    ui.open();
 
     // When UI is closed, tell the other thread to stop working
     keep_working = false;
     process_thread.join();
     return EXIT_SUCCESS;
 }
-
-/*
-void on_command(const std::string& command)
-{
-    if (command == "/help") {
-        printf("Available commands:\n"
-               "  /connect [addr[:port]] - connect to AP server\n"
-               "  /disconnect - disconnect from AP server\n");
-               // TODO: "  /force-send - send missing items to game, ignoring locks\n"
-               // TODO: "  /force-resend - resend all items to game\n"
-               // TODO: "  /sync - resync items/locations with AP server\n");
-    } else if (archipelago) {
-        archipelago->say(command);
-    }
-}
-*/
