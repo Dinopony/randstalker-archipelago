@@ -6,7 +6,6 @@
 #include "client.hpp"
 
 // TODO: ImGui UI
-//      - Enable typing commands & chat
 //      - Enable rich hint handling
 //      - Set input ROM path for generation
 //      - Set Retroarch path to launch automatically (checkbox?)
@@ -17,8 +16,9 @@ constexpr uint32_t MIN_WINDOW_HEIGHT = 600;
 
 constexpr uint32_t MARGIN = 6;
 constexpr uint32_t LEFT_PANEL_WIDTH = 340;
-constexpr uint32_t AP_WINDOW_HEIGHT = 200;
+constexpr uint32_t AP_WINDOW_HEIGHT = 180;
 constexpr uint32_t EMU_WINDOW_HEIGHT = 100;
+constexpr uint32_t CONSOLE_INPUT_HEIGHT = 35;
 
 #include <commdlg.h>
 static std::string ask_for_file()
@@ -62,9 +62,14 @@ void UserInterface::draw_archipelago_connection_window()
 
         ImGui::Separator(); // ------------------------------------------------------------
 
+        ImGui::Text("Connection to server:");
+        ImGui::SameLine();
         if(archipelago && archipelago->is_connected())
         {
-            ImGui::Text("Connection status: Connected");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
+            ImGui::Text("Connected");
+            ImGui::PopStyleColor();
+
             ImGui::Separator(); // ------------------------------------------------------------
 
             if(ImGui::Button("Disconnect"))
@@ -72,7 +77,10 @@ void UserInterface::draw_archipelago_connection_window()
         }
         else if(archipelago)
         {
-            ImGui::Text("Connection status: Attempting to connect...");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,200,0,255));
+            ImGui::Text("Connecting...");
+            ImGui::PopStyleColor();
+
             ImGui::Separator(); // ------------------------------------------------------------
 
             if(ImGui::Button("Stop"))
@@ -80,7 +88,10 @@ void UserInterface::draw_archipelago_connection_window()
         }
         else
         {
-            ImGui::Text("Connection status: Disconnected");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,0,0,255));
+            ImGui::Text("Disconnected");
+            ImGui::PopStyleColor();
+
             ImGui::Separator(); // ------------------------------------------------------------
 
             if(ImGui::Button("Connect"))
@@ -96,16 +107,24 @@ void UserInterface::draw_emulator_connection_window()
     ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, EMU_WINDOW_HEIGHT));
     ImGui::Begin("Emulator Connection", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     {
+        ImGui::Text("Connection to Retroarch:");
+        ImGui::SameLine();
         if(emulator)
         {
-            ImGui::Text("Connected to Retroarch");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
+            ImGui::Text("Connected");
+            ImGui::PopStyleColor();
+
             ImGui::Separator(); // ------------------------------------------------------------
             if(ImGui::Button("Disconnect"))
                 disconnect_emu();
         }
         else
         {
-            ImGui::Text("Not connected to Retroarch");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,0,0,255));
+            ImGui::Text("Disconnected");
+            ImGui::PopStyleColor();
+
             ImGui::Separator(); // ------------------------------------------------------------
             if(ImGui::Button("Connect"))
                 connect_emu();
@@ -117,37 +136,71 @@ void UserInterface::draw_emulator_connection_window()
 void UserInterface::draw_console_window()
 {
     ImGui::SetNextWindowPos(ImVec2(LEFT_PANEL_WIDTH + 2*MARGIN, MARGIN));
-    ImGui::SetNextWindowSize(ImVec2((float)_window_width-(LEFT_PANEL_WIDTH+3*MARGIN), (float)_window_height-(2*MARGIN)));
+    ImGui::SetNextWindowSize(ImVec2((float)_window_width-(LEFT_PANEL_WIDTH+3*MARGIN), (float)_window_height-(CONSOLE_INPUT_HEIGHT+2*MARGIN)));
 
     ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysVerticalScrollbar);
     {
-        for(const Logger::Message& msg : Logger::get().messages())
+        auto messages = Logger::get().messages();
+        for(const Logger::Message& msg : messages)
         {
             std::string prefix;
             switch(msg.level) {
                 case Logger::LOG_DEBUG:
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(120,120,120,255));
-                    prefix = "DEBUG";
+                    prefix = "[DEBUG] ";
+                    break;
+                case Logger::LOG_MESSAGE:
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(230,230,255,255));
                     break;
                 case Logger::LOG_INFO:
-                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(230,230,255,255));
-                    prefix = "INFO";
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,100,255,255));
+                    prefix = "[INFO] ";
                     break;
                 case Logger::LOG_WARNING:
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
-                    prefix = "WARNING";
+                    prefix = "[WARNING] ";
                     break;
                 case Logger::LOG_ERROR:
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,60,60,255));
-                    prefix = "ERROR";
+                    prefix = "[ERROR] ";
                     break;
             }
 
-            ImGui::TextWrapped("[%s] %s", prefix.c_str(), msg.text.c_str());
+            ImGui::TextWrapped("%s%s", prefix.c_str(), msg.text.c_str());
             ImGui::PopStyleColor();
+        }
+
+        if (messages.size() > _last_message_count)
+        {
+            _last_message_count = messages.size();
+            ImGui::SetScrollHereY(1.0f);
         }
     }
     ImGui::End();
+}
+
+void UserInterface::draw_console_input()
+{
+    ImGui::SetNextWindowPos(ImVec2(LEFT_PANEL_WIDTH + 2*MARGIN, _window_height-(CONSOLE_INPUT_HEIGHT+MARGIN)));
+    ImGui::SetNextWindowSize(ImVec2((float)_window_width-(LEFT_PANEL_WIDTH+3*MARGIN), (float)CONSOLE_INPUT_HEIGHT));
+
+    ImGui::Begin("ConsoleInputWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    {
+        ImGui::PushItemWidth(-50);
+        if(ImGui::InputText("##ConsoleInput", _console_input, IM_ARRAYSIZE(_console_input), ImGuiInputTextFlags_EnterReturnsTrue))
+            process_console_input();
+        ImGui::SameLine();
+        if(ImGui::Button("Send"))
+            process_console_input();
+    }
+    ImGui::End();
+}
+
+void UserInterface::process_console_input()
+{
+    if(archipelago)
+        archipelago->say(_console_input);
+    sprintf(_console_input, "");
 }
 
 void UserInterface::open()
@@ -160,6 +213,10 @@ void UserInterface::open()
     sf::RenderWindow window(video_settings, "Landstalker Archipelago Client", sf::Style::Default, context_settings);
     window.setVerticalSyncEnabled(true);
     ImGui::SFML::Init(window);
+
+    sf::Image icon;
+    if(icon.loadFromFile("icon.png"))
+        window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
     sf::Clock delta_clock;
     while(window.isOpen())
@@ -192,6 +249,7 @@ void UserInterface::open()
         draw_archipelago_connection_window();
         draw_emulator_connection_window();
         draw_console_window();
+        draw_console_input();
 
         ImGui::SFML::Render(window);
         window.display();
