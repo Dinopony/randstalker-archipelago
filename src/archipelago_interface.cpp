@@ -2,9 +2,16 @@
 
 #include <utility>
 
+#include <apuuid.hpp>
+#include <fstream>
+
 #include "client.hpp"
 #include "game_state.hpp"
 #include "logger.hpp"
+
+#define GAME_NAME "Landstalker"
+#define DATAPACKAGE_CACHE_FILE "datapackage.json"
+#define UUID_FILE "uuid"
 
 constexpr uint16_t ITEM_BASE_ID = 4000;
 
@@ -30,21 +37,46 @@ ArchipelagoInterface::~ArchipelagoInterface()
     delete _client;
 }
 
+void ArchipelagoInterface::init_handlers()
+{
+    _client->set_socket_connected_handler([this](){ this->on_socket_connected(); });
+    _client->set_socket_disconnected_handler([this](){ this->on_socket_disconnected(); });
+    _client->set_room_info_handler([this](){ this->on_room_info(); });
+
+    _client->set_slot_connected_handler([this](const json& j){ this->on_slot_connected(j); });
+    _client->set_slot_disconnected_handler([this](){ this->on_slot_disconnected(); });
+    _client->set_slot_refused_handler([this](const std::list<std::string>& errors){ this->on_slot_refused(errors); });
+    _client->set_items_received_handler([this](const std::list<APClient::NetworkItem>& items) { this->on_items_received(items); });
+    _client->set_data_package_changed_handler([this](const json& data) { _client->save_data_package(DATAPACKAGE_CACHE_FILE); });
+    _client->set_bounced_handler([this](const json& cmd) { this->on_bounced(cmd); });
+
+    _client->set_print_handler([](const std::string& msg) { Logger::message(msg); });
+    _client->set_print_json_handler([this](const std::list<APClient::TextNode>& msg) {
+        Logger::message(_client->render_json(msg, APClient::RenderFormat::TEXT));
+    });
+}
+
+void ArchipelagoInterface::say(const std::string& msg)
+{
+    if(msg.empty())
+        return;
+    if(!_client || _client->get_state() < APClient::State::SOCKET_CONNECTED)
+        return;
+
+    _client->Say(msg);
+}
+
+bool ArchipelagoInterface::is_connected() const
+{
+    return _client && _client->get_state() == APClient::State::SLOT_CONNECTED;
+}
+
 void ArchipelagoInterface::poll()
 {
     if(!_client)
         return;
 
     _client->poll();
-
-    if(_game_state->server_must_know_checked_locations() && _client->get_state() == APClient::State::SLOT_CONNECTED)
-    {
-        this->send_checked_locations_to_server(_game_state->checked_locations());
-        _game_state->clear_server_must_know_checked_locations();
-    }
-
-    if(_game_state->has_won())
-        this->notify_game_completed();
 }
 
 void ArchipelagoInterface::send_checked_locations_to_server(const std::set<uint16_t>& checked_locations)
@@ -91,18 +123,12 @@ void ArchipelagoInterface::on_socket_disconnected()
 
 void ArchipelagoInterface::on_room_info()
 {
-//        // compare seeds and error out if it's the wrong one, and then (try to) connect with games's slot
-//        if (!game || game->get_seed().empty() || game->get_slot().empty())
-//            printf("Waiting for game ...\n");
-//        else if (strncmp(game->get_seed().c_str(), ap->get_seed().c_str(), GAME::MAX_SEED_LENGTH) != 0)
-//            bad_seed(ap->get_seed(), game->get_seed());
-//        else {
-//            std::list<std::string> tags;
-//            if (game->want_deathlink()) tags.push_back("DeathLink");
-//            ap->ConnectSlot(game->get_slot(), password, game->get_items_handling(), tags, VERSION_TUPLE);
-//            ap_connect_sent = true; // TODO: move to APClient::State ?
-//        }
-    _client->ConnectSlot(_slot_name, _password, 1, {}, {0, 3, 8});
+    if(!_client)
+        return;
+
+    std::list<std::string> tags;
+    // if (game->want_deathlink()) tags.push_back("DeathLink"); // TODO: Handle deathlink
+    _client->ConnectSlot(_slot_name, _password, 1, tags, {0, 4, 0});
 }
 
 void ArchipelagoInterface::on_slot_connected(const json& slot_data)
@@ -116,23 +142,39 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
 
     _game_state->expected_seed(preset["seed"]);
 
-    char command[] = "randstalker.exe --outputrom=./seeds/ --preset=_ap_preset --nopause";
+    char command[] = "randstalker.exe --outputrom=\"ap_seed.md\" --preset=_ap_preset --nopause";
     if(invoke(command))
         Logger::info("ROM built successfully.");
     else
         Logger::error("ROM failed to build.");
+
+    // TODO: Remove ap_preset
+}
+
+void ArchipelagoInterface::on_slot_disconnected()
+{
+    std::cout << "Disconnected from slot." << std::endl;
+}
+
+void ArchipelagoInterface::on_slot_refused(const std::list<std::string>& errors)
+{
+    _connection_failed = true;
+    if (std::find(errors.begin(), errors.end(), "InvalidSlot") != errors.end())
+    {
+        Logger::error("Game slot '" + _slot_name + "' is invalid. Did you connect to the wrong server?");
+    }
+    else
+    {
+        Logger::error("Connection refused:");
+        for (const auto& error: errors)
+            Logger::error(error);
+    }
 }
 
 void ArchipelagoInterface::on_items_received(const std::list<APClient::NetworkItem>& items)
 {
-    // TODO: Handle datapackage?
-    // if (!_client->is_data_package_valid())
-    // {
-    //     // NOTE: this should not happen since we ask for data package before connecting
-    //     if (!ap_sync_queued) _client->Sync();
-    //     ap_sync_queued = true;
-    //     return;
-    // }
+    if(!_client)
+        return;
 
     for (const auto& item: items)
     {
@@ -140,7 +182,41 @@ void ArchipelagoInterface::on_items_received(const std::list<APClient::NetworkIt
         std::string sender = _client->get_player_alias(item.player);
         std::string location = _client->get_location_name(item.location);
 
-        Logger::info("Received " + item_name + " from " + sender + " (" + location + ")");
+        Logger::debug("Received " + item_name + " from " + sender + " (" + location + ")");
         _game_state->set_received_item(item.index, item.item - ITEM_BASE_ID);
     }
+}
+
+void ArchipelagoInterface::on_bounced(const json& cmd)
+{
+    // TODO: Deathlink handling
+    /*
+    bool isEqual(double a, double b)
+    {
+        return fabs(a - b) < std::numeric_limits<double>::epsilon() * fmax(fabs(a), fabs(b));
+    }
+
+    if (game->want_deathlink())
+    {
+        auto tagsIt = cmd.find("tags");
+        auto dataIt = cmd.find("data");
+        if (tagsIt != cmd.end() && tagsIt->is_array() && std::find(tagsIt->begin(), tagsIt->end(), "DeathLink") != tagsIt->end())
+        {
+            if (dataIt != cmd.end() && dataIt->is_object()) {
+                json data = *dataIt;
+                printf("Received deathlink...\n");
+                if (data["time"].is_number() && isEqual(data["time"].get<double>(), deathtime)) {
+                    deathtime = -1;
+                } else if (game) {
+                    game->send_death();
+                    printf("Died by the hands of %s: %s\n",
+                           data["source"].is_string() ? data["source"].get<std::string>().c_str() : "???",
+                           data["cause"].is_string() ? data["cause"].get<std::string>().c_str() : "???");
+                }
+            } else {
+                printf("Bad deathlink packet!\n");
+            }
+        }
+    }
+    */
 }

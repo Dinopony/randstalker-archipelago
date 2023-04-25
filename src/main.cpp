@@ -95,6 +95,33 @@ void disconnect_emu()
     session_mutex.unlock();
 }
 
+void poll_archipelago()
+{
+    if(!archipelago)
+        return;
+
+    archipelago->poll();
+
+    if(archipelago->connection_failed())
+    {
+        delete archipelago;
+        archipelago = nullptr;
+        return;
+    }
+
+    if(!archipelago->is_connected())
+        return;
+
+    if(game_state.server_must_know_checked_locations())
+    {
+        archipelago->send_checked_locations_to_server(game_state.checked_locations());
+        game_state.clear_server_must_know_checked_locations();
+    }
+
+    if(game_state.has_won())
+        archipelago->notify_game_completed();
+}
+
 void poll_emulator()
 {
     if(!emulator)
@@ -113,6 +140,7 @@ void poll_emulator()
             // during gameplay and another one was provided.
             throw EmulatorException("Invalid seed. Please ensure the right ROM was loaded.");
         }
+        return;
     }
 
     // Test all location flags to see if player checked new locations since last poll
@@ -171,8 +199,7 @@ int main()
                     emulator = nullptr;
                 }
 
-                if(archipelago)
-                    archipelago->poll();
+                poll_archipelago();
             }
             session_mutex.unlock();
 

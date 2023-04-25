@@ -1,6 +1,7 @@
 #include "randstalker_invoker.hpp"
 #include <Windows.h>
 #include <iostream>
+#include "logger.hpp"
 
 bool invoke(char* command)
 {
@@ -13,7 +14,7 @@ bool invoke(char* command)
 
     if(!CreateProcess(nullptr, command, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi))
     {
-        std::cerr << "CreateProcess failed (" << GetLastError() << ").\n";
+        Logger::error("Couldn't create Randstalker process to build ROM.");
         return false;
     }
 
