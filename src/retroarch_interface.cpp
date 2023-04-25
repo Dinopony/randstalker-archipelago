@@ -6,12 +6,12 @@
 
 RetroarchInterface::RetroarchInterface()
 {
-    get_debug_privileges();
+    //get_debug_privileges();
     _process_id = find_process_id("retroarch.exe");
     if(_process_id == -1)
         throw EmulatorException("Could not find a Retroarch process currently running.");
 
-    _process_handle = OpenProcess(PROCESS_ALL_ACCESS, false, _process_id);
+    _process_handle = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_QUERY_INFORMATION, false, _process_id);
     if(!read_module_information(_process_handle, "genesis_plus_gx_libretro.dll"))
     {
         CloseHandle(_process_handle);
@@ -101,6 +101,7 @@ void RetroarchInterface::write_game_long(uint16_t address, uint32_t value)
     this->write_game_word(address + 2, lsw);
 }
 
+/*
 bool RetroarchInterface::get_debug_privileges()
 {
     HANDLE hToken = nullptr;
@@ -132,6 +133,7 @@ bool RetroarchInterface::set_privilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOO
 
     return true;
 }
+*/
 
 DWORD RetroarchInterface::find_process_id(const std::string& process_name)
 {
