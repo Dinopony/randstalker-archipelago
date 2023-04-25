@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 
 class Logger {
 public:
@@ -20,14 +21,16 @@ public:
 
 private:
     std::vector<Message> _messages;
+    std::mutex _mutex;
 
 public:
     void log(const std::string& msg, LogLevel level);
 
-    [[nodiscard]] const std::vector<Message>& messages() const { return _messages; }
+    [[nodiscard]] std::vector<Message> messages();
 
     static Logger& get();
     static void debug(const std::string& msg)    { Logger::get().log(msg, LOG_DEBUG); }
+    static void message(const std::string& msg)  { Logger::get().log(msg, LOG_MESSAGE); }
     static void info(const std::string& msg)     { Logger::get().log(msg, LOG_INFO); }
     static void warning(const std::string& msg)  { Logger::get().log(msg, LOG_WARNING); }
     static void error(const std::string& msg)    { Logger::get().log(msg, LOG_ERROR); }
