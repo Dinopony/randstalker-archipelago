@@ -76,7 +76,7 @@ static json build_world_json(const json& slot_data, const std::string& player_na
         }
         else
         {
-            world["itemSources"][item_source_name] = "Archipelago Item";
+            world["itemSources"][item_source_name] = data;
         }
     }
 
