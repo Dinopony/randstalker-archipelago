@@ -11,10 +11,9 @@ GameState::GameState()
 {
     _received_items.reserve(256);
 
-    uint8_t cur_reward_id = 0;
     json input_json = json::parse(ITEM_SOURCES_JSON);
     for(json& location_data : input_json)
-        _locations.emplace_back(Location(location_data, cur_reward_id));
+        _locations.emplace_back(Location(location_data));
 }
 
 uint8_t GameState::item_with_index(uint16_t received_item_index) const

@@ -14,7 +14,7 @@ private:
 
 public:
     Location() = default;
-    explicit Location(nlohmann::json& location_data, uint8_t& cur_reward_id);
+    explicit Location(nlohmann::json& location_data);
 
     [[nodiscard]] uint16_t id() const { return _id; }
     [[nodiscard]] const std::string& name() const { return _name; }

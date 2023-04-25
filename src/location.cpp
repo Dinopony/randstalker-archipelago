@@ -8,7 +8,7 @@ constexpr uint16_t BASE_GROUND_LOCATION_ID = BASE_LOCATION_ID + 256;
 constexpr uint16_t BASE_SHOP_LOCATION_ID = BASE_GROUND_LOCATION_ID + 30;
 constexpr uint16_t BASE_REWARD_LOCATION_ID = BASE_SHOP_LOCATION_ID + 50;
 
-Location::Location(nlohmann::json& location_data, uint8_t& cur_reward_id)
+Location::Location(nlohmann::json& location_data)
 {
     std::string debug_dump = location_data.dump(4);
     _name = location_data["name"];
@@ -37,10 +37,11 @@ Location::Location(nlohmann::json& location_data, uint8_t& cur_reward_id)
     }
     else if(type == "reward")
     {
+        uint8_t reward_id = location_data["rewardId"];
         const std::string& byte_str = location_data["flag"]["byte"];
         _checked_flag_byte = std::stoul(byte_str.substr(2), nullptr, 16);
         _checked_flag_bit = location_data["flag"]["bit"];
-        _id = BASE_REWARD_LOCATION_ID + (cur_reward_id++);
+        _id = BASE_REWARD_LOCATION_ID + reward_id;
     }
 }
 
