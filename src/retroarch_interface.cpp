@@ -57,7 +57,7 @@ uint16_t RetroarchInterface::read_game_word(uint16_t address) const
     LPCVOID addr = reinterpret_cast<LPCVOID>(_game_ram_base_address + address);
     BOOL success = ReadProcessMemory(_process_handle, addr, &buffer, sizeof(uint16_t), &bytes_read);
     if (!success || bytes_read != sizeof(uint16_t))
-        throw EmulatorException("read_game_word failed");
+        throw EmulatorException("Failed to read data from the emulator's memory");
 
     return buffer;
 }
@@ -81,7 +81,7 @@ void RetroarchInterface::write_game_byte(uint16_t address, uint8_t value)
     LPVOID addr = reinterpret_cast<LPVOID>(_game_ram_base_address + address);
     BOOL success = WriteProcessMemory(_process_handle, addr, &value, sizeof(value), &written_count);
     if (!success || written_count != sizeof(value))
-        throw EmulatorException("write_game_byte failed");
+        throw EmulatorException("Failed to write data into the emulator's memory");
 }
 
 void RetroarchInterface::write_game_word(uint16_t address, uint16_t value)
@@ -90,7 +90,7 @@ void RetroarchInterface::write_game_word(uint16_t address, uint16_t value)
     LPVOID addr = reinterpret_cast<LPVOID>(_game_ram_base_address + address);
     BOOL success = WriteProcessMemory(_process_handle, addr, &value, sizeof(value), &written_count);
     if (!success || written_count != sizeof(value))
-        throw EmulatorException("write_game_word failed");
+        throw EmulatorException("Failed to write data into the emulator's memory");
 }
 
 void RetroarchInterface::write_game_long(uint16_t address, uint32_t value)
@@ -105,10 +105,10 @@ bool RetroarchInterface::get_debug_privileges()
 {
     HANDLE hToken = nullptr;
     if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken))
-        throw EmulatorException("OpenProcessToken failed");
+        throw EmulatorException("Failed to enable debug privileges");
 
     if(!set_privilege(hToken, SE_DEBUG_NAME, TRUE))
-        throw EmulatorException("Failed to enable privilege");
+        throw EmulatorException("Failed to enable debug privileges");
 
     return true;
 }
@@ -117,7 +117,7 @@ bool RetroarchInterface::set_privilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOO
 {
     LUID luid;
     if (!LookupPrivilegeValue(nullptr, lpszPrivilege, &luid))
-        throw EmulatorException("LookupPrivilegeValue error");
+        throw EmulatorException("Failed to enable debug privileges");
 
     TOKEN_PRIVILEGES tp;
     tp.PrivilegeCount = 1;
@@ -125,10 +125,10 @@ bool RetroarchInterface::set_privilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOO
     tp.Privileges[0].Attributes = (bEnablePrivilege) ? SE_PRIVILEGE_ENABLED : 0;
 
     if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(TOKEN_PRIVILEGES), (PTOKEN_PRIVILEGES) nullptr, (PDWORD) nullptr))
-        throw EmulatorException("AdjustTokenPrivileges error");
+        throw EmulatorException("Failed to enable debug privileges");
 
     if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
-        throw EmulatorException("The token does not have the specified privilege.");
+        throw EmulatorException("Failed to enable debug privileges");
 
     return true;
 }
@@ -198,7 +198,7 @@ uint32_t RetroarchInterface::read_uint32(uint64_t address)
 
     BOOL success = ReadProcessMemory(_process_handle, reinterpret_cast<LPCVOID>(address), &buffer, NumberOfBytesToRead, &NumberOfBytesActuallyRead);
     if (!success || NumberOfBytesActuallyRead != NumberOfBytesToRead)
-        throw EmulatorException("read_int failed");
+        throw EmulatorException("Failed to read data from the emulator's memory");
 
     return buffer;
 }
@@ -211,7 +211,7 @@ uint64_t RetroarchInterface::read_uint64(uint64_t address)
 
     BOOL success = ReadProcessMemory(_process_handle, reinterpret_cast<LPCVOID>(address), &buffer, NumberOfBytesToRead, &NumberOfBytesActuallyRead);
     if (!success || NumberOfBytesActuallyRead != NumberOfBytesToRead)
-        throw EmulatorException("read_int failed");
+        throw EmulatorException("Failed to read data from the emulator's memory");
 
     return buffer;
 }
@@ -222,7 +222,7 @@ void RetroarchInterface::write_byte(uint64_t address, char value)
 
     BOOL success = WriteProcessMemory(_process_handle, reinterpret_cast<LPVOID>(_base_address + address), &value, 1, &written_count);
     if (!success || written_count != 1)
-        throw EmulatorException("write_byte failed");
+        throw EmulatorException("Failed to write data into the emulator's memory");
 }
 
 uint64_t RetroarchInterface::find_signature(const std::vector<uint16_t>& signature)
@@ -277,7 +277,7 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     if(addr != UINT64_MAX)
     {
         addr += 16;
-        Logger::debug("Found signature 1");
+        Logger::debug("Found GPGX signature 1");
         uint32_t offset = this->read_uint32(addr);
         return this->read_uint64(addr + 4 + offset);
     }
@@ -290,7 +290,7 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     if(addr != UINT64_MAX)
     {
         addr += 13;
-        Logger::debug("Found signature 2");
+        Logger::debug("Found GPGX signature 2");
         uint32_t offset = this->read_uint32(addr);
         return this->read_uint64(addr + 4 + offset);
     }
@@ -303,7 +303,7 @@ uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
     if(addr != UINT64_MAX)
     {
         addr += 17;
-        Logger::debug("Found signature 3");
+        Logger::debug("Found GPGX signature 3");
         uint32_t offset = this->read_uint32(addr);
         return this->read_uint32(addr + 4 + offset);
     }
