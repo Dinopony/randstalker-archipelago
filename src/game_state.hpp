@@ -15,6 +15,9 @@ private:
     uint32_t _expected_seed = 0xFFFFFFFF;
     bool _has_won = false;
 
+    bool _has_deathlink = false;
+    bool _received_death = false;
+    bool _must_send_death = false;
 public:
     GameState();
 
@@ -33,5 +36,14 @@ public:
     void expected_seed(uint32_t seed) { _expected_seed = seed; }
 
     [[nodiscard]] bool has_won() const { return _has_won; }
-    void has_won(bool val) { _has_won = true; }
+    void has_won(bool val) { _has_won = val; }
+
+    [[nodiscard]] bool has_deathlink() const { return _has_deathlink; }
+    void has_deathlink(bool val) { _has_deathlink = val; }
+
+    [[nodiscard]] bool received_death() const { return _received_death; }
+    void received_death(bool val) { _received_death = val; }
+
+    [[nodiscard]] bool must_send_death() const { return _must_send_death; }
+    void must_send_death(bool val) { _must_send_death = val; }
 };

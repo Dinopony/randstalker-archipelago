@@ -9,7 +9,7 @@
 #include "logger.hpp"
 
 // TODO: Add a setting to enforce one EkeEke in shops?
-// TODO: "Ignored placement of Sword of Gaia after crossing path because there are no more instances of it inside the item pool."
+// TODO: Handle shops
 
 // TODO: Handle hints
 //      - Oracle Stone      (currently empty)
@@ -18,8 +18,6 @@
 //      - Foxies?
 
 // TODO: Shorten some item source names
-
-// TODO: Handle deathlink
 
 // TODO: Handle collection from server (make check flags match with game state at all times)
 //      - The problem is that if we reload, local items won't be reobtainable anymore
@@ -31,11 +29,15 @@ RetroarchInterface* emulator = nullptr;
 std::mutex session_mutex;
 
 constexpr uint16_t ADDR_RECEIVED_ITEM = 0x20;
+constexpr uint16_t ADDR_RECEIVED_DEATH = 0x21;
 constexpr uint16_t ADDR_IS_IN_GAME = 0x1200;
 constexpr uint16_t ADDR_SEED = 0x22;
 constexpr uint16_t ADDR_CURRENT_RECEIVED_ITEM_INDEX = 0x107E;
 constexpr uint16_t ADDR_EQUIPPED_SWORD_EFFECT = 0x114E;
+constexpr uint16_t ADDR_CURRENT_HEALTH = 0x543E;
 
+constexpr uint64_t DEATHLINK_SEND_INTERVAL = 5; // in seconds
+constexpr uint64_t DEATHLINK_RECEIVE_INTERVAL = 5; // in seconds
 
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
@@ -120,6 +122,9 @@ void poll_archipelago()
 
     if(game_state.has_won())
         archipelago->notify_game_completed();
+
+    if(game_state.must_send_death())
+        archipelago->notify_death();
 }
 
 void poll_emulator()
@@ -171,6 +176,35 @@ void poll_emulator()
         // Right after beating Gola, the game uses a unique "coin fall" equipped sword effect that is used
         // to detect that we are in the endgame cutscene
         game_state.has_won(true);
+    }
+
+    // Handle deathlink, both ways
+    if(game_state.has_deathlink())
+    {
+        // If another player died and we received the death notification, schedule a death
+        if(game_state.received_death() && emulator->read_game_byte(ADDR_RECEIVED_DEATH) == 0x00)
+        {
+            Logger::debug("Processing received death...");
+            emulator->write_game_byte(ADDR_RECEIVED_DEATH, 0x01);
+            game_state.received_death(false);
+        }
+
+        // If player just died, send a death notification to other players
+        if(emulator->read_game_word(ADDR_CURRENT_HEALTH) == 0x0000)
+        {
+            // Check that this death wasn't caused by a recent received death
+            if(!game_state.must_send_death() && emulator->read_game_byte(ADDR_RECEIVED_DEATH) == 0x00)
+            {
+                Logger::debug("Player death detected");
+                game_state.must_send_death(true);
+            }
+        }
+        else if(emulator->read_game_byte(ADDR_RECEIVED_DEATH) == 0x02)
+        {
+            // Player has life and is in a "post-received deathlink" state, clear it back to normal to make
+            // dying from deathlink possible again
+            emulator->write_game_byte(ADDR_RECEIVED_DEATH, 0x00);
+        }
     }
 }
 

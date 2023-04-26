@@ -105,6 +105,24 @@ void ArchipelagoInterface::notify_game_completed()
     _client->StatusUpdate(APClient::ClientStatus::GOAL);
 }
 
+void ArchipelagoInterface::notify_death()
+{
+    if(!_client || _client->get_state() != APClient::State::SLOT_CONNECTED)
+    {
+        Logger::warning("Attempting to send deathlink, but there is no connection.");
+        return;
+    }
+
+    double death_time = _client->get_server_time();
+    json data{
+            {"time", death_time},
+            {"cause", "Wanted to consume an EkeEke."},
+            {"source", _slot_name},
+    };
+    _client->Bounce(data, {}, {}, {"DeathLink"});
+    Logger::debug("Sending death...");
+}
+
 void ArchipelagoInterface::on_socket_connected()
 {
     // if the socket (re)connects we actually don't know the server's state. clear game's cache to not desync
@@ -117,7 +135,7 @@ void ArchipelagoInterface::on_socket_connected()
 
 void ArchipelagoInterface::on_socket_disconnected()
 {
-    _connected = false;
+    _connection_failed = true;
     Logger::info("Disconnected from Archipelago server.");
 }
 
@@ -133,6 +151,9 @@ void ArchipelagoInterface::on_room_info()
 
 void ArchipelagoInterface::on_slot_connected(const json& slot_data)
 {
+    if(!_client)
+        return;
+
     Logger::info("Connected to slot, building ROM...");
 
     json preset = build_preset_json(slot_data, _slot_name);
@@ -141,6 +162,12 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
     outfile.close();
 
     _game_state->expected_seed(preset["seed"]);
+    _game_state->has_deathlink(slot_data["death_link"] == 1);
+    if (_game_state->has_deathlink())
+    {
+        Logger::debug("Updating connection with DeathLink tag");
+        _client->ConnectUpdate(false, 0, true, { "DeathLink" });
+    }
 
     char command[] = "randstalker.exe --outputrom=\"ap_seed.md\" --preset=_ap_preset --nopause";
     if(invoke(command))
@@ -187,36 +214,36 @@ void ArchipelagoInterface::on_items_received(const std::list<APClient::NetworkIt
     }
 }
 
-void ArchipelagoInterface::on_bounced(const json& cmd)
+void ArchipelagoInterface::on_bounced(const json& packet)
 {
-    // TODO: Deathlink handling
-    /*
-    bool isEqual(double a, double b)
-    {
-        return fabs(a - b) < std::numeric_limits<double>::epsilon() * fmax(fabs(a), fabs(b));
-    }
+    if(!_game_state->has_deathlink())
+        return;
 
-    if (game->want_deathlink())
+    auto tagsIt = packet.find("tags");
+    auto dataIt = packet.find("data");
+    if (tagsIt != packet.end() && tagsIt->is_array() && std::find(tagsIt->begin(), tagsIt->end(), "DeathLink") != tagsIt->end())
     {
-        auto tagsIt = cmd.find("tags");
-        auto dataIt = cmd.find("data");
-        if (tagsIt != cmd.end() && tagsIt->is_array() && std::find(tagsIt->begin(), tagsIt->end(), "DeathLink") != tagsIt->end())
+        Logger::debug("Received deathlink");
+        if (dataIt != packet.end() && dataIt->is_object())
         {
-            if (dataIt != cmd.end() && dataIt->is_object()) {
-                json data = *dataIt;
-                printf("Received deathlink...\n");
-                if (data["time"].is_number() && isEqual(data["time"].get<double>(), deathtime)) {
-                    deathtime = -1;
-                } else if (game) {
-                    game->send_death();
-                    printf("Died by the hands of %s: %s\n",
-                           data["source"].is_string() ? data["source"].get<std::string>().c_str() : "???",
-                           data["cause"].is_string() ? data["cause"].get<std::string>().c_str() : "???");
-                }
-            } else {
-                printf("Bad deathlink packet!\n");
+            json data = *dataIt;
+            std::string player_name = data["source"].is_string() ? data["source"].get<std::string>().c_str() : "???";
+
+            if(data["cause"].is_string())
+            {
+                std::string cause = data["cause"];
+                Logger::message("Died by the hands of " + player_name + ": " + cause);
             }
+            else
+            {
+                Logger::message("Died by the hands of " + player_name + ".");
+            }
+
+            _game_state->received_death(true);
+        }
+        else
+        {
+            Logger::error("Received bad deathlink packet.");
         }
     }
-    */
 }

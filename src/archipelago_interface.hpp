@@ -29,6 +29,7 @@ public:
     bool is_connected() const;
     bool connection_failed() const { return _connection_failed; }
     void notify_game_completed();
+    void notify_death();
 
 private:
     void init_handlers();
