@@ -11,7 +11,7 @@ private:
     std::set<uint16_t> _checked_locations;
 
     std::vector<uint8_t> _received_items;
-    bool _server_must_know_checked_locations = false;
+    bool _must_send_checked_locations = false;
     uint32_t _expected_seed = 0xFFFFFFFF;
     bool _has_won = false;
 
@@ -28,8 +28,8 @@ public:
     [[nodiscard]] const std::vector<Location>& locations() const { return _locations; }
     bool set_location_checked_by_player(uint16_t location_index);
 
-    [[nodiscard]] bool server_must_know_checked_locations() const { return _server_must_know_checked_locations; }
-    void clear_server_must_know_checked_locations() { _server_must_know_checked_locations = false; }
+    [[nodiscard]] bool must_send_checked_locations() const { return _must_send_checked_locations; }
+    void must_send_checked_locations(bool val) { _must_send_checked_locations = val; }
     [[nodiscard]] const std::set<uint16_t>& checked_locations() const { return _checked_locations; }
 
     [[nodiscard]] uint32_t expected_seed() const { return _expected_seed; }

@@ -14,3 +14,4 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
 void disconnect_ap();
 void connect_emu();
 void disconnect_emu();
+void process_console_input(const std::string& input);

@@ -9,15 +9,20 @@
 #include "logger.hpp"
 
 // TODO: Add a setting to enforce one EkeEke in shops?
+
 // TODO: Handle shops
+//      - Put price of all AP items to 100 Golds -> needs some hardcoding...
+//      - Make the shopkeeper capable of naming Archipelago items (use dialogue of ground_item + BASE_SHOP_ID)
+//      - See how easy it is to do, but if we use source_id to name the item, we can use it for price as well
+//      - Inject a table with prices for all shop items
+//      - Decide of prices either at plando time, or during shuffling
+//          > they can be indexed on "ITEM_BASE_WORTH * DISTANCE_TO_START_POINT_FACTOR * RANDOM_FACTOR
 
 // TODO: Handle hints
 //      - Oracle Stone      (currently empty)
 //      - Lithograph        (currently empty)
 //      - Fortune Teller?   (seems to work..ish)
 //      - Foxies?
-
-// TODO: Shorten some item source names
 
 // TODO: Handle collection from server (make check flags match with game state at all times)
 //      - The problem is that if we reload, local items won't be reobtainable anymore
@@ -29,15 +34,16 @@ RetroarchInterface* emulator = nullptr;
 std::mutex session_mutex;
 
 constexpr uint16_t ADDR_RECEIVED_ITEM = 0x20;
-constexpr uint16_t ADDR_RECEIVED_DEATH = 0x21;
+constexpr uint16_t ADDR_DEATHLINK_STATE = 0x21;
 constexpr uint16_t ADDR_IS_IN_GAME = 0x1200;
 constexpr uint16_t ADDR_SEED = 0x22;
 constexpr uint16_t ADDR_CURRENT_RECEIVED_ITEM_INDEX = 0x107E;
 constexpr uint16_t ADDR_EQUIPPED_SWORD_EFFECT = 0x114E;
 constexpr uint16_t ADDR_CURRENT_HEALTH = 0x543E;
 
-constexpr uint64_t DEATHLINK_SEND_INTERVAL = 5; // in seconds
-constexpr uint64_t DEATHLINK_RECEIVE_INTERVAL = 5; // in seconds
+constexpr uint8_t DEATHLINK_STATE_IDLE = 0;
+constexpr uint8_t DEATHLINK_STATE_RECEIVED_DEATH = 1;
+constexpr uint8_t DEATHLINK_STATE_WAIT_FOR_RESURRECT = 2;
 
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
@@ -114,17 +120,20 @@ void poll_archipelago()
     if(!archipelago->is_connected())
         return;
 
-    if(game_state.server_must_know_checked_locations())
+    if(game_state.must_send_checked_locations())
     {
         archipelago->send_checked_locations_to_server(game_state.checked_locations());
-        game_state.clear_server_must_know_checked_locations();
+        game_state.must_send_checked_locations(false);
     }
 
     if(game_state.has_won())
         archipelago->notify_game_completed();
 
     if(game_state.must_send_death())
+    {
         archipelago->notify_death();
+        game_state.must_send_death(false);
+    }
 }
 
 void poll_emulator()
@@ -182,32 +191,60 @@ void poll_emulator()
     if(game_state.has_deathlink())
     {
         // If another player died and we received the death notification, schedule a death
-        if(game_state.received_death() && emulator->read_game_byte(ADDR_RECEIVED_DEATH) == 0x00)
+        if(game_state.received_death() && emulator->read_game_byte(ADDR_DEATHLINK_STATE) == DEATHLINK_STATE_IDLE)
         {
             Logger::debug("Processing received death...");
-            emulator->write_game_byte(ADDR_RECEIVED_DEATH, 0x01);
+            emulator->write_game_byte(ADDR_DEATHLINK_STATE, DEATHLINK_STATE_RECEIVED_DEATH);
             game_state.received_death(false);
         }
 
         // If player just died, send a death notification to other players
         if(emulator->read_game_word(ADDR_CURRENT_HEALTH) == 0x0000)
         {
-            // Check that this death wasn't caused by a recent received death
-            if(!game_state.must_send_death() && emulator->read_game_byte(ADDR_RECEIVED_DEATH) == 0x00)
+            // Check that this death wasn't caused by a recent received death or already processed
+            if(!game_state.must_send_death() && emulator->read_game_byte(ADDR_DEATHLINK_STATE) == DEATHLINK_STATE_IDLE)
             {
                 Logger::debug("Player death detected");
+                emulator->write_game_byte(ADDR_DEATHLINK_STATE, DEATHLINK_STATE_WAIT_FOR_RESURRECT);
                 game_state.must_send_death(true);
             }
         }
-        else if(emulator->read_game_byte(ADDR_RECEIVED_DEATH) == 0x02)
+        else if(emulator->read_game_byte(ADDR_DEATHLINK_STATE) == DEATHLINK_STATE_WAIT_FOR_RESURRECT)
         {
-            // Player has life and is in a "post-received deathlink" state, clear it back to normal to make
-            // dying from deathlink possible again
-            emulator->write_game_byte(ADDR_RECEIVED_DEATH, 0x00);
+            // Player has life and is in a "post deathlink" state, clear it back to normal to make
+            // dying from deathlink and sending deaths possible again
+            emulator->write_game_byte(ADDR_DEATHLINK_STATE, DEATHLINK_STATE_IDLE);
         }
     }
 }
 
+void process_console_input(const std::string& input)
+{
+    if(input == "!senddeath" && game_state.has_deathlink())
+    {
+        Logger::debug("Fake death queued for sending");
+        game_state.must_send_death(true);
+    }
+    else if(input == "!receivedeath" && game_state.has_deathlink())
+    {
+        Logger::debug("Fake death registered as received");
+        game_state.received_death(true);
+    }
+    else if(input == "!giveallitems" && emulator)
+    {
+        Logger::debug("Giving all items...");
+        for(uint16_t addr = 0x1040 ; addr <= 0x105E ; ++addr)
+            emulator->write_game_byte(addr, 0x22);
+    }
+    else if(archipelago)
+    {
+        archipelago->say(input);
+    }
+    else
+    {
+        Logger::error("Command could not be sent to Archipelago server, please connect first.");
+    }
+}
 
 // =============================================================================================
 //      ENTRY POINT

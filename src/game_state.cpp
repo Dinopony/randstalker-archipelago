@@ -33,7 +33,7 @@ bool GameState::set_location_checked_by_player(uint16_t location_index)
     if(!_checked_locations.count(location_index))
     {
         _checked_locations.insert(location_index);
-        _server_must_know_checked_locations = true;
+        _must_send_checked_locations = true;
         return true;
     }
 

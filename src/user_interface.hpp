@@ -23,6 +23,4 @@ private:
     void draw_emulator_connection_window();
     void draw_console_window();
     void draw_console_input();
-
-    void process_console_input();
 };

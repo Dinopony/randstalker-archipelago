@@ -186,21 +186,20 @@ void UserInterface::draw_console_input()
 
     ImGui::Begin("ConsoleInputWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     {
-        ImGui::PushItemWidth(-50);
+        ImGui::PushItemWidth(-45);
         if(ImGui::InputText("##ConsoleInput", _console_input, IM_ARRAYSIZE(_console_input), ImGuiInputTextFlags_EnterReturnsTrue))
-            process_console_input();
+        {
+            process_console_input(_console_input);
+            sprintf(_console_input, "");
+        }
         ImGui::SameLine();
         if(ImGui::Button("Send"))
-            process_console_input();
+        {
+            process_console_input(_console_input);
+            sprintf(_console_input, "");
+        }
     }
     ImGui::End();
-}
-
-void UserInterface::process_console_input()
-{
-    if(archipelago)
-        archipelago->say(_console_input);
-    sprintf(_console_input, "");
 }
 
 void UserInterface::open()
@@ -211,7 +210,7 @@ void UserInterface::open()
     context_settings.stencilBits = 8;
 
     sf::RenderWindow window(video_settings, "Landstalker Archipelago Client", sf::Style::Default, context_settings);
-    window.setVerticalSyncEnabled(true);
+    window.setFramerateLimit(30);
     ImGui::SFML::Init(window);
 
     sf::Image icon;

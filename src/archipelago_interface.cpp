@@ -223,11 +223,12 @@ void ArchipelagoInterface::on_bounced(const json& packet)
     auto dataIt = packet.find("data");
     if (tagsIt != packet.end() && tagsIt->is_array() && std::find(tagsIt->begin(), tagsIt->end(), "DeathLink") != tagsIt->end())
     {
-        Logger::debug("Received deathlink");
         if (dataIt != packet.end() && dataIt->is_object())
         {
             json data = *dataIt;
             std::string player_name = data["source"].is_string() ? data["source"].get<std::string>().c_str() : "???";
+            if(player_name == _slot_name && player_name != "???")
+                return;
 
             if(data["cause"].is_string())
             {
