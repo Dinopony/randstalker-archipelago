@@ -9,14 +9,7 @@
 #include "logger.hpp"
 
 // TODO: Add a setting to enforce one EkeEke in shops?
-
-// TODO: Handle shops
-//      - Put price of all AP items to 100 Golds -> needs some hardcoding...
-//      - Make the shopkeeper capable of naming Archipelago items (use dialogue of ground_item + BASE_SHOP_ID)
-//      - See how easy it is to do, but if we use source_id to name the item, we can use it for price as well
-//      - Inject a table with prices for all shop items
-//      - Decide of prices either at plando time, or during shuffling
-//          > they can be indexed on "ITEM_BASE_WORTH * DISTANCE_TO_START_POINT_FACTOR * RANDOM_FACTOR
+// TODO: Add lifestock requirements to logic
 
 // TODO: Handle hints
 //      - Oracle Stone      (currently empty)
@@ -235,6 +228,17 @@ void process_console_input(const std::string& input)
         Logger::debug("Giving all items...");
         for(uint16_t addr = 0x1040 ; addr <= 0x105E ; ++addr)
             emulator->write_game_byte(addr, 0x22);
+    }
+    else if(input == "!infinitegold" && emulator)
+    {
+        Logger::debug("Giving lots of gold...");
+        emulator->write_game_word(0x120E, 9999);
+    }
+    else if(input == "!collectallchecks" && emulator)
+    {
+        Logger::debug("Collecting all checks...");
+        for(const Location& loc : game_state.locations())
+            loc.mark_as_checked(*emulator);
     }
     else if(archipelago)
     {

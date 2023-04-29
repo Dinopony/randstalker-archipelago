@@ -74,7 +74,18 @@ static json build_world_json(const json& slot_data, const std::string& player_na
                 item_name += "s";
             else if(item_name == "Progressive Armor")
                 item_name = "Steel Breast";
-            world["itemSources"][item_source_name] = item_name;
+
+            if(data.contains("price"))
+            {
+                world["itemSources"][item_source_name] = {
+                    { "item", item_name },
+                    { "price", data["price"] },
+                };
+            }
+            else
+            {
+                world["itemSources"][item_source_name] = item_name;
+            }
         }
         else
         {

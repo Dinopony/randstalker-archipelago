@@ -19,4 +19,5 @@ public:
     [[nodiscard]] uint16_t id() const { return _id; }
     [[nodiscard]] const std::string& name() const { return _name; }
     [[nodiscard]] bool was_checked(const RetroarchInterface& emulator) const;
+    void mark_as_checked(RetroarchInterface& emulator) const;
 };
