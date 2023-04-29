@@ -3,7 +3,7 @@
 #include <iostream>
 #include "logger.hpp"
 
-bool invoke(char* command)
+bool invoke(const std::string& command)
 {
     STARTUPINFO si;
     ZeroMemory(&si, sizeof(si));
@@ -12,7 +12,10 @@ bool invoke(char* command)
     PROCESS_INFORMATION pi;
     ZeroMemory(&pi, sizeof(pi));
 
-    if(!CreateProcess(nullptr, command, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi))
+    char command_c_str[2048];
+    sprintf(command_c_str, "%s", command.c_str());
+
+    if(!CreateProcess(nullptr, command_c_str, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi))
     {
         Logger::error("Couldn't create Randstalker process to build ROM.");
         return false;

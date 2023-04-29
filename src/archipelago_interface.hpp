@@ -1,12 +1,11 @@
 #pragma once
 
 #include "preset_builder.hpp"
-#include "randstalker_invoker.hpp"
 #include <set>
-#include <apclient.hpp>
 
 using nlohmann::json;
 
+class APClient;
 class GameState;
 
 class ArchipelagoInterface {
@@ -26,8 +25,8 @@ public:
     void send_checked_locations_to_server(const std::set<uint16_t>& checked_locations);
 
     void say(const std::string& msg);
-    bool is_connected() const;
-    bool connection_failed() const { return _connection_failed; }
+    [[nodiscard]] bool is_connected() const;
+    [[nodiscard]] bool connection_failed() const { return _connection_failed; }
     void notify_game_completed();
     void notify_death();
 
@@ -40,6 +39,7 @@ private:
     void on_slot_connected(const json& slot_data);
     void on_slot_disconnected();
     void on_slot_refused(const std::list<std::string>& errors);
-    void on_items_received(const std::list<APClient::NetworkItem>& items);
+    void on_item_received(int index, int64_t item, int player, int64_t location);
+
     void on_bounced(const json& cmd);
 };

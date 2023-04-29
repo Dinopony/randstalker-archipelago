@@ -2,4 +2,4 @@
 
 #include <string>
 
-bool invoke(char* command);
+bool invoke(const std::string& command);

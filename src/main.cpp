@@ -7,6 +7,7 @@
 #include "game_state.hpp"
 #include "user_interface.hpp"
 #include "logger.hpp"
+#include "randstalker_invoker.hpp"
 
 // TODO: Add a setting to enforce one EkeEke in shops?
 // TODO: Add lifestock requirements to logic
@@ -15,6 +16,7 @@
 //      - The problem is that if we reload, local items won't be reobtainable anymore
 //      - We need to enforce this only for checks containing non-local items
 
+UserInterface ui;
 GameState game_state;
 ArchipelagoInterface* archipelago = nullptr;
 RetroarchInterface* emulator = nullptr;
@@ -205,6 +207,22 @@ void poll_emulator()
     }
 }
 
+void build_rom()
+{
+    ui.save_personal_settings();
+
+    std::string command = "randstalker.exe";
+    command += " --inputrom=\"" + std::string(ui.input_rom_path()) +"\"";
+    command += " --outputrom=\"" + std::string(ui.output_rom_path()) +"\"";
+    command += " --preset=_ap_preset";
+    command += " --nopause";
+
+    if(invoke(command))
+        Logger::info("ROM built successfully.");
+    else
+        Logger::error("ROM failed to build.");
+}
+
 void process_console_input(const std::string& input)
 {
     if(input == "!senddeath" && game_state.has_deathlink())
@@ -278,7 +296,6 @@ int main()
     });
 
     // UI thread
-    UserInterface ui;
     ui.open();
 
     // When UI is closed, tell the other thread to stop working

@@ -1,7 +1,8 @@
 #include "archipelago_interface.hpp"
 
 #include <utility>
-
+#include <filesystem>
+#include <apclient.hpp>
 #include <apuuid.hpp>
 #include <fstream>
 
@@ -46,7 +47,12 @@ void ArchipelagoInterface::init_handlers()
     _client->set_slot_connected_handler([this](const json& j){ this->on_slot_connected(j); });
     _client->set_slot_disconnected_handler([this](){ this->on_slot_disconnected(); });
     _client->set_slot_refused_handler([this](const std::list<std::string>& errors){ this->on_slot_refused(errors); });
-    _client->set_items_received_handler([this](const std::list<APClient::NetworkItem>& items) { this->on_items_received(items); });
+
+    _client->set_items_received_handler([this](const std::list<APClient::NetworkItem>& items) {
+        for (const auto& i : items)
+            this->on_item_received(i.index, i.item, i.player, i.location);
+    });
+
     _client->set_data_package_changed_handler([this](const json& data) { _client->save_data_package(DATAPACKAGE_CACHE_FILE); });
     _client->set_bounced_handler([this](const json& cmd) { this->on_bounced(cmd); });
 
@@ -169,13 +175,9 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
         _client->ConnectUpdate(false, 0, true, { "DeathLink" });
     }
 
-    char command[] = "randstalker.exe --outputrom=\"ap_seed.md\" --preset=_ap_preset --nopause";
-    if(invoke(command))
-        Logger::info("ROM built successfully.");
-    else
-        Logger::error("ROM failed to build.");
+    build_rom();
 
-    // TODO: Remove ap_preset
+//    std::filesystem::path("./presets/_ap_preset.json").remove_filename();
 }
 
 void ArchipelagoInterface::on_slot_disconnected()
@@ -198,20 +200,17 @@ void ArchipelagoInterface::on_slot_refused(const std::list<std::string>& errors)
     }
 }
 
-void ArchipelagoInterface::on_items_received(const std::list<APClient::NetworkItem>& items)
+void ArchipelagoInterface::on_item_received(int index, int64_t item, int player, int64_t location)
 {
     if(!_client)
         return;
 
-    for (const auto& item: items)
-    {
-        std::string item_name = _client->get_item_name(item.item);
-        std::string sender = _client->get_player_alias(item.player);
-        std::string location = _client->get_location_name(item.location);
+    std::string item_name = _client->get_item_name(item);
+    std::string player_name = _client->get_player_alias(player);
+    std::string location_name = _client->get_location_name(location);
 
-        Logger::debug("Received " + item_name + " from " + sender + " (" + location + ")");
-        _game_state->set_received_item(item.index, item.item - ITEM_BASE_ID);
-    }
+    Logger::debug("Received " + item_name + " from " + player_name + " (" + location_name + ")");
+    _game_state->set_received_item(index, item - ITEM_BASE_ID);
 }
 
 void ArchipelagoInterface::on_bounced(const json& packet)
