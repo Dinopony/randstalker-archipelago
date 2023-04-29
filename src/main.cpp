@@ -11,12 +11,6 @@
 // TODO: Add a setting to enforce one EkeEke in shops?
 // TODO: Add lifestock requirements to logic
 
-// TODO: Handle hints
-//      - Oracle Stone      (currently empty)
-//      - Lithograph        (currently empty)
-//      - Fortune Teller?   (seems to work..ish)
-//      - Foxies?
-
 // TODO: Handle collection from server (make check flags match with game state at all times)
 //      - The problem is that if we reload, local items won't be reobtainable anymore
 //      - We need to enforce this only for checks containing non-local items
