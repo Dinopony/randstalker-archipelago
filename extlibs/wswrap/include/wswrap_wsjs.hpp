@@ -24,9 +24,16 @@ namespace wswrap {
         typedef std::function<void(void)> onopen_handler;
         typedef std::function<void(void)> onclose_handler;
         typedef std::function<void(void)> onerror_handler;
+        typedef std::function<void(const std::string&)> onerror_ex_handler;
         typedef std::function<void(const std::string&)> onmessage_handler;
 
-        WS(const std::string& uri, onopen_handler hopen, onclose_handler hclose, onmessage_handler hmessage, onerror_handler herror=nullptr)
+        WS(const std::string& uri_string, onopen_handler hopen, onclose_handler hclose, onmessage_handler hmessage,
+           onerror_ex_handler herror=nullptr, const std::string& = "")
+                : WS(uri_string, hopen, hclose, hmessage, [herror](){herror("Unknown");})
+        {
+        }
+
+        WS(const std::string& uri, onopen_handler hopen, onclose_handler hclose, onmessage_handler hmessage, onerror_handler herror=nullptr, const std::string& = "")
         {
             _impl = new IMPL(uri, hopen, hclose, hmessage, herror);
         }
@@ -42,6 +49,7 @@ namespace wswrap {
             return _impl->get_ok_connect_interval();
         }
 
+#ifdef WSWRAP_SEND_EXCEPTIONS
         void send(const std::string& data)
         {
             _impl->send(data);
@@ -56,6 +64,37 @@ namespace wswrap {
         {
             _impl->send_binary(data);
         }
+#else
+        bool send(const std::string& data)
+        {
+            try {
+                _impl->send(data);
+                return true;
+            } catch (...) {
+                return false;
+            }
+        }
+
+        bool send_text(const std::string& data)
+        {
+            try {
+                _impl->send_text(data);
+                return true;
+            } catch (...) {
+                return false;
+            }
+        }
+
+        bool send_binary(const std::string& data)
+        {
+            try {
+                _impl->send_binary(data);
+                return true;
+            } catch (...) {
+                return false;
+            }
+        }
+#endif
 
         bool poll()
         {
@@ -67,6 +106,10 @@ namespace wswrap {
         {
             // run does not work for wsjs
             return 0;
+        }
+
+        void stop()
+        {
         }
 
     private:
