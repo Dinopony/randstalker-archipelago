@@ -1,11 +1,8 @@
 #pragma once
 
-#include <Windows.h>
-#include <TlHelp32.h>
-#include <string>
-#include <Psapi.h>
-#include <utility>
 #include <vector>
+#include <string>
+#include <windows.h>
 
 class EmulatorException : public std::exception {
 private:
@@ -28,9 +25,9 @@ public:
     RetroarchInterface();
     virtual ~RetroarchInterface();
 
-    uint8_t read_game_byte(uint16_t address) const;
-    uint16_t read_game_word(uint16_t address) const;
-    uint32_t read_game_long(uint16_t address) const;
+    [[nodiscard]] uint8_t read_game_byte(uint16_t address) const;
+    [[nodiscard]] uint16_t read_game_word(uint16_t address) const;
+    [[nodiscard]] uint32_t read_game_long(uint16_t address) const;
 
     void write_game_byte(uint16_t address, uint8_t value);
     void write_game_word(uint16_t address, uint16_t value);
@@ -44,7 +41,5 @@ private:
     bool read_module_information(HANDLE processHandle, const std::string& module_name);
     uint64_t find_gpgx_ram_base_addr();
 
-    static bool get_debug_privileges();
-    static bool set_privilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bEnablePrivilege);
     static DWORD find_process_id(const std::string& process_name);
 };

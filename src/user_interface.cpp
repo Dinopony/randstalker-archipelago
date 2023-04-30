@@ -87,6 +87,13 @@ void UserInterface::draw_archipelago_connection_window()
 
             if(ImGui::Button("Disconnect"))
                 disconnect_ap();
+
+            if(game_state.has_preset_json())
+            {
+                ImGui::SameLine();
+                if(ImGui::Button("Rebuild ROM"))
+                    build_rom();
+            }
         }
         else if(archipelago)
         {
@@ -120,7 +127,7 @@ void UserInterface::draw_rom_generation_window()
     ImGui::SetNextWindowSize(ImVec2(ROM_WINDOW_W, ROM_WINDOW_H));
     ImGui::Begin("ROM Generation", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     {
-        ImGui::Text("Input ROM path");
+        ImGui::Text("Input ROM file");
         ImGui::PushItemWidth(-35);
         ImGui::InputText("##InputPath", _input_rom_path, IM_ARRAYSIZE(_input_rom_path));
         ImGui::PopItemWidth();
@@ -131,7 +138,6 @@ void UserInterface::draw_rom_generation_window()
             if(!picked_path.empty())
                 sprintf(_input_rom_path, "%s", picked_path.c_str());
         }
-
 
         ImGui::Text("Output ROM directory");
 //        ImGui::PushItemWidth(-35);

@@ -1,7 +1,6 @@
 #include "archipelago_interface.hpp"
 
 #include <utility>
-#include <filesystem>
 #include <apclient.hpp>
 #include <apuuid.hpp>
 #include <fstream>
@@ -160,12 +159,10 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
     if(!_client)
         return;
 
-    Logger::info("Connected to slot, building ROM...");
+    Logger::info("Connected to slot.");
 
     json preset = build_preset_json(slot_data, _slot_name);
-    std::ofstream outfile("./presets/_ap_preset.json");
-    outfile << preset.dump(4);
-    outfile.close();
+    _game_state->preset_json(preset);
 
     _game_state->expected_seed(preset["seed"]);
     _game_state->has_deathlink(slot_data["death_link"] == 1);
@@ -176,8 +173,6 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
     }
 
     build_rom();
-
-//    std::filesystem::path("./presets/_ap_preset.json").remove_filename();
 }
 
 void ArchipelagoInterface::on_slot_disconnected()

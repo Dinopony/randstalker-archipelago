@@ -43,6 +43,12 @@ else ()
     add_compile_options(-Wa,-mbig-obj)
 endif ()
 
+if (WIN32)
+    set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+else()
+    set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
+endif()
+
 macro(WRAPPED_DEPENDENCY)
     message(STATUS "Defining wrapped dependency for ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV1}")
     add_custom_command(

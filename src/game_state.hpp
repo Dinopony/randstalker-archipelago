@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 #include <set>
 #include <iostream>
@@ -7,6 +8,8 @@
 
 class GameState {
 private:
+    nlohmann::json _preset_json = {};
+
     std::vector<Location> _locations;
     std::set<uint16_t> _checked_locations;
 
@@ -46,4 +49,8 @@ public:
 
     [[nodiscard]] bool must_send_death() const { return _must_send_death; }
     void must_send_death(bool val) { _must_send_death = val; }
+
+    [[nodiscard]] bool has_preset_json() const { return !_preset_json.empty(); }
+    [[nodiscard]] const nlohmann::json& preset_json() const { return _preset_json; }
+    void preset_json(nlohmann::json json) { _preset_json = std::move(json); }
 };

@@ -1,6 +1,8 @@
 #include <cmath>
 #include <chrono>
 #include <thread>
+#include <fstream>
+#include <filesystem>
 
 #include "archipelago_interface.hpp"
 #include "retroarch_interface.hpp"
@@ -209,18 +211,36 @@ void poll_emulator()
 
 void build_rom()
 {
+    Logger::info("Building ROM...");
+
+    std::ofstream outfile("./_ap_preset.json");
+    outfile << game_state.preset_json().dump(4);
+    outfile.close();
+
     ui.save_personal_settings();
 
+    std::string output_path = std::string(ui.output_rom_path());
+    if(!output_path.ends_with("/"))
+        output_path += "/";
+    output_path += std::to_string(game_state.expected_seed()) + ".md";
+
     std::string command = "randstalker.exe";
-    command += " --inputrom=\"" + std::string(ui.input_rom_path()) +"\"";
-    command += " --outputrom=\"" + std::string(ui.output_rom_path()) +"\"";
+    command += " --inputrom=\"" + std::string(ui.input_rom_path()) + "\"";
+    command += " --outputrom=\"" + output_path + "\"";
     command += " --preset=_ap_preset";
-    command += " --nopause";
+    command += " --nostdin";
 
     if(invoke(command))
-        Logger::info("ROM built successfully.");
+    {
+        Logger::info("ROM built successfully at \"" + output_path + "\".");
+#ifndef DEBUG
+        std::filesystem::path("./_ap_preset.json").remove_filename();
+#endif
+    }
     else
+    {
         Logger::error("ROM failed to build.");
+    }
 }
 
 void process_console_input(const std::string& input)

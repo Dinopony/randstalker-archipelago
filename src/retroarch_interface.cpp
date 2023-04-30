@@ -1,7 +1,9 @@
 #include "retroarch_interface.hpp"
 
+#include <TlHelp32.h>
+#include <Psapi.h>
+#include <utility>
 #include <iostream>
-#include <sstream>
 #include "logger.hpp"
 
 RetroarchInterface::RetroarchInterface()

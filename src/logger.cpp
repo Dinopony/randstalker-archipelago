@@ -4,6 +4,10 @@
 
 void Logger::log(const std::string& msg, LogLevel level)
 {
+#ifndef DEBUG
+    if(level == LOG_DEBUG)
+        return;
+#endif
     _mutex.lock();
     Message new_message;
     new_message.level = level;
