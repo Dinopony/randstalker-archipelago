@@ -230,20 +230,27 @@ void poll_emulator()
     }
 }
 
-void build_rom()
+void build_rom(bool replace_if_exists)
 {
-    Logger::info("Building ROM...");
-
-    std::ofstream outfile("./_ap_preset.json");
-    outfile << game_state.preset_json().dump(4);
-    outfile.close();
-
-    ui.save_personal_settings();
-
     std::string output_path = std::string(ui.output_rom_path());
     if(!output_path.ends_with("/"))
         output_path += "/";
     output_path += std::to_string(game_state.expected_seed()) + ".md";
+
+    if(!replace_if_exists && std::filesystem::exists(std::filesystem::path(output_path)))
+    {
+        Logger::info("ROM already found at \"" + output_path + "\", press the \"Rebuild ROM\" button if you want "
+                                                               "to rebuild it anyway.");
+        return;
+    }
+
+    Logger::info("Building ROM...");
+
+    std::ofstream preset_file("./presets/_ap_preset.json");
+    preset_file << game_state.preset_json().dump(4);
+    preset_file.close();
+
+    ui.save_personal_settings();
 
     std::string command = "randstalker.exe";
     command += " --inputrom=\"" + std::string(ui.input_rom_path()) + "\"";
@@ -252,16 +259,13 @@ void build_rom()
     command += " --nostdin";
 
     if(invoke(command))
-    {
         Logger::info("ROM built successfully at \"" + output_path + "\".");
-#ifndef DEBUG
-        std::filesystem::path("./_ap_preset.json").remove_filename();
-#endif
-    }
     else
-    {
         Logger::error("ROM failed to build.");
-    }
+
+#ifndef DEBUG
+    std::filesystem::path("./presets/_ap_preset.json").remove_filename();
+#endif
 }
 
 void process_console_input(const std::string& input)

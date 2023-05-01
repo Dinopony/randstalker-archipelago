@@ -92,7 +92,7 @@ void UserInterface::draw_archipelago_connection_window()
             {
                 ImGui::SameLine();
                 if(ImGui::Button("Rebuild ROM"))
-                    build_rom();
+                    build_rom(true);
             }
         }
         else if(archipelago)

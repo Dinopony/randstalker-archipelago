@@ -172,7 +172,7 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
         _client->ConnectUpdate(false, 0, true, { "DeathLink" });
     }
 
-    build_rom();
+    build_rom(false);
 }
 
 void ArchipelagoInterface::on_slot_disconnected()
