@@ -75,8 +75,8 @@ static json build_world_json(const json& slot_data, const std::string& player_na
     std::map<std::string, json> locations = slot_data.at("locations");
     for(auto& [item_source_name, data] : locations)
     {
-        // Ignore the fake "Gola" location which only serves as a win condition
-        if(item_source_name == "Gola")
+        // Ignore the fake "End" location which only serves as a win condition
+        if(item_source_name == "End")
             continue;
 
         if(data["player"] == player_name)
@@ -113,6 +113,11 @@ static json build_world_json(const json& slot_data, const std::string& player_na
     world["hints"] = json::object();
     world["hints"]["Lithograph"] = slot_data["hints"]["Lithograph"];
     world["hints"]["Oracle Stone"] = slot_data["hints"]["Oracle Stone"];
+
+    if(slot_data["goal"] == 1)
+        world["goal"] = "reach_kazalt";
+    else
+        world["goal"] = "beat_gola";
 
     return world;
 }

@@ -12,8 +12,6 @@
 #include "logger.hpp"
 #include "randstalker_invoker.hpp"
 
-// TODO: Add lifestock requirements to logic
-
 UserInterface ui;
 GameState game_state;
 ArchipelagoInterface* archipelago = nullptr;
