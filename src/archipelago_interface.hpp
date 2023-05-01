@@ -6,19 +6,17 @@
 using nlohmann::json;
 
 class APClient;
-class GameState;
 
 class ArchipelagoInterface {
 private:
     APClient* _client = nullptr;
-    GameState* _game_state;
     bool _connected = false;
     bool _connection_failed = false;
     std::string _slot_name;
     std::string _password;
 
 public:
-    explicit ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password, GameState* game_state);
+    explicit ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password);
     virtual ~ArchipelagoInterface();
 
     void poll();

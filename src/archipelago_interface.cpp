@@ -15,8 +15,7 @@
 
 constexpr uint16_t ITEM_BASE_ID = 4000;
 
-ArchipelagoInterface::ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password, GameState* game_state) :
-    _game_state (game_state),
+ArchipelagoInterface::ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password) :
     _slot_name  (std::move(slot_name)),
     _password   (std::move(password))
 {
@@ -162,11 +161,11 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
     Logger::info("Connected to slot.");
 
     json preset = build_preset_json(slot_data, _slot_name);
-    _game_state->preset_json(preset);
+    game_state.preset_json(preset);
 
-    _game_state->expected_seed(preset["seed"]);
-    _game_state->has_deathlink(slot_data["death_link"] == 1);
-    if (_game_state->has_deathlink())
+    game_state.expected_seed(preset["seed"]);
+    game_state.has_deathlink(slot_data["death_link"] == 1);
+    if (game_state.has_deathlink())
     {
         Logger::debug("Updating connection with DeathLink tag");
         _client->ConnectUpdate(false, 0, true, { "DeathLink" });
@@ -205,12 +204,12 @@ void ArchipelagoInterface::on_item_received(int index, int64_t item, int player,
     std::string location_name = _client->get_location_name(location);
 
     Logger::debug("Received " + item_name + " from " + player_name + " (" + location_name + ")");
-    _game_state->set_received_item(index, item - ITEM_BASE_ID);
+    game_state.set_received_item(index, item - ITEM_BASE_ID);
 }
 
 void ArchipelagoInterface::on_bounced(const json& packet)
 {
-    if(!_game_state->has_deathlink())
+    if(!game_state.has_deathlink())
         return;
 
     auto tagsIt = packet.find("tags");
@@ -234,7 +233,7 @@ void ArchipelagoInterface::on_bounced(const json& packet)
                 Logger::message("Died by the hands of " + player_name + ".");
             }
 
-            _game_state->received_death(true);
+            game_state.received_death(true);
         }
         else
         {

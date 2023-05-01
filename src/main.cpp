@@ -62,7 +62,7 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
 
     session_mutex.lock();
     Logger::info("Attempting to connect to Archipelago server at '" + host + "'...");
-    archipelago = new ArchipelagoInterface(host, slot_name, password, &game_state);
+    archipelago = new ArchipelagoInterface(host, slot_name, password);
     session_mutex.unlock();
 }
 
