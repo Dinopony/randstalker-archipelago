@@ -33,7 +33,7 @@ constexpr uint8_t DEATHLINK_STATE_RECEIVED_DEATH = 1;
 constexpr uint8_t DEATHLINK_STATE_WAIT_FOR_RESURRECT = 2;
 
 constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
-
+#define PRESET_FILE_PATH "./_ap_preset.json"
 
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
@@ -243,7 +243,7 @@ void build_rom(bool replace_if_exists)
 
     Logger::info("Building ROM...");
 
-    std::ofstream preset_file("./presets/_ap_preset.json");
+    std::ofstream preset_file(PRESET_FILE_PATH);
     preset_file << game_state.preset_json().dump(4);
     preset_file.close();
 
@@ -252,7 +252,7 @@ void build_rom(bool replace_if_exists)
     std::string command = "randstalker.exe";
     command += " --inputrom=\"" + std::string(ui.input_rom_path()) + "\"";
     command += " --outputrom=\"" + output_path + "\"";
-    command += " --preset=_ap_preset";
+    command += " --preset=\"" PRESET_FILE_PATH "\"";
     command += " --nostdin";
 
     if(invoke(command))
@@ -261,7 +261,7 @@ void build_rom(bool replace_if_exists)
         Logger::error("ROM failed to build.");
 
 #ifndef DEBUG
-    std::filesystem::path("./presets/_ap_preset.json").remove_filename();
+    std::filesystem::path(PRESET_FILE_PATH).remove_filename();
 #endif
 }
 
