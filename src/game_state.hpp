@@ -23,6 +23,7 @@ private:
     bool _must_send_death = false;
 public:
     GameState();
+    void reset();
 
     [[nodiscard]] uint16_t current_item_index() const { return static_cast<uint16_t>(_received_items.size()); }
     [[nodiscard]] uint8_t item_with_index(uint16_t received_item_index) const;

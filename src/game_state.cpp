@@ -16,6 +16,19 @@ GameState::GameState()
         _locations.emplace_back(Location(location_data));
 }
 
+void GameState::reset()
+{
+    _preset_json = {};
+    _checked_locations.clear();
+    _received_items.clear();
+    _must_send_checked_locations = false;
+    _expected_seed = 0xFFFFFFFF;
+    _has_won = false;
+    _has_deathlink = false;
+    _received_death = false;
+    _must_send_death = false;
+}
+
 uint8_t GameState::item_with_index(uint16_t received_item_index) const
 {
     if(received_item_index < _received_items.size())
