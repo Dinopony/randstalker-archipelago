@@ -292,6 +292,9 @@ void UserInterface::draw_console_window()
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,100,255,255));
                     prefix = "[INFO] ";
                     break;
+                case Logger::LOG_HINT:
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,255));
+                    break;
                 case Logger::LOG_WARNING:
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
                     prefix = "[WARNING] ";

@@ -10,8 +10,9 @@ public:
         LOG_DEBUG = 0,
         LOG_MESSAGE = 1,
         LOG_INFO = 2,
-        LOG_WARNING = 3,
-        LOG_ERROR = 4
+        LOG_HINT = 3,
+        LOG_WARNING = 4,
+        LOG_ERROR = 5
     };
 
     struct Message {

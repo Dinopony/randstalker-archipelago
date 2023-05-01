@@ -15,6 +15,9 @@ void Logger::log(const std::string& msg, LogLevel level)
     const auto now = std::chrono::system_clock::now();
     new_message.timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
 
+    if(level == LOG_MESSAGE && msg.starts_with("[Hint]:"))
+        new_message.level = LOG_HINT;
+
     if(level == LOG_WARNING || level == LOG_ERROR)
         std::cerr << msg << std::endl;
     else
