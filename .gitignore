@@ -8,6 +8,3 @@ build_release_win32/
 
 # Auto-generated headers from json files
 *.hxx
-
-# Debug ROM file output
-*.md
