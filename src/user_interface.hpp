@@ -34,7 +34,7 @@ private:
     void draw_archipelago_connection_window();
     void draw_rom_generation_window();
     void draw_emulator_connection_window();
-    void draw_hint_window();
+    void draw_hint_window() const;
     void draw_console_window();
     void draw_console_input();
 };

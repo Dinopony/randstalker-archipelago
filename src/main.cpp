@@ -136,10 +136,6 @@ void poll_emulator()
     if(!emulator)
         return;
 
-    // If no save file is currently loaded, no need to do anything
-    if(emulator->read_game_word(ADDR_IS_IN_GAME) == 0x00)
-        return;
-
     if(emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
     {
         if(game_state.expected_seed() != 0xFFFFFFFF)
@@ -151,6 +147,10 @@ void poll_emulator()
         }
         return;
     }
+
+    // If no save file is currently loaded, no need to do anything
+    if(emulator->read_game_word(ADDR_IS_IN_GAME) == 0x00)
+        return;
 
     // Test all location flags to see if player checked new locations since last poll
     const std::vector<Location>& locations = game_state.locations();

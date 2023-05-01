@@ -29,7 +29,7 @@ constexpr uint32_t EMU_WINDOW_H = 60;
 
 constexpr uint32_t HINT_WINDOW_X = MARGIN;
 constexpr uint32_t HINT_WINDOW_W = LEFT_PANEL_WIDTH;
-constexpr uint32_t HINT_WINDOW_H = 60;
+constexpr uint32_t HINT_WINDOW_H = 85;
 
 constexpr uint32_t CONSOLE_INPUT_HEIGHT = 35;
 
@@ -221,7 +221,7 @@ void UserInterface::draw_emulator_connection_window()
     ImGui::End();
 }
 
-void UserInterface::draw_hint_window()
+void UserInterface::draw_hint_window() const
 {
     if(!archipelago || !archipelago->is_connected())
         return;
@@ -230,7 +230,7 @@ void UserInterface::draw_hint_window()
     ImGui::SetNextWindowSize(ImVec2(HINT_WINDOW_W, HINT_WINDOW_H));
     ImGui::Begin("Hints", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     {
-        ImGui::Text("Item to hint");
+        // ITEM HINT COMBO /////////////////////////////////////////////////////////////////////
 
         const char* items[] = {
                 "Safety Pass", "Key", "Idol Stone", "Axe Magic", "Lantern", "Armlet", "Garlic",
@@ -249,25 +249,47 @@ void UserInterface::draw_hint_window()
                 "Dahl", "Restoration", "Logs", "Bell", "Short Cake"
         };
         static const char* current_item = items[0];
-
-        if (ImGui::BeginCombo("##combo", current_item)) // The second parameter is the label previewed before opening the combo.
+        if (ImGui::BeginCombo("##combo", current_item))
         {
             for (auto& item : items)
             {
-                bool is_selected = (current_item == item); // You can store your selection however you want, outside or inside your objects
+                bool is_selected = (current_item == item);
                 if (ImGui::Selectable(item, is_selected))
                     current_item = item;
                 if (is_selected)
-                    ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
+                    ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
         }
         ImGui::SameLine();
 
-        if(ImGui::Button("Ask hint"))
-        {
+        if(ImGui::Button("Hint item"))
             process_console_input("!hint " + std::string(current_item));
+
+        // LOCATION HINT COMBO /////////////////////////////////////////////////////////////////////
+
+        static const char* current_location = game_state.locations()[0].name().c_str();
+        if (ImGui::BeginCombo("##combolocations", current_location))
+        {
+            for (auto& location : game_state.locations())
+            {
+                bool is_selected = (current_location == location.name().c_str());
+                if (ImGui::Selectable(location.name().c_str(), is_selected))
+                    current_location = location.name().c_str();
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
         }
+        ImGui::SameLine();
+
+        if(ImGui::Button("Hint location"))
+            process_console_input("!hint_location " + std::string(current_location));
+
+        // LIST HINTS BUTTON /////////////////////////////////////////////////////////////////////
+
+        if(ImGui::Button("List known hints"))
+            process_console_input("!hint");
     }
     ImGui::End();
 }
