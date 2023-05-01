@@ -12,14 +12,7 @@
 #include "logger.hpp"
 #include "randstalker_invoker.hpp"
 
-// TODO: Add a setting to enforce one EkeEke in shops?
 // TODO: Add lifestock requirements to logic
-
-// TODO: Handle collection from server (make check flags match with game state at all times)
-//      - The problem is that if we reload, local items won't be reobtainable anymore
-//      - We need to enforce this only for checks containing non-local items
-
-constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
 
 UserInterface ui;
 GameState game_state;
@@ -38,6 +31,9 @@ constexpr uint16_t ADDR_CURRENT_HEALTH = 0x543E;
 constexpr uint8_t DEATHLINK_STATE_IDLE = 0;
 constexpr uint8_t DEATHLINK_STATE_RECEIVED_DEATH = 1;
 constexpr uint8_t DEATHLINK_STATE_WAIT_FOR_RESURRECT = 2;
+
+constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
+
 
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
@@ -307,6 +303,7 @@ void process_console_input(const std::string& input)
         Logger::error("Command could not be sent to Archipelago server, please connect first.");
     }
 }
+
 
 // =============================================================================================
 //      ENTRY POINT

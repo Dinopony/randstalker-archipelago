@@ -11,8 +11,10 @@ static json build_game_settings_json(const json& slot_data)
     game_settings["startingGold"] = 0;
 
     game_settings["startingItems"] = json::object();
-    game_settings["startingItems"]["Record Book"] = 1;
-    game_settings["startingItems"]["Spell Book"] = 1;
+    if(slot_data["use_record_book"] == 1)
+        game_settings["startingItems"]["Record Book"] = 1;
+    if(slot_data["use_spell_book"] == 1)
+        game_settings["startingItems"]["Spell Book"] = 1;
 
     game_settings["fixArmletSkip"] = true;
     game_settings["removeTreeCuttingGlitchDrops"] = true;
@@ -25,12 +27,22 @@ static json build_game_settings_json(const json& slot_data)
                                             || (slot_data["teleport_tree_requirements"] == 2));
     game_settings["allTreesVisitedAtStart"] = (slot_data["teleport_tree_requirements"] < 2);
 
-    game_settings["ekeekeAutoRevive"] = true;
-    game_settings["enemiesDamageFactor"] = 100;
-    game_settings["enemiesHealthFactor"] = 100;
+    game_settings["ekeekeAutoRevive"] = (slot_data["revive_using_ekeeke"] == 1);
+
+    const std::array<int, 5> DIFFICULTY_RATES = {
+            50,     // Peaceful = 50% HP & Damage
+            75,     // Easy     = 75% HP & Damage
+            100,    // Normal   = 100% HP & Damage
+            140,    // Hard     = 140% HP & Damage
+            200,    // Insane   = 200% HP & Damage
+    };
+    uint8_t difficulty = slot_data["combat_difficulty"];
+    game_settings["enemiesDamageFactor"] = DIFFICULTY_RATES[difficulty];
+    game_settings["enemiesHealthFactor"] = DIFFICULTY_RATES[difficulty];
     game_settings["enemiesArmorFactor"] = 100;
     game_settings["enemiesGoldsFactor"] = 100;
     game_settings["enemiesDropChanceFactor"] = 100;
+
     game_settings["healthGainedPerLifestock"] = 1;
     game_settings["fastMenuTransitions"] = true;
 
