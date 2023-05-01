@@ -10,7 +10,7 @@ private:
     char _slot_name[256] = "Player";
     char _password[256] = "";
     char _console_input[512] = "";
-    char _input_rom_path[1024] = "./Landstalker (USA).md";
+    char _input_rom_path[1024] = "./LandStalker_USA.SGD";
     char _output_rom_path[1024] = "./seeds/";
     float _hud_color[3] = { 0.f, 0.f, 0.f };
     float _nigel_color_light[3] = { 0.f, 0.f, 0.f };

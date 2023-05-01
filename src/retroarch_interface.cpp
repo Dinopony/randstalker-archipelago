@@ -35,6 +35,8 @@ RetroarchInterface::RetroarchInterface()
     std::ostringstream oss3;
     oss3 << "Game RAM = 0x" << std::hex << _game_ram_base_address;
     Logger::debug(oss3.str());
+
+    Logger::info("Successfully connected to Retroarch.");
 }
 
 RetroarchInterface::~RetroarchInterface()

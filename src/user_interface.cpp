@@ -223,6 +223,9 @@ void UserInterface::draw_emulator_connection_window()
 
 void UserInterface::draw_hint_window()
 {
+    if(!archipelago || !archipelago->is_connected())
+        return;
+
     ImGui::SetNextWindowPos(ImVec2(HINT_WINDOW_X, _window_height - HINT_WINDOW_H - MARGIN));
     ImGui::SetNextWindowSize(ImVec2(HINT_WINDOW_W, HINT_WINDOW_H));
     ImGui::Begin("Hints", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
@@ -276,6 +279,7 @@ void UserInterface::draw_console_window()
 
     ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysVerticalScrollbar);
     {
+        ImGui::PushStyleColor(ImGuiCol_Separator, IM_COL32(128,128,128,40));
         auto messages = Logger::get().messages();
         for(const Logger::Message& msg : messages)
         {
@@ -307,7 +311,10 @@ void UserInterface::draw_console_window()
 
             ImGui::TextWrapped("%s%s", prefix.c_str(), msg.text.c_str());
             ImGui::PopStyleColor();
+
+            ImGui::Separator();
         }
+        ImGui::PopStyleColor();
 
         if (messages.size() > _last_message_count)
         {
