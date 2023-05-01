@@ -3,6 +3,7 @@
 #include <thread>
 #include <fstream>
 #include <filesystem>
+#include <landstalker_lib/constants/item_codes.hpp>
 
 #include "archipelago_interface.hpp"
 #include "retroarch_interface.hpp"
@@ -17,6 +18,8 @@
 // TODO: Handle collection from server (make check flags match with game state at all times)
 //      - The problem is that if we reload, local items won't be reobtainable anymore
 //      - We need to enforce this only for checks containing non-local items
+
+constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
 
 UserInterface ui;
 GameState game_state;
@@ -166,7 +169,25 @@ void poll_emulator()
     {
         if(emulator->read_game_byte(ADDR_RECEIVED_ITEM) == 0xFF)
         {
-            emulator->write_game_byte(ADDR_RECEIVED_ITEM, game_state.item_with_index(current_item_index_in_game));
+            uint8_t item_id = game_state.item_with_index(current_item_index_in_game);
+
+            // If the item is a progressive armor, look at the armors owned by the player and give them the next tier.
+            // Technically, we *could* send any kind of armor and the next tier would be received in-game, but the
+            // item name inside the "Got <ITEM>" textbox when an item is received directly depends on this ID.
+            if(item_id == ITEM_PROGRESSIVE_ARMOR)
+            {
+                uint32_t owned_armors = emulator->read_game_word(0x1044);
+                if((owned_armors & 0x2000) == 0)
+                    item_id = ITEM_STEEL_BREAST;
+                else if((owned_armors & 0x0002) == 0)
+                    item_id = ITEM_CHROME_BREAST;
+                else if((owned_armors & 0x0020) == 0)
+                    item_id = ITEM_SHELL_BREAST;
+                else
+                    item_id = ITEM_HYPER_BREAST;
+            }
+
+            emulator->write_game_byte(ADDR_RECEIVED_ITEM, item_id);
         }
     }
 

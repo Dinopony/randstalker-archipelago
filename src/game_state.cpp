@@ -3,10 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "data/item_source.json.hxx"
-#include <landstalker_lib/constants/item_codes.hpp>
 #include "logger.hpp"
-
-constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69;
 
 using nlohmann::json;
 
@@ -46,10 +43,6 @@ void GameState::set_received_item(uint16_t index, uint8_t item)
         _received_items.resize(index+1, 0xFF);
     else
         Logger::warning("Setting a received item without resizing received items array.");
-
-    // Convert the symbolic "Progressive Armor" item ID to an armor ID in game
-    if(item == ITEM_PROGRESSIVE_ARMOR)
-        item = ITEM_STEEL_BREAST;
 
     _received_items[index] = item;
 }
