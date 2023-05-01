@@ -9,7 +9,7 @@
 #include "game_state.hpp"
 #include "logger.hpp"
 
-#define GAME_NAME "Landstalker"
+#define GAME_NAME "Landstalker - The Treasures of King Nole"
 #define DATAPACKAGE_CACHE_FILE "datapackage.json"
 #define UUID_FILE "uuid"
 
