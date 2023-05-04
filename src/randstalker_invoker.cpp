@@ -15,7 +15,7 @@ bool invoke(const std::string& command)
     char command_c_str[2048];
     sprintf(command_c_str, "%s", command.c_str());
 
-    if(!CreateProcess(nullptr, command_c_str, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi))
+    if(!CreateProcess(nullptr, command_c_str, nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi))
     {
         Logger::error("Couldn't create Randstalker process to build ROM.");
         return false;

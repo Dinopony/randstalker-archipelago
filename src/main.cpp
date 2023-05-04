@@ -12,6 +12,10 @@
 #include "logger.hpp"
 #include "randstalker_invoker.hpp"
 
+#ifdef _MSC_VER
+    #pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+#endif
+
 UserInterface ui;
 GameState game_state;
 ArchipelagoInterface* archipelago = nullptr;

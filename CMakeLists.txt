@@ -39,15 +39,10 @@ if (MSVC)
     add_compile_options(/bigobj)
     add_compile_definitions(_WEBSOCKETPP_CPP11_STL_)
     add_compile_definitions(HAS_STD_FILESYSTEM)
+
 else ()
     add_compile_options(-Wa,-mbig-obj)
 endif ()
-
-if (WIN32)
-    set(SUBSYSTEM_LINKER_OPTIONS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-else()
-    set(SUBSYSTEM_LINKER_OPTIONS "-mwindows")
-endif()
 
 macro(WRAPPED_DEPENDENCY)
     message(STATUS "Defining wrapped dependency for ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV1}")
@@ -92,5 +87,5 @@ set(SOURCES
         src/logger.hpp
         src/logger.cpp)
 
-add_executable(randstalker_archipelago "${SOURCES}")
+add_executable(randstalker_archipelago WIN32 "${SOURCES}")
 target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32 libssl libcrypto crypt32)
