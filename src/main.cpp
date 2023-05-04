@@ -18,12 +18,12 @@ ArchipelagoInterface* archipelago = nullptr;
 RetroarchInterface* emulator = nullptr;
 std::mutex session_mutex;
 
-constexpr uint16_t ADDR_RECEIVED_ITEM = 0x20;
-constexpr uint16_t ADDR_DEATHLINK_STATE = 0x21;
+constexpr uint16_t ADDR_RECEIVED_ITEM = 0x0020;                 // 1 byte long
+constexpr uint16_t ADDR_DEATHLINK_STATE = 0x0021;               // 1 byte long
+constexpr uint16_t ADDR_SEED = 0x0022;                          // 4 bytes long
+constexpr uint16_t ADDR_COMPLETION_BYTE = 0x0028;               // 1 byte long
 constexpr uint16_t ADDR_IS_IN_GAME = 0x1200;
-constexpr uint16_t ADDR_SEED = 0x22;
 constexpr uint16_t ADDR_CURRENT_RECEIVED_ITEM_INDEX = 0x107E;
-constexpr uint16_t ADDR_EQUIPPED_SWORD_EFFECT = 0x114E;
 constexpr uint16_t ADDR_CURRENT_HEALTH = 0x543E;
 
 constexpr uint8_t DEATHLINK_STATE_IDLE = 0;
@@ -187,11 +187,10 @@ void poll_emulator()
     }
 
     // Check goal completion
-    if(emulator->read_game_byte(ADDR_EQUIPPED_SWORD_EFFECT) == 0x05)
+    if(emulator->read_game_byte(ADDR_COMPLETION_BYTE) == 0x01)
     {
-        // Right after beating Gola, the game uses a unique "coin fall" equipped sword effect that is used
-        // to detect that we are in the endgame cutscene
         game_state.has_won(true);
+        emulator->write_game_byte(ADDR_COMPLETION_BYTE, 0x00);
     }
 
     // Handle deathlink, both ways
