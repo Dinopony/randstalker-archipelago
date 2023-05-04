@@ -5,6 +5,11 @@ static json build_game_settings_json(const json& slot_data)
     json game_settings = json::object();
 
     game_settings["archipelagoWorld"] = true;
+
+    const std::array<std::string, 3> GOAL_NAMES = { "beat_gola", "reach_kazalt", "beat_dark_nole" };
+    uint8_t goal_id = slot_data["goal"];
+    game_settings["goal"] = GOAL_NAMES[goal_id];
+
     game_settings["jewelCount"] = slot_data["jewel_count"];
     game_settings["armorUpgrades"] = (slot_data["progressive_armors"] == 1);
     game_settings["startingLife"] = 0;
@@ -113,11 +118,6 @@ static json build_world_json(const json& slot_data, const std::string& player_na
     world["hints"] = json::object();
     world["hints"]["Lithograph"] = slot_data["hints"]["Lithograph"];
     world["hints"]["Oracle Stone"] = slot_data["hints"]["Oracle Stone"];
-
-    if(slot_data["goal"] == 1)
-        world["goal"] = "reach_kazalt";
-    else
-        world["goal"] = "beat_gola";
 
     return world;
 }
