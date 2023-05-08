@@ -1,3 +1,6 @@
+#define NOMINMAX
+#include <Windows.h>
+
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <imgui-SFML.h>
@@ -273,6 +276,9 @@ void UserInterface::draw_hint_window() const
         {
             for (auto& location : game_state.locations())
             {
+                if(location.was_checked())
+                    continue;
+
                 bool is_selected = (current_location == location.name().c_str());
                 if (ImGui::Selectable(location.name().c_str(), is_selected))
                     current_location = location.name().c_str();

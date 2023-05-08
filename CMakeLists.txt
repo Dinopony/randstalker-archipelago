@@ -72,20 +72,25 @@ set(SOURCES
         src/client.hpp
         src/game_state.hpp
         src/game_state.cpp
-        src/archipelago_interface.hpp
-        src/archipelago_interface.cpp
         src/preset_builder.hpp
         src/preset_builder.cpp
-        src/randstalker_invoker.cpp
-        src/randstalker_invoker.hpp
-        src/retroarch_interface.cpp
-        src/retroarch_interface.hpp
         src/location.hpp
         src/location.cpp
         src/user_interface.hpp
         src/user_interface.cpp
         src/logger.hpp
-        src/logger.cpp)
+        src/logger.cpp
 
-add_executable(randstalker_archipelago WIN32 "${SOURCES}")
+        src/archipelago_interface.hpp
+        src/archipelago_interface.cpp
+
+        src/randstalker_invoker.cpp
+        src/randstalker_invoker.hpp
+
+        src/emulator_interface.hpp
+        src/retroarch_mem_interface.cpp
+        src/retroarch_mem_interface.hpp
+)
+
+add_executable(randstalker_archipelago "${SOURCES}")
 target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32 libssl libcrypto crypt32)

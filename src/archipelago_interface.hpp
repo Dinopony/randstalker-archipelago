@@ -20,7 +20,7 @@ public:
     virtual ~ArchipelagoInterface();
 
     void poll();
-    void send_checked_locations_to_server(const std::set<uint16_t>& checked_locations);
+    void send_checked_locations_to_server(const std::vector<int64_t>& checked_locations);
 
     void say(const std::string& msg);
     [[nodiscard]] bool is_connected() const;

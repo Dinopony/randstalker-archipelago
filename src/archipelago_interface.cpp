@@ -83,7 +83,7 @@ void ArchipelagoInterface::poll()
     _client->poll();
 }
 
-void ArchipelagoInterface::send_checked_locations_to_server(const std::set<uint16_t>& checked_locations)
+void ArchipelagoInterface::send_checked_locations_to_server(const std::vector<int64_t>& checked_locations)
 {
     if(!_client || _client->get_state() != APClient::State::SLOT_CONNECTED)
     {
@@ -91,11 +91,7 @@ void ArchipelagoInterface::send_checked_locations_to_server(const std::set<uint1
         return;
     }
 
-    std::list<int64_t> checked_locations_typed;
-    for(uint16_t loc_id : checked_locations)
-        checked_locations_typed.emplace_back(static_cast<int64_t>(loc_id));
-
-    _client->LocationChecks(checked_locations_typed);
+    _client->LocationChecks(std::list<int64_t>(checked_locations.begin(), checked_locations.end()));
 }
 
 void ArchipelagoInterface::notify_game_completed()

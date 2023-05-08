@@ -19,7 +19,6 @@ GameState::GameState()
 void GameState::reset()
 {
     _preset_json = {};
-    _checked_locations.clear();
     _received_items.clear();
     _must_send_checked_locations = false;
     _expected_seed = 0xFFFFFFFF;
@@ -27,6 +26,9 @@ void GameState::reset()
     _has_deathlink = false;
     _received_death = false;
     _must_send_death = false;
+
+    for(Location& location : _locations)
+        location.was_checked(false);
 }
 
 uint8_t GameState::item_with_index(uint16_t received_item_index) const
@@ -38,18 +40,6 @@ uint8_t GameState::item_with_index(uint16_t received_item_index) const
     return 0xFF;
 }
 
-bool GameState::set_location_checked_by_player(uint16_t location_index)
-{
-    if(!_checked_locations.count(location_index))
-    {
-        _checked_locations.insert(location_index);
-        _must_send_checked_locations = true;
-        return true;
-    }
-
-    return false;
-}
-
 void GameState::set_received_item(uint16_t index, uint8_t item)
 {
     if(_received_items.size() <= index)
@@ -58,4 +48,16 @@ void GameState::set_received_item(uint16_t index, uint8_t item)
         Logger::warning("Setting a received item without resizing received items array.");
 
     _received_items[index] = item;
+}
+
+std::vector<int64_t> GameState::checked_locations() const
+{
+    std::vector<int64_t> ret;
+    ret.reserve(_locations.size());
+
+    for(const Location& loc : _locations)
+        if(loc.was_checked())
+            ret.emplace_back((int64_t)loc.id());
+
+    return ret;
 }

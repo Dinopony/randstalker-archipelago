@@ -11,7 +11,6 @@ private:
     nlohmann::json _preset_json = {};
 
     std::vector<Location> _locations;
-    std::set<uint16_t> _checked_locations;
 
     std::vector<uint8_t> _received_items;
     bool _must_send_checked_locations = false;
@@ -30,11 +29,11 @@ public:
     void set_received_item(uint16_t index, uint8_t item);
 
     [[nodiscard]] const std::vector<Location>& locations() const { return _locations; }
-    bool set_location_checked_by_player(uint16_t location_index);
+    [[nodiscard]] std::vector<Location>& locations() { return _locations; }
 
     [[nodiscard]] bool must_send_checked_locations() const { return _must_send_checked_locations; }
     void must_send_checked_locations(bool val) { _must_send_checked_locations = val; }
-    [[nodiscard]] const std::set<uint16_t>& checked_locations() const { return _checked_locations; }
+    [[nodiscard]] std::vector<int64_t> checked_locations() const;
 
     [[nodiscard]] uint32_t expected_seed() const { return _expected_seed; }
     void expected_seed(uint32_t seed) { _expected_seed = seed; }

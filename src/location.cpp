@@ -1,7 +1,7 @@
 #include "location.hpp"
 
 #include <iostream>
-#include "retroarch_interface.hpp"
+#include "retroarch_mem_interface.hpp"
 
 constexpr uint16_t BASE_LOCATION_ID = 4000;
 constexpr uint16_t BASE_GROUND_LOCATION_ID = BASE_LOCATION_ID + 256;
@@ -43,18 +43,4 @@ Location::Location(nlohmann::json& location_data)
         _checked_flag_bit = location_data["flag"]["bit"];
         _id = BASE_REWARD_LOCATION_ID + reward_id;
     }
-}
-
-bool Location::was_checked(const RetroarchInterface& emulator) const
-{
-    uint8_t flag_byte_value = emulator.read_game_byte(_checked_flag_byte);
-    uint8_t flag_bit_value = (flag_byte_value >> _checked_flag_bit) & 0x1;
-    return flag_bit_value != 0;
-}
-
-void Location::mark_as_checked(RetroarchInterface& emulator) const
-{
-    uint8_t flag_byte_value = emulator.read_game_byte(_checked_flag_byte);
-    uint8_t or_mask = 0x1 << _checked_flag_bit;
-    emulator.write_game_byte(_checked_flag_byte, flag_byte_value | or_mask);
 }

@@ -1,4 +1,4 @@
-#include "retroarch_interface.hpp"
+#include "retroarch_mem_interface.hpp"
 
 #include <TlHelp32.h>
 #include <Psapi.h>
@@ -6,7 +6,7 @@
 #include <iostream>
 #include "logger.hpp"
 
-RetroarchInterface::RetroarchInterface()
+RetroarchMemInterface::RetroarchMemInterface()
 {
     //get_debug_privileges();
     _process_id = find_process_id("retroarch.exe");
@@ -39,12 +39,12 @@ RetroarchInterface::RetroarchInterface()
     Logger::info("Successfully connected to Retroarch.");
 }
 
-RetroarchInterface::~RetroarchInterface()
+RetroarchMemInterface::~RetroarchMemInterface()
 {
     CloseHandle(_process_handle);
 }
 
-uint8_t RetroarchInterface::read_game_byte(uint16_t address) const
+uint8_t RetroarchMemInterface::read_game_byte(uint16_t address) const
 {
     uint16_t even_address = address - (address % 2);
     uint16_t word = this->read_game_word(even_address);
@@ -53,7 +53,7 @@ uint8_t RetroarchInterface::read_game_byte(uint16_t address) const
     return static_cast<uint8_t>(word);
 }
 
-uint16_t RetroarchInterface::read_game_word(uint16_t address) const
+uint16_t RetroarchMemInterface::read_game_word(uint16_t address) const
 {
     uint16_t buffer = 0;
     SIZE_T bytes_read;
@@ -66,14 +66,14 @@ uint16_t RetroarchInterface::read_game_word(uint16_t address) const
     return buffer;
 }
 
-uint32_t RetroarchInterface::read_game_long(uint16_t address) const
+uint32_t RetroarchMemInterface::read_game_long(uint16_t address) const
 {
     uint32_t msw = this->read_game_word(address);
     uint32_t lsw = this->read_game_word(address + 2);
     return (msw << 16) + lsw;
 }
 
-void RetroarchInterface::write_game_byte(uint16_t address, uint8_t value)
+void RetroarchMemInterface::write_game_byte(uint16_t address, uint8_t value)
 {
     uint16_t even_address = address - (address % 2);
     if(address == even_address)
@@ -88,7 +88,7 @@ void RetroarchInterface::write_game_byte(uint16_t address, uint8_t value)
         throw EmulatorException("Failed to write data into the emulator's memory");
 }
 
-void RetroarchInterface::write_game_word(uint16_t address, uint16_t value)
+void RetroarchMemInterface::write_game_word(uint16_t address, uint16_t value)
 {
     SIZE_T written_count;
     LPVOID addr = reinterpret_cast<LPVOID>(_game_ram_base_address + address);
@@ -97,7 +97,7 @@ void RetroarchInterface::write_game_word(uint16_t address, uint16_t value)
         throw EmulatorException("Failed to write data into the emulator's memory");
 }
 
-void RetroarchInterface::write_game_long(uint16_t address, uint32_t value)
+void RetroarchMemInterface::write_game_long(uint16_t address, uint32_t value)
 {
     uint16_t msw = value >> 16;
     uint16_t lsw = static_cast<uint16_t>(value);
@@ -106,7 +106,7 @@ void RetroarchInterface::write_game_long(uint16_t address, uint32_t value)
 }
 
 /*
-bool RetroarchInterface::get_debug_privileges()
+bool RetroarchMemInterface::get_debug_privileges()
 {
     HANDLE hToken = nullptr;
     if(!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken))
@@ -118,7 +118,7 @@ bool RetroarchInterface::get_debug_privileges()
     return true;
 }
 
-bool RetroarchInterface::set_privilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
+bool RetroarchMemInterface::set_privilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOOL bEnablePrivilege)
 {
     LUID luid;
     if (!LookupPrivilegeValue(nullptr, lpszPrivilege, &luid))
@@ -139,7 +139,7 @@ bool RetroarchInterface::set_privilege(HANDLE hToken, LPCTSTR lpszPrivilege, BOO
 }
 */
 
-DWORD RetroarchInterface::find_process_id(const std::string& process_name)
+DWORD RetroarchMemInterface::find_process_id(const std::string& process_name)
 {
     PROCESSENTRY32 pe32;
     pe32.dwSize = sizeof(PROCESSENTRY32);
@@ -164,7 +164,7 @@ DWORD RetroarchInterface::find_process_id(const std::string& process_name)
     return pe32.th32ProcessID;
 }
 
-bool RetroarchInterface::read_module_information(HANDLE processHandle, const std::string& module_name)
+bool RetroarchMemInterface::read_module_information(HANDLE processHandle, const std::string& module_name)
 {
     constexpr uint16_t MAX_MODULE_COUNT = 512;
     HMODULE* modules = new HMODULE[MAX_MODULE_COUNT];
@@ -196,7 +196,7 @@ bool RetroarchInterface::read_module_information(HANDLE processHandle, const std
     return found;
 }
 
-uint32_t RetroarchInterface::read_uint32(uint64_t address)
+uint32_t RetroarchMemInterface::read_uint32(uint64_t address)
 {
     uint32_t buffer = 0;
     SIZE_T NumberOfBytesToRead = sizeof(buffer); //this is equal to 4
@@ -209,7 +209,7 @@ uint32_t RetroarchInterface::read_uint32(uint64_t address)
     return buffer;
 }
 
-uint64_t RetroarchInterface::read_uint64(uint64_t address)
+uint64_t RetroarchMemInterface::read_uint64(uint64_t address)
 {
     uint64_t buffer = 0;
     SIZE_T NumberOfBytesToRead = sizeof(buffer); //this is equal to 8
@@ -222,7 +222,7 @@ uint64_t RetroarchInterface::read_uint64(uint64_t address)
     return buffer;
 }
 
-void RetroarchInterface::write_byte(uint64_t address, char value)
+void RetroarchMemInterface::write_byte(uint64_t address, char value)
 {
     SIZE_T written_count;
 
@@ -231,7 +231,7 @@ void RetroarchInterface::write_byte(uint64_t address, char value)
         throw EmulatorException("Failed to write data into the emulator's memory");
 }
 
-uint64_t RetroarchInterface::find_signature(const std::vector<uint16_t>& signature)
+uint64_t RetroarchMemInterface::find_signature(const std::vector<uint16_t>& signature)
 {
     BYTE* data = new BYTE[_module_size];
     SIZE_T bytes_read;
@@ -271,7 +271,7 @@ uint64_t RetroarchInterface::find_signature(const std::vector<uint16_t>& signatu
     return UINT64_MAX;
 }
 
-uint64_t RetroarchInterface::find_gpgx_ram_base_addr()
+uint64_t RetroarchMemInterface::find_gpgx_ram_base_addr()
 {
     constexpr uint16_t ANY = 0xFFFF;
 

@@ -6,20 +6,22 @@
 #include <landstalker_lib/constants/item_codes.hpp>
 
 #include "archipelago_interface.hpp"
-#include "retroarch_interface.hpp"
+#include "retroarch_mem_interface.hpp"
 #include "game_state.hpp"
 #include "user_interface.hpp"
 #include "logger.hpp"
 #include "randstalker_invoker.hpp"
 
-#ifdef _MSC_VER
-    #pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+#ifndef DEBUG
+    #ifdef _MSC_VER
+        #pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
+    #endif
 #endif
 
 UserInterface ui;
 GameState game_state;
 ArchipelagoInterface* archipelago = nullptr;
-RetroarchInterface* emulator = nullptr;
+EmulatorInterface* emulator = nullptr;
 std::mutex session_mutex;
 
 constexpr uint16_t ADDR_RECEIVED_ITEM = 0x0020;                 // 1 byte long
@@ -79,7 +81,7 @@ void connect_emu()
     try
     {
         if(!emulator)
-            emulator = new RetroarchInterface();
+            emulator = new RetroarchMemInterface();
     }
     catch(EmulatorException& ex)
     {
@@ -151,14 +153,17 @@ void poll_emulator()
         return;
 
     // Test all location flags to see if player checked new locations since last poll
-    const std::vector<Location>& locations = game_state.locations();
-    for(const Location& location : locations)
+    for(Location& location : game_state.locations())
     {
-        if(location.was_checked(*emulator))
+        if(location.was_checked())
+            continue;
+
+        uint8_t flag_byte_value = emulator->read_game_byte(location.checked_flag_byte());
+        uint8_t flag_bit_value = (flag_byte_value >> location.checked_flag_bit()) & 0x1;
+        if(flag_bit_value != 0)
         {
-            bool location_was_new = game_state.set_location_checked_by_player(location.id());
-            if(location_was_new)
-                Logger::debug("You checked location " + location.name() + ".");
+            location.was_checked(true);
+            game_state.must_send_checked_locations(true);
         }
     }
 
@@ -292,8 +297,13 @@ void process_console_input(const std::string& input)
     else if(input == "!collectallchecks" && emulator)
     {
         Logger::debug("Collecting all checks...");
-        for(const Location& loc : game_state.locations())
-            loc.mark_as_checked(*emulator);
+        for(Location& loc : game_state.locations())
+        {
+            uint8_t flag_byte_value = emulator->read_game_byte(loc.checked_flag_byte());
+            uint8_t or_mask = 0x1 << loc.checked_flag_bit();
+            emulator->write_game_byte(loc.checked_flag_byte(), flag_byte_value | or_mask);
+            loc.was_checked(true);
+        }
     }
     else if(archipelago)
     {
