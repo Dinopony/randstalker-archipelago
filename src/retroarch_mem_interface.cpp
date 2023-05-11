@@ -31,6 +31,12 @@ RetroarchMemInterface::RetroarchMemInterface()
     Logger::debug(oss2.str());
 
     _game_ram_base_address = this->find_gpgx_ram_base_addr();
+    if(_game_ram_base_address == UINT64_MAX)
+    {
+        Logger::error("Could not find any known signature on this core version.\n"
+                      "Please notify the author with your version of Retroarch & Genesis Plus GX.");
+        return;
+    }
 
     std::ostringstream oss3;
     oss3 << "Game RAM = 0x" << std::hex << _game_ram_base_address;
@@ -275,7 +281,7 @@ uint64_t RetroarchMemInterface::find_gpgx_ram_base_addr()
 {
     constexpr uint16_t ANY = 0xFFFF;
 
-    // Signature 1
+    // Signature 1 (RA 1.9.0 - GPGX 1.7.4 [7fa34f2] - 64 bit)
     uint64_t addr = this->find_signature({
         0x85, 0xC9, 0x74, ANY, 0x83, 0xF9, 0x02, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x48, 0x0F, 0x44, 0x05,
         ANY, ANY, ANY, ANY, 0xC3
@@ -288,7 +294,7 @@ uint64_t RetroarchMemInterface::find_gpgx_ram_base_addr()
         return this->read_uint64(addr + 4 + offset);
     }
 
-    // Signature 2
+    // Signature 2 (RA 1.13.0 - GPGX 1.7.4 [7907766] - 64 bit)
     addr = this->find_signature({
         0x85, 0xC9, 0x74, ANY, 0x31, 0xC0, 0x83, 0xF9, 0x02, 0x48, 0x0F, 0x44, 0x05,
         ANY, ANY, ANY, ANY, 0xC3
@@ -301,7 +307,19 @@ uint64_t RetroarchMemInterface::find_gpgx_ram_base_addr()
         return this->read_uint64(addr + 4 + offset);
     }
 
-    // Signature 3
+    // Signature 3 (RA 1.15.0 - GPGX 1.7.4 [9745432] - 32 bit)
+    addr = this->find_signature({
+        0x8B, 0x54, 0x24, 0x04, 0x85, 0xD2, 0x74, ANY, 0x83, 0xFA, 0x02, 0xB8, ANY, ANY, ANY, ANY, 0xBA,
+        0x00, 0x00, 0x00, 0x00
+    });
+    if(addr != UINT64_MAX)
+    {
+        addr += 12;
+        Logger::debug("Found GPGX signature 3");
+        return this->read_uint32(addr);
+    }
+
+    // Signature 4 (???)
     addr = this->find_signature({
         0x8B, 0x44, 0x24, 0x04, 0x85, 0xC0, 0x74, 0x18, 0x83, 0xF8, 0x02, 0xBA, 0x00, 0x00, 0x00, 0x00, 0xB8,
         ANY, ANY, ANY, ANY, 0x0F, 0x45, 0xC2, 0xC3, 0x8D, 0xB4, 0x26, 0x00, 0x00, 0x00, 0x00
@@ -309,7 +327,7 @@ uint64_t RetroarchMemInterface::find_gpgx_ram_base_addr()
     if(addr != UINT64_MAX)
     {
         addr += 17;
-        Logger::debug("Found GPGX signature 3");
+        Logger::debug("Found GPGX signature 4");
         uint32_t offset = this->read_uint32(addr);
         return this->read_uint32(addr + 4 + offset);
     }
