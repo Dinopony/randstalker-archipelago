@@ -117,7 +117,7 @@ void UserInterface::draw_archipelago_connection_window()
 
             ImGui::Separator(); // ------------------------------------------------------------
 
-            if(ImGui::Button("Connect"))
+            if(ImGui::Button("Connect to Archipelago"))
                 connect_ap(_host, _slot_name, _password);
         }
     }
@@ -217,7 +217,7 @@ void UserInterface::draw_emulator_connection_window()
             ImGui::PopStyleColor();
 
             ImGui::Separator(); // ------------------------------------------------------------
-            if(ImGui::Button("Connect"))
+            if(ImGui::Button("Connect to emulator"))
                 connect_emu();
         }
     }
