@@ -23,26 +23,20 @@ RetroarchMemInterface::RetroarchMemInterface()
     Logger::debug("Hooked on Genesis Plus GX core.");
 
     std::ostringstream oss;
-    oss << "Addr = 0x" << std::hex << _base_address;
+    oss << "[0x" << std::hex << _base_address << " - 0x" << (_base_address + _module_size) << "]";
     Logger::debug(oss.str());
-
-    std::ostringstream oss2;
-    oss2 << "Size = 0x" << std::hex << _module_size;
-    Logger::debug(oss2.str());
 
     _game_ram_base_address = this->find_gpgx_ram_base_addr();
     if(_game_ram_base_address == UINT64_MAX)
     {
-        Logger::error("Could not find any known signature on this core version.\n"
-                      "Please notify the author with your version of Retroarch & Genesis Plus GX.");
-        return;
+        CloseHandle(_process_handle);
+        throw EmulatorException("Could not find any known signature on this core version.\n"
+                                "Please notify the author with your version of Retroarch & Genesis Plus GX.");
     }
 
-    std::ostringstream oss3;
-    oss3 << "Game RAM = 0x" << std::hex << _game_ram_base_address;
-    Logger::debug(oss3.str());
-
-    Logger::info("Successfully connected to Retroarch.");
+    std::ostringstream oss2;
+    oss2 << "Game RAM = 0x" << std::hex << _game_ram_base_address;
+    Logger::debug(oss2.str());
 }
 
 RetroarchMemInterface::~RetroarchMemInterface()
@@ -154,20 +148,20 @@ DWORD RetroarchMemInterface::find_process_id(const std::string& process_name)
 
     if(Process32First(hSnapshot, &pe32))
     {
-        do {
+        do
+        {
             if(process_name == pe32.szExeFile)
-                break;
-        } while(Process32Next(hSnapshot, &pe32));
+            {
+                CloseHandle(hSnapshot);
+                return pe32.th32ProcessID;
+            }
+        }
+        while(Process32Next(hSnapshot, &pe32));
     }
 
     if(hSnapshot != INVALID_HANDLE_VALUE)
         CloseHandle(hSnapshot);
-
-    DWORD err = GetLastError();
-    if (err != 0)
-        return -1;
-
-    return pe32.th32ProcessID;
+    return -1;
 }
 
 bool RetroarchMemInterface::read_module_information(HANDLE processHandle, const std::string& module_name)

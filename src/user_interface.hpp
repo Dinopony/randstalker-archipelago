@@ -1,8 +1,10 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
 #include "logger.hpp"
+#include "trackable_item.hpp"
 
 class UserInterface {
 private:
@@ -20,21 +22,29 @@ private:
     uint32_t _window_height = 600;
     uint32_t _last_message_count = 0;
 
+    std::vector<TrackableItem*> _trackable_items;
+
 public:
+    ~UserInterface();
+
     void open();
     void load_client_settings();
     void save_client_settings();
     void load_personal_settings();
     void save_personal_settings();
+    void init_tracker();
 
     [[nodiscard]] const char* input_rom_path() const { return _input_rom_path; }
     [[nodiscard]] const char* output_rom_path() const { return _output_rom_path; }
 
 private:
-    void draw_archipelago_connection_window();
-    void draw_rom_generation_window();
-    void draw_emulator_connection_window();
-    void draw_hint_window() const;
+    float draw_archipelago_connection_window(float y);
+    float draw_rom_generation_window(float y);
+    float draw_emulator_connection_window(float y);
+    float draw_hint_window(float y) const;
+    float draw_tracker_window(float y) const;
+    void draw_status_window();
+
     void draw_console_window();
     void draw_console_input();
 };

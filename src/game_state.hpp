@@ -9,6 +9,7 @@
 class GameState {
 private:
     nlohmann::json _preset_json = {};
+    std::string _built_rom_path;
 
     std::vector<Location> _locations;
 
@@ -17,9 +18,12 @@ private:
     uint32_t _expected_seed = 0xFFFFFFFF;
     bool _has_won = false;
 
+    std::array<uint8_t, 0x20> _inventory_bytes;
+
     bool _has_deathlink = false;
     bool _received_death = false;
     bool _must_send_death = false;
+
 public:
     GameState();
     void reset();
@@ -50,7 +54,13 @@ public:
     [[nodiscard]] bool must_send_death() const { return _must_send_death; }
     void must_send_death(bool val) { _must_send_death = val; }
 
-    [[nodiscard]] bool has_preset_json() const { return !_preset_json.empty(); }
     [[nodiscard]] const nlohmann::json& preset_json() const { return _preset_json; }
     void preset_json(nlohmann::json json) { _preset_json = std::move(json); }
+
+    [[nodiscard]] bool has_built_rom() const { return !_built_rom_path.empty(); }
+    [[nodiscard]] const std::string& built_rom_path() const { return _built_rom_path; }
+    void built_rom_path(const std::string& val) { _built_rom_path = val; }
+
+    void update_inventory_byte(uint8_t byte_id, uint8_t value) { _inventory_bytes[byte_id] = value; }
+    [[nodiscard]] uint8_t owned_item_quantity(uint8_t item_id) const;
 };

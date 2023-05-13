@@ -31,6 +31,7 @@ include_directories("extlibs/openssl/")
 link_directories("extlibs/openssl/lib")
 
 add_compile_definitions(ASIO_STANDALONE)
+add_compile_definitions(NOMINMAX)
 add_compile_definitions(_WIN32_WINNT=0x0600)
 #add_compile_definitions(WIN32_LEAN_AND_MEAN)
 add_compile_definitions(WSWRAP_SEND_EXCEPTIONS)
@@ -90,6 +91,7 @@ set(SOURCES
         src/emulator_interface.hpp
         src/retroarch_mem_interface.cpp
         src/retroarch_mem_interface.hpp
+        src/trackable_item.hpp
 )
 
 add_executable(randstalker_archipelago "${SOURCES}")

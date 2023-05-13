@@ -13,6 +13,6 @@ extern Logger logger;
 void connect_ap(std::string host, const std::string& slot_name, const std::string& password);
 void disconnect_ap();
 void connect_emu();
-void disconnect_emu();
-void build_rom(bool replace_if_exists);
+void check_rom_existence();
+std::string build_rom();
 void process_console_input(const std::string& input);

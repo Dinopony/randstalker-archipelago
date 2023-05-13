@@ -19,6 +19,8 @@ GameState::GameState()
 void GameState::reset()
 {
     _preset_json = {};
+    _built_rom_path = "";
+
     _received_items.clear();
     _must_send_checked_locations = false;
     _expected_seed = 0xFFFFFFFF;
@@ -60,4 +62,14 @@ std::vector<int64_t> GameState::checked_locations() const
             ret.emplace_back((int64_t)loc.id());
 
     return ret;
+}
+
+uint8_t GameState::owned_item_quantity(uint8_t item_id) const
+{
+    uint8_t byte = (item_id / 2);
+    uint8_t upper_half_byte = (item_id % 2 == 1);
+
+    uint8_t byte_value = _inventory_bytes.at(byte);
+    uint8_t quantity = (upper_half_byte) ? (byte_value >> 4) : (byte_value & 0x0F);
+    return quantity;
 }

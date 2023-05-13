@@ -12,6 +12,8 @@
 #include "logger.hpp"
 #include "randstalker_invoker.hpp"
 
+// TODO: Add hint-on-click for tracker
+
 #ifndef DEBUG
     #ifdef _MSC_VER
         #pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
@@ -69,9 +71,13 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
 
 void disconnect_ap()
 {
+    Logger::info("Disconnecting from Archipelago server...");
     session_mutex.lock();
     delete archipelago;
     archipelago = nullptr;
+    delete emulator;
+    emulator = nullptr;
+    game_state.reset();
     session_mutex.unlock();
 }
 
@@ -80,21 +86,21 @@ void connect_emu()
     session_mutex.lock();
     try
     {
-        if(!emulator)
-            emulator = new RetroarchMemInterface();
-    }
-    catch(EmulatorException& ex)
-    {
-        Logger::error("Connection to emulator failed: " + ex.message());
-    }
-    session_mutex.unlock();
-}
+        emulator = new RetroarchMemInterface();
 
-void disconnect_emu()
-{
-    session_mutex.lock();
-    delete emulator;
-    emulator = nullptr;
+        if(emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
+        {
+            delete emulator;
+            emulator = nullptr;
+            throw EmulatorException("Invalid seed. Please ensure the right ROM was loaded.");
+        }
+
+        Logger::info("Successfully connected to Retroarch.");
+    }
+    catch(EmulatorException& e)
+    {
+        Logger::error(e.message());
+    }
     session_mutex.unlock();
 }
 
@@ -133,21 +139,6 @@ void poll_archipelago()
 
 void poll_emulator()
 {
-    if(!emulator)
-        return;
-
-    if(emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
-    {
-        if(game_state.expected_seed() != 0xFFFFFFFF)
-        {
-            // If seed is 0xFFFFFFFF, it means we did not connect to Archipelago server yet.
-            // We only output an error and delete the current emulator interface if we were expecting a specific ROM
-            // during gameplay and another one was provided.
-            throw EmulatorException("Invalid seed. Please ensure the right ROM was loaded.");
-        }
-        return;
-    }
-
     // If no save file is currently loaded, no need to do anything
     if(emulator->read_game_word(ADDR_IS_IN_GAME) == 0x00)
         return;
@@ -202,6 +193,11 @@ void poll_emulator()
         emulator->write_game_byte(ADDR_COMPLETION_BYTE, 0x00);
     }
 
+    // Update inventory bytes for the item tracker
+    constexpr uint32_t INVENTORY_START_ADDR = 0xFF1040;
+    for(uint8_t i=0 ; i<0x20 ; ++i)
+        game_state.update_inventory_byte(i, emulator->read_game_byte(INVENTORY_START_ADDR + i));
+
     // Handle deathlink, both ways
     if(game_state.has_deathlink())
     {
@@ -233,19 +229,27 @@ void poll_emulator()
     }
 }
 
-void build_rom(bool replace_if_exists)
+void check_rom_existence()
 {
     std::string output_path = std::string(ui.output_rom_path());
     if(!output_path.ends_with("/"))
         output_path += "/";
     output_path += std::to_string(game_state.expected_seed()) + ".md";
 
-    if(!replace_if_exists && std::filesystem::exists(std::filesystem::path(output_path)))
+    if(std::filesystem::exists(std::filesystem::path(output_path)))
     {
-        Logger::info("ROM already found at \"" + output_path + "\", press the \"Rebuild ROM\" button if you want "
-                                                               "to rebuild it anyway.");
-        return;
+        game_state.built_rom_path(output_path);
+        Logger::info("ROM already found at \"" + output_path + "\", press the \"Rebuild ROM with other settings\" "
+                                                               "button if you want to rebuild it anyway.");
     }
+}
+
+std::string build_rom()
+{
+    std::string output_path = std::string(ui.output_rom_path());
+    if(!output_path.ends_with("/"))
+        output_path += "/";
+    output_path += std::to_string(game_state.expected_seed()) + ".md";
 
     Logger::info("Building ROM...");
 
@@ -261,18 +265,26 @@ void build_rom(bool replace_if_exists)
     command += " --preset=\"" PRESET_FILE_PATH "\"";
     command += " --nostdin";
 
-    if(invoke(command))
-        Logger::info("ROM built successfully at \"" + output_path + "\".");
-    else
-        Logger::error("ROM failed to build.");
-
+    bool success = invoke(command);
 #ifndef DEBUG
     std::filesystem::path(PRESET_FILE_PATH).remove_filename();
 #endif
+
+    if(success)
+    {
+        Logger::info("ROM built successfully at \"" + output_path + "\".");
+        return output_path;
+    }
+    else
+    {
+        Logger::error("ROM failed to build.");
+        return "";
+    }
 }
 
 void process_console_input(const std::string& input)
 {
+#ifdef DEBUG
     if(input == "!senddeath" && game_state.has_deathlink())
     {
         Logger::debug("Fake death queued for sending");
@@ -305,7 +317,9 @@ void process_console_input(const std::string& input)
             loc.was_checked(true);
         }
     }
-    else if(archipelago)
+    else
+#endif
+    if(archipelago)
     {
         archipelago->say(input);
     }
@@ -322,30 +336,33 @@ void process_console_input(const std::string& input)
 
 int main()
 {
-    // Network + game handling thread
     bool keep_working = true;
-    std::thread process_thread([&keep_working]() {
+
+    // Network + game handling thread
+    std::thread process_thread([&keep_working]()
+    {
         while(keep_working)
         {
             session_mutex.lock();
             {
-                try
-                {
-                    poll_emulator();
-                }
-                catch(EmulatorException& ex)
-                {
-                    Logger::error(ex.message());
-                    delete emulator;
-                    emulator = nullptr;
-                }
-
                 poll_archipelago();
+
+                if(emulator)
+                {
+                    try
+                    {
+                        poll_emulator();
+                    }
+                    catch(EmulatorException& ex)
+                    {
+                        Logger::error(ex.message());
+                        delete emulator;
+                        emulator = nullptr;
+                    }
+                }
             }
             session_mutex.unlock();
-
-            uint32_t millis = (game_state.has_won()) ? 500 : 150;
-            std::this_thread::sleep_for(std::chrono::milliseconds(millis));
+            std::this_thread::sleep_for(std::chrono::milliseconds(150));
         }
     });
 

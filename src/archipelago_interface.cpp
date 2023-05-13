@@ -32,7 +32,6 @@ ArchipelagoInterface::ArchipelagoInterface(const std::string& uri, std::string s
 
 ArchipelagoInterface::~ArchipelagoInterface()
 {
-    Logger::info("Disconnecting from Archipelago server...");
     delete _client;
 }
 
@@ -136,7 +135,7 @@ void ArchipelagoInterface::on_socket_connected()
 void ArchipelagoInterface::on_socket_disconnected()
 {
     _connection_failed = true;
-    Logger::info("Disconnected from Archipelago server.");
+    Logger::error("Disconnected from Archipelago server.");
 }
 
 void ArchipelagoInterface::on_room_info()
@@ -167,7 +166,7 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
         _client->ConnectUpdate(false, 0, true, { "DeathLink" });
     }
 
-    build_rom(false);
+    check_rom_existence();
 }
 
 void ArchipelagoInterface::on_slot_disconnected()
