@@ -35,8 +35,8 @@ static json build_game_settings_json(const json& slot_data)
     game_settings["ekeekeAutoRevive"] = (slot_data["revive_using_ekeeke"] == 1);
 
     const std::array<int, 5> DIFFICULTY_RATES = {
-            50,     // Peaceful = 50% HP & Damage
-            75,     // Easy     = 75% HP & Damage
+            60,     // Peaceful = 60% HP & Damage
+            80,     // Easy     = 80% HP & Damage
             100,    // Normal   = 100% HP & Damage
             140,    // Hard     = 140% HP & Damage
             200,    // Insane   = 200% HP & Damage
