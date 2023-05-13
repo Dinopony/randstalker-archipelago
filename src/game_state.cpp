@@ -14,6 +14,9 @@ GameState::GameState()
     json input_json = json::parse(ITEM_SOURCES_JSON);
     for(json& location_data : input_json)
         _locations.emplace_back(Location(location_data));
+    std::sort(_locations.begin(), _locations.end(), [](Location& loc1, Location& loc2){
+        return loc1.name() < loc2.name();
+    });
 }
 
 void GameState::reset()
