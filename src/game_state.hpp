@@ -27,6 +27,7 @@ private:
     /// 0 = beat_gola, 1 = reach_kazalt, 2 = beat_dark_nole
     uint8_t _goal_id = -1;
     std::string _goal_string;
+    uint8_t _jewel_count = 0;
 
 public:
     GameState();
@@ -64,6 +65,7 @@ public:
 
     [[nodiscard]] uint8_t goal_id() const { return _goal_id; }
     [[nodiscard]] const std::string& goal_string() const { return _goal_string; }
+    [[nodiscard]] bool item_exists_in_game(uint8_t item_id) const;
 
     [[nodiscard]] bool has_built_rom() const { return !_built_rom_path.empty(); }
     [[nodiscard]] const std::string& built_rom_path() const { return _built_rom_path; }

@@ -14,16 +14,12 @@ TrackableItem::TrackableItem(const nlohmann::json& json)
     }
     if(json.contains("itemId"))
         _item_id = json.at("itemId");
+
     if(json.contains("x"))
         _x = json.at("x");
+    _x *= ICON_SIZE;
+
     if(json.contains("y"))
         _y = json.at("y");
-    if(json.contains("hiddenForGoals"))
-    {
-        for(uint8_t goal_id : json.at("hiddenForGoals"))
-            _hidden_for_goals.insert(goal_id);
-    }
-
-    _x *= ICON_SIZE;
     _y *= ICON_SIZE;
 }

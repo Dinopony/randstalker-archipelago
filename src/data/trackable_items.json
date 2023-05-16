@@ -252,16 +252,16 @@
     "y": 6
   },
   {
-    "name": "Yellow Jewel",
-    "image": "yellow_jewel.gif",
-    "itemId": 34,
+    "name": "Blue Jewel",
+    "image": "blue_jewel.gif",
+    "itemId": 33,
     "x": 2.36,
     "y": 6.63
   },
   {
-    "name": "Blue Jewel",
-    "image": "blue_jewel.gif",
-    "itemId": 33,
+    "name": "Yellow Jewel",
+    "image": "yellow_jewel.gif",
+    "itemId": 34,
     "x": 2.81,
     "y": 6
   },
@@ -270,23 +270,20 @@
     "image": "gola_nail.gif",
     "itemId": 55,
     "x": 3.90,
-    "y": 6,
-    "hiddenForGoals": [ 1 ]
+    "y": 6
   },
   {
     "name": "Gola's Fang",
     "image": "gola_fang.gif",
     "itemId": 57,
     "x": 4.45,
-    "y": 6.63,
-    "hiddenForGoals": [ 1 ]
+    "y": 6.63
   },
   {
     "name": "Gola's Horn",
     "image": "gola_horn.gif",
     "itemId": 56,
     "x": 5,
-    "y": 6,
-    "hiddenForGoals": [ 1 ]
+    "y": 6
   }
 ]

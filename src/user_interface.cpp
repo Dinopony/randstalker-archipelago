@@ -312,7 +312,7 @@ float UserInterface::draw_item_tracker_window() const
         ImVec2 wsize(46.f, 46.f);
         for(TrackableItem* item : _trackable_items)
         {
-            if(item->is_hidden_for_goal(game_state.goal_id()))
+            if(!game_state.item_exists_in_game(item->item_id()))
                 continue;
 
             bool item_owned = (game_state.owned_item_quantity(item->item_id()) > 0);

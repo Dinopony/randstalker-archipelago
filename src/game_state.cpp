@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include <landstalker_lib/constants/item_codes.hpp>
 #include "data/item_source.json.hxx"
 #include "logger.hpp"
 
@@ -34,6 +35,7 @@ void GameState::reset()
 
     _goal_id = -1;
     _goal_string = "";
+    _jewel_count = 0;
 
     for(Location& location : _locations)
     {
@@ -106,8 +108,34 @@ void GameState::preset_json(nlohmann::json json)
         _goal_id = -1;
         _goal_string = "Unknown";
     }
+
+    _jewel_count = _preset_json.at("gameSettings").at("jewelCount");
 }
 
+bool GameState::item_exists_in_game(uint8_t item_id) const
+{
+    // Depending on the jewel count, some jewels don't exist
+    if(item_id == ITEM_RED_JEWEL && _jewel_count < 1)
+        return false;
+    if(item_id == ITEM_PURPLE_JEWEL && _jewel_count < 2)
+        return false;
+    if(item_id == ITEM_GREEN_JEWEL && _jewel_count < 3)
+        return false;
+    if(item_id == ITEM_BLUE_JEWEL && _jewel_count < 4)
+        return false;
+    if(item_id == ITEM_YELLOW_JEWEL && _jewel_count < 5)
+        return false;
+
+    // No Gola items in "reach_kazalt" goal
+    if(item_id == ITEM_GOLA_NAIL && _goal_id == 1)
+        return false;
+    if(item_id == ITEM_GOLA_FANG && _goal_id == 1)
+        return false;
+    if(item_id == ITEM_GOLA_HORN && _goal_id == 1)
+        return false;
+
+    return true;
+}
 
 uint8_t GameState::owned_item_quantity(uint8_t item_id) const
 {

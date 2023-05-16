@@ -12,7 +12,6 @@
 #include "logger.hpp"
 #include "randstalker_invoker.hpp"
 
-// TODO: Add hint-on-click for tracker
 
 #ifndef DEBUG
     #ifdef _MSC_VER
