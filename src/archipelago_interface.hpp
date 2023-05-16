@@ -25,6 +25,7 @@ public:
     void say(const std::string& msg);
     [[nodiscard]] bool is_connected() const;
     [[nodiscard]] bool connection_failed() const { return _connection_failed; }
+    [[nodiscard]] const std::string& player_name() const { return _slot_name; }
     void notify_game_completed();
     void notify_death();
 

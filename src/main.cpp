@@ -239,13 +239,23 @@ void poll_emulator()
     }
 }
 
-void check_rom_existence()
+static std::string get_output_rom_path()
 {
     std::string output_path = std::string(ui.output_rom_path());
     if(!output_path.ends_with("/"))
         output_path += "/";
+
+    output_path += "AP_";
+    if(archipelago)
+        output_path += archipelago->player_name() + "_";
     output_path += std::to_string(game_state.expected_seed()) + ".md";
 
+    return output_path;
+}
+
+void check_rom_existence()
+{
+    std::string output_path = get_output_rom_path();
     if(std::filesystem::exists(std::filesystem::path(output_path)))
     {
         game_state.built_rom_path(output_path);
@@ -256,16 +266,15 @@ void check_rom_existence()
 
 std::string build_rom()
 {
-    std::string output_path = std::string(ui.output_rom_path());
-    if(!output_path.ends_with("/"))
-        output_path += "/";
-    output_path += std::to_string(game_state.expected_seed()) + ".md";
+    session_mutex.lock();
+    std::string output_path = get_output_rom_path();
 
     Logger::info("Building ROM...");
 
     std::ofstream preset_file(PRESET_FILE_PATH);
     preset_file << game_state.preset_json().dump(4);
     preset_file.close();
+    session_mutex.unlock();
 
     ui.save_personal_settings();
 
