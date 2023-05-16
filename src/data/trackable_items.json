@@ -1,0 +1,292 @@
+[
+  {
+    "name": "Magic Sword",
+    "image": "sword_1.gif",
+    "itemId": 1,
+    "x": 0,
+    "y": 0
+  },
+  {
+    "name": "Thunder Sword",
+    "image": "sword_2.gif",
+    "itemId": 3,
+    "x": 1,
+    "y": 0
+  },
+  {
+    "name": "Sword of Ice",
+    "image": "sword_3.gif",
+    "itemId": 2,
+    "x": 2,
+    "y": 0
+  },
+  {
+    "name": "Sword of Gaia",
+    "image": "sword_4.gif",
+    "itemId": 4,
+    "x": 3,
+    "y": 0
+  },
+  {
+    "name": "Steel Breast",
+    "image": "armor_1.gif",
+    "itemId": 9,
+    "x": 0,
+    "y": 1
+  },
+  {
+    "name": "Chrome Breast",
+    "image": "armor_2.gif",
+    "itemId": 10,
+    "x": 1,
+    "y": 1
+  },
+  {
+    "name": "Shell Breast",
+    "image": "armor_3.gif",
+    "itemId": 11,
+    "x": 2,
+    "y": 1
+  },
+  {
+    "name": "Hyper Breast",
+    "image": "armor_4.gif",
+    "itemId": 12,
+    "x": 3,
+    "y": 1
+  },
+  {
+    "name": "Healing Boots",
+    "image": "boots_1.gif",
+    "itemId": 7,
+    "x": 0,
+    "y": 2
+  },
+  {
+    "name": "Fireproof",
+    "image": "boots_2.gif",
+    "itemId": 5,
+    "x": 1,
+    "y": 2
+  },
+  {
+    "name": "Iron Boots",
+    "image": "boots_3.gif",
+    "itemId": 6,
+    "x": 2,
+    "y": 2
+  },
+  {
+    "name": "Snow Spikes",
+    "image": "boots_4.gif",
+    "itemId": 8,
+    "x": 3,
+    "y": 2
+  },
+  {
+    "name": "Saturn Stone",
+    "image": "ring_1.gif",
+    "itemId": 15,
+    "x": 0,
+    "y": 3
+  },
+  {
+    "name": "Mars Stone",
+    "image": "ring_2.gif",
+    "itemId": 13,
+    "x": 1,
+    "y": 3
+  },
+  {
+    "name": "Moon Stone",
+    "image": "ring_3.gif",
+    "itemId": 14,
+    "x": 2,
+    "y": 3
+  },
+  {
+    "name": "Venus Stone",
+    "image": "ring_4.gif",
+    "itemId": 16,
+    "x": 3,
+    "y": 3
+  },
+  {
+    "name": "Bell",
+    "image": "bell.gif",
+    "itemId": 53,
+    "x": 5,
+    "y": 0
+  },
+  {
+    "name": "Lithograph",
+    "image": "lithograph.gif",
+    "itemId": 39,
+    "x": 5,
+    "y": 1
+  },
+  {
+    "name": "Oracle Stone",
+    "image": "oracle_stone.gif",
+    "itemId": 48,
+    "x": 5,
+    "y": 2
+  },
+  {
+    "name": "Statue of Jypta",
+    "image": "statue_jypta.gif",
+    "itemId": 29,
+    "x": 5,
+    "y": 3
+  },
+  {
+    "name": "Idol Stone",
+    "image": "idol_stone.gif",
+    "itemId": 49,
+    "x": 0,
+    "y": 4
+  },
+  {
+    "name": "Safety Pass",
+    "image": "safety_pass.gif",
+    "itemId": 51,
+    "x": 1,
+    "y": 4
+  },
+  {
+    "name": "Armlet",
+    "image": "armlet.gif",
+    "itemId": 31,
+    "x": 2,
+    "y": 4
+  },
+  {
+    "name": "Garlic",
+    "image": "garlic.gif",
+    "itemId": 27,
+    "x": 3,
+    "y": 4
+  },
+  {
+    "name": "Key",
+    "image": "key.gif",
+    "itemId": 50,
+    "x": 4,
+    "y": 4
+  },
+  {
+    "name": "Lantern",
+    "image": "lantern.gif",
+    "itemId": 26,
+    "x": 5,
+    "y": 4
+  },
+  {
+    "name": "Einstein Whistle",
+    "image": "einstein_whistle.gif",
+    "itemId": 32,
+    "x": 0,
+    "y": 5
+  },
+  {
+    "name": "Sun Stone",
+    "image": "sun_stone.gif",
+    "itemId": 30,
+    "x": 1,
+    "y": 5
+  },
+  {
+    "name": "Axe Magic",
+    "image": "axe_magic.gif",
+    "itemId": 23,
+    "x": 2,
+    "y": 5
+  },
+  {
+    "name": "Logs",
+    "image": "logs.gif",
+    "itemId": 47,
+    "x": 3,
+    "y": 5
+  },
+  {
+    "name": "Buyer Card",
+    "image": "buyer_card.gif",
+    "itemId": 25,
+    "x": 4,
+    "y": 5
+  },
+  {
+    "name": "Casino Ticket",
+    "image": "casino_ticket.gif",
+    "itemId": 22,
+    "x": 5,
+    "y": 5
+  },
+  {
+    "name": "Gola's Eye",
+    "image": "gola_eye.gif",
+    "itemId": 43,
+    "x": 0,
+    "y": 6.27
+  },
+  {
+    "name": "Red Jewel",
+    "image": "red_jewel.gif",
+    "itemId": 40,
+    "x": 1,
+    "y": 6
+  },
+  {
+    "name": "Purple Jewel",
+    "image": "purple_jewel.gif",
+    "itemId": 42,
+    "x": 1.45,
+    "y": 6.63
+  },
+  {
+    "name": "Green Jewel",
+    "image": "green_jewel.gif",
+    "itemId": 52,
+    "x": 1.90,
+    "y": 6
+  },
+  {
+    "name": "Yellow Jewel",
+    "image": "yellow_jewel.gif",
+    "itemId": 34,
+    "x": 2.36,
+    "y": 6.63
+  },
+  {
+    "name": "Blue Jewel",
+    "image": "blue_jewel.gif",
+    "itemId": 33,
+    "x": 2.81,
+    "y": 6
+  },
+  {
+    "name": "Gola's Nail",
+    "image": "gola_nail.gif",
+    "itemId": 55,
+    "x": 3.90,
+    "y": 6,
+    "hiddenForGoals": [ 1 ]
+  },
+  {
+    "name": "Gola's Fang",
+    "image": "gola_fang.gif",
+    "itemId": 57,
+    "x": 4.45,
+    "y": 6.63,
+    "hiddenForGoals": [ 1 ]
+  },
+  {
+    "name": "Gola's Horn",
+    "image": "gola_horn.gif",
+    "itemId": 56,
+    "x": 5,
+    "y": 6,
+    "hiddenForGoals": [ 1 ]
+  }
+]

@@ -59,6 +59,7 @@ endmacro()
 # Wrap JSON model files and assets into automated .hxx headers
 wrapped_dependency(TEXT src/data/item_source.json ITEM_SOURCES_JSON)
 wrapped_dependency(TEXT src/data/trackable_regions.json TRACKABLE_REGIONS_JSON)
+wrapped_dependency(TEXT src/data/trackable_items.json TRACKABLE_ITEMS_JSON)
 
 set(SOURCES
         extlibs/imgui/imgui.cpp
@@ -70,6 +71,7 @@ set(SOURCES
 
         src/data/item_source.json.hxx
         src/data/trackable_regions.json.hxx
+        src/data/trackable_items.json.hxx
 
         src/main.cpp
         src/client.hpp
@@ -95,6 +97,7 @@ set(SOURCES
         src/retroarch_mem_interface.hpp
 
         src/trackable_item.hpp
+        src/trackable_item.cpp
         src/trackable_region.hpp
         src/trackable_region.cpp)
 

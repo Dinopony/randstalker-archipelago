@@ -9,6 +9,7 @@
 #include "user_interface.hpp"
 #include "client.hpp"
 #include "randstalker_invoker.hpp"
+#include "data/trackable_items.json.hxx"
 #include "data/trackable_regions.json.hxx"
 
 // ===== WINDOWS SPECIFIC TOOL FUNCTIONS ======================================================================
@@ -308,19 +309,19 @@ float UserInterface::draw_item_tracker_window() const
 
     ImGui::Begin("Tracker", nullptr, WINDOW_FLAGS);
     {
-        ImGui::Text("Goal: %s", game_state.goal_string().c_str());
-        ImGui::Separator();
-
         ImVec2 wsize(46.f, 46.f);
-        for(TrackableItem* ptr : _trackable_items)
+        for(TrackableItem* item : _trackable_items)
         {
-            bool item_owned = (game_state.owned_item_quantity(ptr->item_id()) > 0);
+            if(item->is_hidden_for_goal(game_state.goal_id()))
+                continue;
+
+            bool item_owned = (game_state.owned_item_quantity(item->item_id()) > 0);
             ImVec4 color_multipler(1, 1, 1, 1);
             if(!item_owned)
                 color_multipler = ImVec4(0.4, 0.4, 0.4, 0.6);
 
-            ImGui::SetCursorPos(ImVec2(MARGIN + ptr->x(), MARGIN + 26 + ptr->y()));
-            ImGui::Image((ImTextureID) ptr->get_texture_id(), wsize, ImVec2(0,0), ImVec2(1,1), color_multipler);
+            ImGui::SetCursorPos(ImVec2(MARGIN + item->x(), MARGIN + item->y()));
+            ImGui::Image((ImTextureID) item->get_texture_id(), wsize, ImVec2(0,0), ImVec2(1,1), color_multipler);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
                 std::string suffix = (!item_owned) ? "\n\n(Right-click to get a hint for this item)" : "";
@@ -329,11 +330,11 @@ float UserInterface::draw_item_tracker_window() const
                 else
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,100,100,255));
 
-                ImGui::SetTooltip("%s%s", ptr->name().c_str(), suffix.c_str());
+                ImGui::SetTooltip("%s%s", item->name().c_str(), suffix.c_str());
                 ImGui::PopStyleColor();
 
                 if(!item_owned && ImGui::IsMouseReleased(1))
-                    process_console_input("!hint " + ptr->name());
+                    process_console_input("!hint " + item->name());
             }
         }
     }
@@ -437,6 +438,8 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
 
     ImGui::Begin("Map Tracker", nullptr, WINDOW_FLAGS);
     {
+        ImGui::Text("Goal: %s", game_state.goal_string().c_str());
+
         for(TrackableRegion* region : _trackable_regions)
         {
             if(region->is_hidden_for_goal(game_state.goal_id()))
@@ -906,57 +909,9 @@ void UserInterface::save_client_settings()
 
 void UserInterface::init_item_tracker()
 {
-    constexpr float ICON_SIZE = 55.f;
-    _trackable_items = {
-        new TrackableItem("Magic Sword",   "sword_1.gif", ITEM_MAGIC_SWORD,     sf::Vector2f(0.f,         0.f)),
-        new TrackableItem("Thunder Sword", "sword_2.gif", ITEM_THUNDER_SWORD,   sf::Vector2f(ICON_SIZE,   0.f)),
-        new TrackableItem("Sword of Ice",  "sword_3.gif", ITEM_ICE_SWORD,       sf::Vector2f(ICON_SIZE*2, 0.f)),
-        new TrackableItem("Sword of Gaia", "sword_4.gif", ITEM_GAIA_SWORD,      sf::Vector2f(ICON_SIZE*3, 0.f)),
-
-        new TrackableItem("Steel Breast",  "armor_1.gif", ITEM_STEEL_BREAST,    sf::Vector2f(0.f,         ICON_SIZE)),
-        new TrackableItem("Chrome Breast", "armor_2.gif", ITEM_CHROME_BREAST,   sf::Vector2f(ICON_SIZE,   ICON_SIZE)),
-        new TrackableItem("Shell Breast",  "armor_3.gif", ITEM_SHELL_BREAST,    sf::Vector2f(ICON_SIZE*2, ICON_SIZE)),
-        new TrackableItem("Hyper Breast",  "armor_4.gif", ITEM_HYPER_BREAST,    sf::Vector2f(ICON_SIZE*3, ICON_SIZE)),
-
-        new TrackableItem("Healing Boots", "boots_1.gif", ITEM_HEALING_BOOTS,   sf::Vector2f(0.f,         ICON_SIZE*2)),
-        new TrackableItem("Fireproof",     "boots_2.gif", ITEM_FIREPROOF_BOOTS, sf::Vector2f(ICON_SIZE,   ICON_SIZE*2)),
-        new TrackableItem("Iron Boots",    "boots_3.gif", ITEM_IRON_BOOTS,      sf::Vector2f(ICON_SIZE*2, ICON_SIZE*2)),
-        new TrackableItem("Snow Spikes",   "boots_4.gif", ITEM_SPIKE_BOOTS,     sf::Vector2f(ICON_SIZE*3, ICON_SIZE*2)),
-
-        new TrackableItem("Saturn Stone",  "ring_1.gif",  ITEM_SATURN_STONE,    sf::Vector2f(0.f,         ICON_SIZE*3)),
-        new TrackableItem("Mars Stone",    "ring_2.gif",  ITEM_MARS_STONE,      sf::Vector2f(ICON_SIZE,   ICON_SIZE*3)),
-        new TrackableItem("Moon Stone",    "ring_3.gif",  ITEM_MOON_STONE,      sf::Vector2f(ICON_SIZE*2, ICON_SIZE*3)),
-        new TrackableItem("Venus Stone",   "ring_4.gif",  ITEM_VENUS_STONE,     sf::Vector2f(ICON_SIZE*3, ICON_SIZE*3)),
-
-        new TrackableItem("Bell",            "bell.gif",         ITEM_BELL,         sf::Vector2f(ICON_SIZE*5, 0.f)),
-        new TrackableItem("Lithograph",      "lithograph.gif",   ITEM_LITHOGRAPH,   sf::Vector2f(ICON_SIZE*5, ICON_SIZE)),
-        new TrackableItem("Oracle Stone",    "oracle_stone.gif", ITEM_ORACLE_STONE, sf::Vector2f(ICON_SIZE*5, ICON_SIZE*2)),
-        new TrackableItem("Statue of Jypta", "statue_jypta.gif", ITEM_STATUE_JYPTA, sf::Vector2f(ICON_SIZE*5, ICON_SIZE*3)),
-
-        new TrackableItem("Idol Stone",  "idol_stone.gif",  ITEM_IDOL_STONE,    sf::Vector2f(0.f,         ICON_SIZE*4)),
-        new TrackableItem("Safety Pass", "safety_pass.gif", ITEM_SAFETY_PASS,   sf::Vector2f(ICON_SIZE,   ICON_SIZE*4)),
-        new TrackableItem("Armlet",      "armlet.gif",      ITEM_ARMLET,        sf::Vector2f(ICON_SIZE*2, ICON_SIZE*4)),
-        new TrackableItem("Garlic",      "garlic.gif",      ITEM_GARLIC,        sf::Vector2f(ICON_SIZE*3, ICON_SIZE*4)),
-        new TrackableItem("Key",         "key.gif",         ITEM_KEY,           sf::Vector2f(ICON_SIZE*4, ICON_SIZE*4)),
-        new TrackableItem("Lantern",     "lantern.gif",     ITEM_LANTERN,       sf::Vector2f(ICON_SIZE*5, ICON_SIZE*4)),
-
-        new TrackableItem("Einstein Whistle", "einstein_whistle.gif", ITEM_EINSTEIN_WHISTLE, sf::Vector2f(0.f,         ICON_SIZE*5)),
-        new TrackableItem("Sun Stone",        "sun_stone.gif",        ITEM_SUN_STONE,        sf::Vector2f(ICON_SIZE,   ICON_SIZE*5)),
-        new TrackableItem("Axe Magic",        "axe_magic.gif",        ITEM_AXE_MAGIC,        sf::Vector2f(ICON_SIZE*2, ICON_SIZE*5)),
-        new TrackableItem("Logs",             "logs.gif",             ITEM_LOGS,             sf::Vector2f(ICON_SIZE*3, ICON_SIZE*5)),
-        new TrackableItem("Buyer Card",       "buyer_card.gif",       ITEM_BUYER_CARD,       sf::Vector2f(ICON_SIZE*4, ICON_SIZE*5)),
-        new TrackableItem("Casino Ticket",    "casino_ticket.gif",    ITEM_CASINO_TICKET,    sf::Vector2f(ICON_SIZE*5, ICON_SIZE*5)),
-
-        new TrackableItem("Gola's Eye",       "gola_eye.gif",       ITEM_GOLA_EYE,      sf::Vector2f(0.f,           ICON_SIZE*6+15)),
-        new TrackableItem("Red Jewel",        "red_jewel.gif",      ITEM_RED_JEWEL,     sf::Vector2f(ICON_SIZE,     ICON_SIZE*6)),
-        new TrackableItem("Purple Jewel",     "purple_jewel.gif",   ITEM_PURPLE_JEWEL,  sf::Vector2f(ICON_SIZE+25,  ICON_SIZE*6+35)),
-        new TrackableItem("Green Jewel",      "green_jewel.gif",    ITEM_GREEN_JEWEL,   sf::Vector2f(ICON_SIZE+50,  ICON_SIZE*6)),
-        new TrackableItem("Yellow Jewel",     "yellow_jewel.gif",   ITEM_YELLOW_JEWEL,  sf::Vector2f(ICON_SIZE+75,  ICON_SIZE*6+35)),
-        new TrackableItem("Blue Jewel",       "blue_jewel.gif",     ITEM_BLUE_JEWEL,    sf::Vector2f(ICON_SIZE+100, ICON_SIZE*6)),
-        new TrackableItem("Gola's Nail",      "gola_nail.gif",      ITEM_GOLA_NAIL,     sf::Vector2f(ICON_SIZE*3+50,ICON_SIZE*6)),
-        new TrackableItem("Gola's Fang",      "gola_fang.gif",      ITEM_GOLA_FANG,     sf::Vector2f(ICON_SIZE*4+25,ICON_SIZE*6+35)),
-        new TrackableItem("Gola's Horn",      "gola_horn.gif",      ITEM_GOLA_HORN,     sf::Vector2f(ICON_SIZE*5,   ICON_SIZE*6)),
-    };
+    json input_json = json::parse(TRACKABLE_ITEMS_JSON);
+    for(json& item_data : input_json)
+        _trackable_items.emplace_back(new TrackableItem(item_data));
 }
 
 void UserInterface::init_map_tracker()

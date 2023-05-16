@@ -22,9 +22,9 @@ TrackableRegion::TrackableRegion(const nlohmann::json& json)
                 _locations.emplace_back(loc);
         }
     }
-    if(json.contains("hidden_for_goals"))
+    if(json.contains("hiddenForGoals"))
     {
-        for(uint8_t goal_id : json.at("hidden_for_goals"))
+        for(uint8_t goal_id : json.at("hiddenForGoals"))
             _hidden_for_goals.insert(goal_id);
     }
 }

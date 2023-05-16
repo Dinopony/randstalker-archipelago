@@ -1,9 +1,11 @@
 #pragma once
 
 #include <string>
+#include <utility>
+#include <set>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Sprite.hpp>
-#include <utility>
+#include <nlohmann/json.hpp>
 
 class TrackableItem
 {
@@ -12,19 +14,11 @@ private:
     uint8_t _item_id;
     float _x;
     float _y;
-
     sf::Texture _texture;
+    std::set<uint8_t> _hidden_for_goals;
 
 public:
-    TrackableItem(std::string name, const std::string& image_name, uint8_t item_id, sf::Vector2f position) :
-        _name       (std::move(name)),
-        _item_id    (item_id),
-        _x          (position.x),
-        _y          (position.y)
-    {
-        _texture.loadFromFile("./images/" + image_name);
-        _texture.setSmooth(true);
-    }
+    explicit TrackableItem(const nlohmann::json& json);
 
     const std::string& name() const { return _name; }
     uint8_t item_id() const { return _item_id; }
@@ -32,4 +26,6 @@ public:
     float y() const { return _y; }
 
     uint64_t get_texture_id() const { return _texture.getNativeHandle(); }
+
+    [[nodiscard]] bool is_hidden_for_goal(uint8_t goal_id) const { return _hidden_for_goals.count(goal_id); }
 };
