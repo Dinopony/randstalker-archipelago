@@ -329,7 +329,27 @@ void process_console_input(const std::string& input)
     }
     else
 #endif
-    if(archipelago)
+    if(input == "/about")
+    {
+        Logger::info("About Randstalker Archipelago Client v" RELEASE);
+        Logger::message("Developement of Randstalker, this client and the whole Landstalker integration in Archipelago");
+        Logger::message("-> Dinopony");
+        Logger::message("");
+
+        Logger::message("\"Where is it?\" checks screenshots");
+        Logger::message("-> Lucy");
+        Logger::message("");
+
+        Logger::message("Testing");
+        Logger::message("-> Hawkrex");
+        Logger::message("-> Lucy");
+        Logger::message("-> Sagaz");
+        Logger::message("-> Wiz");
+        Logger::message("");
+
+        Logger::message("Thanks for playing :)");
+    }
+    else if(archipelago)
     {
         archipelago->say(input);
     }
@@ -347,6 +367,10 @@ void process_console_input(const std::string& input)
 int main()
 {
     bool keep_working = true;
+
+    Logger::info("===== Randstalker Archipelago Client v" RELEASE " =====");
+    Logger::info("Use /about for full credits");
+    Logger::info("Have fun randomizing!");
 
     // Network + game handling thread
     std::thread process_thread([&keep_working]()
