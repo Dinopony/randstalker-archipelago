@@ -24,6 +24,10 @@ private:
     bool _received_death = false;
     bool _must_send_death = false;
 
+    /// 0 = beat_gola, 1 = reach_kazalt, 2 = beat_dark_nole
+    uint8_t _goal_id = -1;
+    std::string _goal_string;
+
 public:
     GameState();
     void reset();
@@ -56,7 +60,10 @@ public:
     void must_send_death(bool val) { _must_send_death = val; }
 
     [[nodiscard]] const nlohmann::json& preset_json() const { return _preset_json; }
-    void preset_json(nlohmann::json json) { _preset_json = std::move(json); }
+    void preset_json(nlohmann::json json);
+
+    [[nodiscard]] uint8_t goal_id() const { return _goal_id; }
+    [[nodiscard]] const std::string& goal_string() const { return _goal_string; }
 
     [[nodiscard]] bool has_built_rom() const { return !_built_rom_path.empty(); }
     [[nodiscard]] const std::string& built_rom_path() const { return _built_rom_path; }

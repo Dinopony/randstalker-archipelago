@@ -32,6 +32,9 @@ void GameState::reset()
     _received_death = false;
     _must_send_death = false;
 
+    _goal_id = -1;
+    _goal_string = "";
+
     for(Location& location : _locations)
     {
         location.was_checked(false);
@@ -77,6 +80,34 @@ std::vector<int64_t> GameState::checked_locations() const
 
     return ret;
 }
+
+void GameState::preset_json(nlohmann::json json)
+{
+    _preset_json = std::move(json);
+
+    std::string goal_short_str = _preset_json.at("gameSettings").at("goal");
+    if(goal_short_str == "beat_gola")
+    {
+        _goal_id = 0;
+        _goal_string = "Beat Gola";
+    }
+    else if(goal_short_str == "reach_kazalt")
+    {
+        _goal_id = 1;
+        _goal_string = "Reach Kazalt";
+    }
+    else if(goal_short_str == "beat_dark_nole")
+    {
+        _goal_id = 2;
+        _goal_string = "Beat Dark Nole";
+    }
+    else
+    {
+        _goal_id = -1;
+        _goal_string = "Unknown";
+    }
+}
+
 
 uint8_t GameState::owned_item_quantity(uint8_t item_id) const
 {

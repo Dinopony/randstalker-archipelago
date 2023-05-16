@@ -678,7 +678,8 @@
         "x": 12,
         "y": 10,
         "width": 1,
-        "height": 1
+        "height": 1,
+        "hidden_for_goals": [ 1 ]
     },
     {
         "name": "Kazalt",
@@ -692,13 +693,15 @@
             "Kazalt: Shop item #3",
             "Kazalt: Shop item #4",
             "Kazalt: Shop item #5"
-        ]
+        ],
+        "hidden_for_goals": [ 1 ]
     },
     {
         "x": 11,
         "y": 13,
         "width": 1,
-        "height": 1
+        "height": 1,
+        "hidden_for_goals": [ 1 ]
     },
     {
         "name": "King Nole's Labyrinth",
@@ -741,13 +744,15 @@
             "King Nole's Labyrinth (-3F): item on ground behind waterfall after beating Spinner",
             "King Nole's Labyrinth (-2F): Left item dropped by sacred tree",
             "King Nole's Labyrinth (-2F): Right item dropped by sacred tree"
-        ]
+        ],
+        "hidden_for_goals": [ 1 ]
     },
     {
         "x": 14,
         "y": 18,
         "width": 1,
-        "height": 1
+        "height": 1,
+        "hidden_for_goals": [ 1 ]
     },
     {
         "name": "King Nole's Palace",
@@ -759,6 +764,7 @@
             "King Nole's Palace: chest at entrance",
             "King Nole's Palace: chest along central pit",
             "King Nole's Palace: chest in floating button room"
-        ]
+        ],
+        "hidden_for_goals": [ 1 ]
     }
 ]

@@ -305,8 +305,12 @@ float UserInterface::draw_item_tracker_window() const
 {
     ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
     ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
+
     ImGui::Begin("Tracker", nullptr, WINDOW_FLAGS);
     {
+        ImGui::Text("Goal: %s", game_state.goal_string().c_str());
+        ImGui::Separator();
+
         ImVec2 wsize(46.f, 46.f);
         for(TrackableItem* ptr : _trackable_items)
         {
@@ -315,7 +319,7 @@ float UserInterface::draw_item_tracker_window() const
             if(!item_owned)
                 color_multipler = ImVec4(0.4, 0.4, 0.4, 0.6);
 
-            ImGui::SetCursorPos(ImVec2(MARGIN + ptr->x(), MARGIN + ptr->y()));
+            ImGui::SetCursorPos(ImVec2(MARGIN + ptr->x(), MARGIN + 26 + ptr->y()));
             ImGui::Image((ImTextureID) ptr->get_texture_id(), wsize, ImVec2(0,0), ImVec2(1,1), color_multipler);
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
             {
@@ -435,6 +439,9 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
     {
         for(TrackableRegion* region : _trackable_regions)
         {
+            if(region->is_hidden_for_goal(game_state.goal_id()))
+                continue;
+
             ImGui::SetCursorPos(ImVec2(map_origin_x, map_origin_y));
 
             sf::FloatRect rectangle((float)region->x() * SIZE_UNIT, (float)region->y() * SIZE_UNIT,

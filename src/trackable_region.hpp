@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <nlohmann/json.hpp>
 
 class Location;
@@ -15,9 +16,10 @@ private:
     uint16_t _width = 1;
     uint16_t _height = 1;
     std::vector<const Location*> _locations;
+    std::set<uint8_t> _hidden_for_goals;
 
 public:
-    explicit TrackableRegion(nlohmann::json json);
+    explicit TrackableRegion(const nlohmann::json& json);
 
     [[nodiscard]] const std::string& name() const { return _name; }
     [[nodiscard]] uint16_t x() const { return _x; }
@@ -27,4 +29,6 @@ public:
 
     [[nodiscard]] const std::vector<const Location*>& locations() const { return _locations; }
     [[nodiscard]] uint32_t checked_locations_count() const;
+
+    [[nodiscard]] bool is_hidden_for_goal(uint8_t goal_id) const { return _hidden_for_goals.count(goal_id); }
 };

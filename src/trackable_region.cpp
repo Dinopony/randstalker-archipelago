@@ -1,7 +1,7 @@
 #include "trackable_region.hpp"
 #include "client.hpp"
 
-TrackableRegion::TrackableRegion(nlohmann::json json)
+TrackableRegion::TrackableRegion(const nlohmann::json& json)
 {
     if(json.contains("name"))
         _name = json.at("name");
@@ -21,6 +21,11 @@ TrackableRegion::TrackableRegion(nlohmann::json json)
             if(loc)
                 _locations.emplace_back(loc);
         }
+    }
+    if(json.contains("hidden_for_goals"))
+    {
+        for(uint8_t goal_id : json.at("hidden_for_goals"))
+            _hidden_for_goals.insert(goal_id);
     }
 }
 
