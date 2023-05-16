@@ -35,6 +35,8 @@ private:
     sf::Texture* _tex_location;
     sf::Texture* _tex_location_checked;
 
+    bool _map_tracker_open = false;
+
 public:
     ~UserInterface();
 
@@ -59,7 +61,7 @@ private:
     void draw_rom_generation_window();
     void draw_emulator_connection_window();
     float draw_item_tracker_window() const;
-    void draw_map_tracker_details_window(float y) const;
+    void draw_map_tracker_details_window(float y);
     void draw_status_window() const;
 
     float draw_map_tracker_window(float x, float y, float width, float height);

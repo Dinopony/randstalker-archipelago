@@ -5,7 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <landstalker_lib/constants/item_codes.hpp>
-#include <Shlobj_core.h>
+#include <ShlObj_core.h>
 
 #include "user_interface.hpp"
 #include "client.hpp"
@@ -76,9 +76,9 @@ constexpr uint32_t STATUS_WINDOW_H = 104;
 
 constexpr uint32_t CONSOLE_INPUT_HEIGHT = 35;
 
-const auto WINDOW_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize
-                        | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
-
+const auto WINDOW_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse
+                        | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings
+                        | ImGuiWindowFlags_NoFocusOnAppearing;
 
 void UserInterface::draw_archipelago_connection_window()
 {
@@ -230,9 +230,30 @@ void UserInterface::draw_emulator_connection_window()
     ImGui::End();
 }
 
-void UserInterface::draw_map_tracker_details_window(float y) const
+void UserInterface::draw_map_tracker_details_window(float y)
 {
     ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
+
+    if(!_map_tracker_open)
+    {
+        ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
+
+        ImGui::Begin("Locations details", nullptr, WINDOW_FLAGS);
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
+            ImGui::Text("Goal: %s", game_state.goal_string().c_str());
+            ImGui::PopStyleColor();
+
+            if(ImGui::Button("Open map tracker"))
+                _map_tracker_open = true;
+        }
+        ImGui::End();
+        return;
+    }
+
+    if(!_selected_region)
+        return;
+
     ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, (float)_window_height - y - STATUS_WINDOW_H - 2*MARGIN));
     ImGui::Begin("Locations details", nullptr, WINDOW_FLAGS);
     {
@@ -434,6 +455,9 @@ void UserInterface::draw_status_window() const
 
 float UserInterface::draw_map_tracker_window(float x, float y, float width, float height)
 {
+    if(!_map_tracker_open)
+        return 0.f;
+
     ImGui::SetNextWindowPos(ImVec2(x, y));
     ImGui::SetNextWindowSize(ImVec2(width, height));
 
@@ -445,9 +469,11 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
     if(height != 0.f)
         map_origin_y = std::round((height - map_height) / 2.f);
 
-    ImGui::Begin("Map Tracker", nullptr, WINDOW_FLAGS);
+    ImGui::Begin("Map Tracker", &_map_tracker_open, WINDOW_FLAGS & (~ImGuiWindowFlags_NoTitleBar));
     {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
         ImGui::Text("Goal: %s", game_state.goal_string().c_str());
+        ImGui::PopStyleColor();
 
         for(TrackableRegion* region : _trackable_regions)
         {
@@ -698,8 +724,7 @@ void UserInterface::loop(sf::RenderWindow& window)
         else
         {
             float y = draw_item_tracker_window();
-            if(_selected_region)
-                draw_map_tracker_details_window(y);
+            draw_map_tracker_details_window(y);
         }
         draw_status_window();
 
@@ -712,7 +737,7 @@ void UserInterface::loop(sf::RenderWindow& window)
         }
         else
         {
-            if(_window_width > THREE_COLUMNS_MODE_THRESHOLD)
+            if(_window_width > THREE_COLUMNS_MODE_THRESHOLD && _map_tracker_open)
             {
                 // Three-columns mode: draw the map tracker as a full column, and the console as another column
                 draw_map_tracker_window(right_panel_x_start,
