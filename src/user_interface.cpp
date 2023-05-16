@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <landstalker_lib/constants/item_codes.hpp>
+#include <Shlobj_core.h>
 
 #include "user_interface.hpp"
 #include "client.hpp"
@@ -40,6 +41,20 @@ static std::string ask_for_file()
     GetOpenFileName(&ofn);
 
     return ofn.lpstrFile;
+}
+
+/**
+ * Opens an explorer process if needed, and select the file pointed by the given path
+ */
+void show_file_in_explorer(const std::string& filename)
+{
+    std::string abs_path = std::filesystem::absolute(std::filesystem::path(filename)).string();
+    PIDLIST_ABSOLUTE pidl = ILCreateFromPath(abs_path.c_str());
+    if(pidl)
+    {
+        SHOpenFolderAndSelectItems(pidl, 0, nullptr, 0);
+        ILFree(pidl);
+    }
 }
 
 // ============================================================================================================
@@ -194,13 +209,7 @@ void UserInterface::draw_emulator_connection_window()
     ImGui::Begin("Emulator Connection", nullptr, WINDOW_FLAGS);
     {
         if(ImGui::Button("Show ROM file in explorer"))
-        {
-            std::string output_path = std::string(_output_rom_path);
-            if(!output_path.ends_with("/"))
-                output_path += "/";
-            std::string path_str = std::filesystem::absolute(std::filesystem::path(output_path)).string();
-            ShellExecuteA(nullptr, "explore", path_str.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
-        }
+            show_file_in_explorer(game_state.built_rom_path());
 
         if(ImGui::Button("Rebuild ROM with other settings"))
             game_state.built_rom_path("");
