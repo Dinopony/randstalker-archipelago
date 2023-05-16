@@ -8,6 +8,8 @@
 
 #include "user_interface.hpp"
 #include "client.hpp"
+#include "randstalker_invoker.hpp"
+#include "data/trackable_regions.json.hxx"
 
 // ===== WINDOWS SPECIFIC TOOL FUNCTIONS ======================================================================
 
@@ -45,16 +47,15 @@ constexpr uint32_t FRAMERATE_LIMIT_FOCUS = 60;
 constexpr uint32_t FRAMERATE_LIMIT_NO_FOCUS = 10;
 
 constexpr uint32_t MIN_WINDOW_WIDTH = 800;
-constexpr uint32_t MIN_WINDOW_HEIGHT = 640;
+constexpr uint32_t MIN_WINDOW_HEIGHT = 800;
+
+/// When the width of the client window becomes bigger than this value, the UI swap into a 3-columns mode where the
+/// map tracker gets placed next to the console log, instead of being one on top of the other.
+constexpr uint32_t THREE_COLUMNS_MODE_THRESHOLD = 1200;
+constexpr uint32_t MAP_TRACKER_WINDOW_MIN_W = 410;
 
 constexpr uint32_t MARGIN = 8;
 constexpr uint32_t LEFT_PANEL_WIDTH = 340;
-
-constexpr uint32_t AP_WINDOW_H = 172;
-constexpr uint32_t ROM_WINDOW_H = 260;
-constexpr uint32_t EMU_WINDOW_H = 155;
-constexpr uint32_t HINT_WINDOW_H = 62;
-constexpr uint32_t TRACKER_WINDOW_H = 427;
 constexpr uint32_t STATUS_WINDOW_H = 104;
 
 constexpr uint32_t CONSOLE_INPUT_HEIGHT = 35;
@@ -63,13 +64,10 @@ const auto WINDOW_FLAGS = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResiz
                         | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
 
 
-float UserInterface::draw_archipelago_connection_window(float y)
+void UserInterface::draw_archipelago_connection_window()
 {
-    if(archipelago && archipelago->is_connected())
-        return 0.f;
-
-    ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
-    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, AP_WINDOW_H));
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
 
     ImGui::Begin("AP Connection", nullptr, WINDOW_FLAGS);
     {
@@ -98,17 +96,12 @@ float UserInterface::draw_archipelago_connection_window(float y)
         }
     }
     ImGui::End();
-
-    return (float)(AP_WINDOW_H + MARGIN);
 }
 
-float UserInterface::draw_rom_generation_window(float y)
+void UserInterface::draw_rom_generation_window()
 {
-    if(!archipelago || !archipelago->is_connected() || game_state.has_built_rom())
-        return 0.f;
-
-    ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
-    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, ROM_WINDOW_H));
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
 
     ImGui::Begin("ROM Generation", nullptr, WINDOW_FLAGS);
     {
@@ -171,6 +164,18 @@ float UserInterface::draw_rom_generation_window(float y)
         ImGui::Separator(); // --------------------------------------------------------
         ImGui::Dummy(ImVec2(0.f, 1.f));
 
+        ImGui::Checkbox("Remove music", &_remove_music);
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            ImGui::SetTooltip("Removes in-game music, but keeps sound effects untouched");
+
+        ImGui::Checkbox("Swap overworld music", &_swap_overworld_music);
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            ImGui::SetTooltip("Swap the music before and after taking boat to Verla");
+
+        ImGui::Dummy(ImVec2(0.f, 2.f));
+        ImGui::Separator(); // --------------------------------------------------------
+        ImGui::Dummy(ImVec2(0.f, 1.f));
+
         if(ImGui::Button("Build ROM"))
         {
             std::string rom_path = build_rom();
@@ -178,17 +183,12 @@ float UserInterface::draw_rom_generation_window(float y)
         }
     }
     ImGui::End();
-
-    return (float)(ROM_WINDOW_H + MARGIN);
 }
 
-float UserInterface::draw_emulator_connection_window(float y)
+void UserInterface::draw_emulator_connection_window()
 {
-    if(!archipelago || !archipelago->is_connected() || !game_state.has_built_rom() || emulator)
-        return 0.f;
-
-    ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
-    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, EMU_WINDOW_H));
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
 
     ImGui::Begin("Emulator Connection", nullptr, WINDOW_FLAGS);
     {
@@ -218,59 +218,93 @@ float UserInterface::draw_emulator_connection_window(float y)
             connect_emu();
     }
     ImGui::End();
-
-    return (float)(EMU_WINDOW_H + MARGIN);
 }
 
-float UserInterface::draw_hint_window(float y) const
+void UserInterface::draw_map_tracker_details_window(float y) const
 {
-    if(!archipelago || !archipelago->is_connected() || !game_state.has_built_rom() || !emulator)
-        return 0.f;
-
     ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
-    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, HINT_WINDOW_H));
-    ImGui::Begin("Hints", nullptr, WINDOW_FLAGS);
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, (float)_window_height - y - STATUS_WINDOW_H - 2*MARGIN));
+    ImGui::Begin("Locations details", nullptr, WINDOW_FLAGS);
     {
-        // LOCATION HINT COMBO /////////////////////////////////////////////////////////////////////
-
-        static const char* current_location = game_state.locations()[0].name().c_str();
-        if (ImGui::BeginCombo("##combolocations", current_location))
+        // Display unchecked locations
+        for(const Location* loc : _selected_region->locations())
         {
-            for (auto& location : game_state.locations())
+            if(loc->was_checked())
+                continue;
+
+            float initial_cursor_y = ImGui::GetCursorPosY();
+            ImGui::Image((ImTextureID)(uintptr_t)_tex_location->getNativeHandle(), ImVec2(39.f, 39.f));
+            float cursor_x_after_image = ImGui::GetCursorStartPos().x + 39.f + 6.f;
+            float cursor_y_after_image = ImGui::GetCursorPos().y;
+
+            ImGui::SetCursorPos(ImVec2(cursor_x_after_image, initial_cursor_y));
+            ImGui::TextWrapped("%s", loc->name().c_str());
+
+            ImGui::SetCursorPosX(cursor_x_after_image);
+            if(loc->reachable())
             {
-                if(location.was_checked())
-                    continue;
-
-                bool is_selected = (current_location == location.name().c_str());
-                if (ImGui::Selectable(location.name().c_str(), is_selected))
-                    current_location = location.name().c_str();
-                if (is_selected)
-                    ImGui::SetItemDefaultFocus();
+                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100, 255, 100, 255));
+                ImGui::TextWrapped("Can be checked");
             }
-            ImGui::EndCombo();
+            else
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 100, 100, 255));
+                ImGui::TextWrapped("Cannot be checked");
+            }
+            ImGui::PopStyleColor();
+
+            ImGui::SetCursorPosX(cursor_x_after_image);
+
+            std::string hint_btn_id = "Hint contents##" + loc->name();
+            if(ImGui::Button(hint_btn_id.c_str()))
+                process_console_input("!hint_location " + loc->name());
+
+            ImGui::SameLine();
+            std::string where_is_it_btn_id = "Where is it?##" + loc->name();
+            if(ImGui::Button(where_is_it_btn_id.c_str()))
+            {
+                std::string url = "https://imgur.com/a/FnN7Akx";
+                ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
+            }
+
+            if(ImGui::GetCursorPosY() < cursor_y_after_image)
+                ImGui::SetCursorPosY(cursor_y_after_image);
+            ImGui::Separator();
         }
-        ImGui::SameLine();
 
-        if(ImGui::Button("Hint location"))
-            process_console_input("!hint_location " + std::string(current_location));
+        // Display already checked locations
+        for(const Location* loc : _selected_region->locations())
+        {
+            if(!loc->was_checked())
+                continue;
 
-        // LIST HINTS BUTTON /////////////////////////////////////////////////////////////////////
+            float initial_cursor_y = ImGui::GetCursorPosY();
+            ImGui::Image((ImTextureID)(uintptr_t)_tex_location_checked->getNativeHandle(), ImVec2(39.f, 39.f));
+            float cursor_x_after_image = ImGui::GetCursorStartPos().x + 39.f + 6.f;
+            float cursor_y_after_image = ImGui::GetCursorPos().y;
 
-        if(ImGui::Button("List known hints"))
-            process_console_input("!hint");
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,255,255,128));
+            ImGui::SetCursorPos(ImVec2(cursor_x_after_image, initial_cursor_y));
+            ImGui::TextWrapped("%s", loc->name().c_str());
+            ImGui::PopStyleColor();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,128));
+            ImGui::SetCursorPosX(cursor_x_after_image);
+            ImGui::TextWrapped("Already checked");
+            ImGui::PopStyleColor();
+
+            if(ImGui::GetCursorPosY() < cursor_y_after_image)
+                ImGui::SetCursorPosY(cursor_y_after_image);
+            ImGui::Separator();
+        }
     }
     ImGui::End();
-
-    return (float)(HINT_WINDOW_H + MARGIN);
 }
 
-float UserInterface::draw_tracker_window(float y) const
+float UserInterface::draw_item_tracker_window() const
 {
-    if(!archipelago || !archipelago->is_connected() || !game_state.has_built_rom() || !emulator)
-        return 0.f;
-
-    ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
-    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, TRACKER_WINDOW_H));
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
     ImGui::Begin("Tracker", nullptr, WINDOW_FLAGS);
     {
         ImVec2 wsize(46.f, 46.f);
@@ -299,9 +333,10 @@ float UserInterface::draw_tracker_window(float y) const
             }
         }
     }
+    float window_height = ImGui::GetWindowHeight();
     ImGui::End();
 
-    return (float)(TRACKER_WINDOW_H + MARGIN);
+    return window_height + MARGIN*2;
 }
 
 void UserInterface::draw_status_window()
@@ -383,10 +418,103 @@ void UserInterface::draw_status_window()
     ImGui::End();
 }
 
-void UserInterface::draw_console_window()
+float UserInterface::draw_map_tracker_window(float x, float y, float width, float height)
 {
-    ImGui::SetNextWindowPos(ImVec2(LEFT_PANEL_WIDTH + 2*MARGIN, MARGIN));
-    ImGui::SetNextWindowSize(ImVec2((float)_window_width-(LEFT_PANEL_WIDTH+3*MARGIN), (float)_window_height-(CONSOLE_INPUT_HEIGHT+2*MARGIN)));
+    ImGui::SetNextWindowPos(ImVec2(x, y));
+    ImGui::SetNextWindowSize(ImVec2(width, height));
+
+    constexpr float SIZE_UNIT = 16.f;
+    float map_width = SIZE_UNIT * 23;
+    float map_height = SIZE_UNIT * 38;
+    float map_origin_x = std::round((width - map_width) / 2.f);
+    float map_origin_y = 8;
+    if(height != 0.f)
+        map_origin_y = std::round((height - map_height) / 2.f);
+
+    ImGui::Begin("Map Tracker", nullptr, WINDOW_FLAGS);
+    {
+        for(TrackableRegion* region : _trackable_regions)
+        {
+            ImGui::SetCursorPos(ImVec2(map_origin_x, map_origin_y));
+
+            sf::FloatRect rectangle((float)region->x() * SIZE_UNIT, (float)region->y() * SIZE_UNIT,
+                                    (float)region->width() * SIZE_UNIT, (float)region->height() * SIZE_UNIT);
+
+            uint32_t locations_count = region->locations().size();
+            uint32_t checked_locations_count = region->checked_locations_count();
+
+            bool draw_border = (locations_count > 0);
+
+            bool contains_at_least_one_reachable = false;
+            bool contains_at_least_one_unreachable = false;
+            for(const Location* loc : region->locations())
+            {
+                if(loc->was_checked())
+                    continue;
+
+                if(loc->reachable())
+                    contains_at_least_one_reachable = true;
+                else
+                    contains_at_least_one_unreachable = true;
+            }
+
+            sf::Color color(128,128,128);
+            if(locations_count > 0)
+            {
+                if(locations_count == checked_locations_count)
+                    color = sf::Color(20, 80, 20);
+                else if(contains_at_least_one_unreachable)
+                {
+                    if(contains_at_least_one_reachable)
+                        color = sf::Color(255, 160, 60); // Mixed reachable / unreachable => orange
+                    else
+                        color = sf::Color(200, 60, 60); // Fully unreachable => red
+                }
+                else if(contains_at_least_one_reachable)
+                {
+                    color = sf::Color(60, 200, 60); // Fully reachable => green
+                }
+            }
+
+            ImGui::DrawRectFilled(rectangle, color, 0.f, 0);
+            if(draw_border)
+            {
+                sf::Color border_color = (_selected_region == region) ? sf::Color(255, 220, 0) : sf::Color::Black;
+                ImGui::DrawRect(rectangle, border_color);
+            }
+
+            ImGui::SetCursorPos(ImVec2(map_origin_x + rectangle.left, map_origin_y + rectangle.top));
+            ImGui::Dummy(ImVec2(rectangle.width, rectangle.height));
+            if (!region->name().empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            {
+                ImGui::SetTooltip("%s\n%u/%u locations checked",
+                                  region->name().c_str(),
+                                  checked_locations_count,
+                                  locations_count);
+
+                if(locations_count > 0 && ImGui::IsMouseReleased(0))
+                {
+                    if(_selected_region != region)
+                        _selected_region = region;
+                    else
+                        _selected_region = nullptr;
+                }
+            }
+        }
+    }
+    float window_height = ImGui::GetWindowHeight();
+    ImGui::End();
+
+    return y + window_height + MARGIN;
+}
+
+void UserInterface::draw_console_window(float x, float y)
+{
+    float width = (float)_window_width - x - MARGIN;
+    float height = (float)_window_height - y - CONSOLE_INPUT_HEIGHT - MARGIN;
+
+    ImGui::SetNextWindowPos(ImVec2(x, y));
+    ImGui::SetNextWindowSize(ImVec2(width, height));
 
     ImGui::Begin("Console", nullptr, WINDOW_FLAGS | ImGuiWindowFlags_AlwaysVerticalScrollbar);
     {
@@ -408,7 +536,7 @@ void UserInterface::draw_console_window()
                     prefix = "[INFO] ";
                     break;
                 case Logger::LOG_HINT:
-                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,255));
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,(msg.text.ends_with("(found)")) ? 100 : 255));
                     break;
                 case Logger::LOG_WARNING:
                     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
@@ -434,12 +562,9 @@ void UserInterface::draw_console_window()
         }
     }
     ImGui::End();
-}
 
-void UserInterface::draw_console_input()
-{
-    ImGui::SetNextWindowPos(ImVec2(LEFT_PANEL_WIDTH + 2*MARGIN, _window_height-(CONSOLE_INPUT_HEIGHT+MARGIN)));
-    ImGui::SetNextWindowSize(ImVec2((float)_window_width-(LEFT_PANEL_WIDTH+3*MARGIN), (float)CONSOLE_INPUT_HEIGHT));
+    ImGui::SetNextWindowPos(ImVec2(x, y + height - 1));
+    ImGui::SetNextWindowSize(ImVec2(width, (float)CONSOLE_INPUT_HEIGHT));
 
     ImGui::Begin("ConsoleInputWindow", nullptr, WINDOW_FLAGS);
     {
@@ -461,7 +586,8 @@ void UserInterface::draw_console_input()
 
 void UserInterface::open()
 {
-    this->init_tracker();
+    this->init_item_tracker();
+    this->init_map_tracker();
     this->load_personal_settings();
     this->load_client_settings();
 
@@ -474,10 +600,30 @@ void UserInterface::open()
     window.setFramerateLimit(FRAMERATE_LIMIT_FOCUS);
     ImGui::SFML::Init(window);
 
+    auto pos = window.getPosition();
+    if(_window_x != -1)
+        pos.x = _window_x;
+    if(_window_y != -1)
+        pos.y = _window_y;
+    window.setPosition(pos);
+
     sf::Image icon;
     if(icon.loadFromFile("icon.png"))
         window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
+    this->loop(window);
+
+    _window_x = window.getPosition().x;
+    _window_y = window.getPosition().y;
+
+    ImGui::SFML::Shutdown();
+
+    this->save_personal_settings();
+    this->save_client_settings();
+}
+
+void UserInterface::loop(sf::RenderWindow& window)
+{
     sf::Clock delta_clock;
     while(window.isOpen())
     {
@@ -500,41 +646,64 @@ void UserInterface::open()
                     _window_height = MIN_WINDOW_HEIGHT;
 
                 window.setSize(sf::Vector2u(_window_width, _window_height));
-                window.setView(sf::View(sf::FloatRect(0, 0, _window_width, _window_height)));
+                window.setView(sf::View(sf::FloatRect(0, 0, (float)_window_width, (float)_window_height)));
             }
             else if(event.type == sf::Event::LostFocus)
-            {
                 window.setFramerateLimit(FRAMERATE_LIMIT_NO_FOCUS);
-            }
             else if(event.type == sf::Event::GainedFocus)
-            {
                 window.setFramerateLimit(FRAMERATE_LIMIT_FOCUS);
-            }
         }
 
         window.clear(sf::Color::Black);
         ImGui::SFML::Update(window, delta_clock.restart());
 
-        float y = MARGIN;
-        y += draw_archipelago_connection_window(y);
-        y += draw_rom_generation_window(y);
-        y += draw_emulator_connection_window(y);
-        y += draw_tracker_window(y);
-        draw_hint_window(y);
-
+        // Draw left panel windows
+        if(!archipelago || !archipelago->is_connected())
+            draw_archipelago_connection_window();
+        else if(!game_state.has_built_rom())
+            draw_rom_generation_window();
+        else if(!emulator)
+            draw_emulator_connection_window();
+        else
+        {
+            float y = draw_item_tracker_window();
+            if(_selected_region)
+                draw_map_tracker_details_window(y);
+        }
         draw_status_window();
 
-        draw_console_window();
-        draw_console_input();
+        // Draw right panel windows
+        float right_panel_x_start = LEFT_PANEL_WIDTH + 2*MARGIN;
+        if(!archipelago || !archipelago->is_connected() || !game_state.has_built_rom() || !emulator)
+        {
+            // Map tracker doesn't need to be drawn, just fill the remaining space with the console window
+            draw_console_window(right_panel_x_start, MARGIN);
+        }
+        else
+        {
+            if(_window_width > THREE_COLUMNS_MODE_THRESHOLD)
+            {
+                // Three-columns mode: draw the map tracker as a full column, and the console as another column
+                draw_map_tracker_window(right_panel_x_start,
+                                        MARGIN,
+                                        MAP_TRACKER_WINDOW_MIN_W,
+                                        (float)_window_height - 2*MARGIN);
+                draw_console_window(right_panel_x_start + MAP_TRACKER_WINDOW_MIN_W + MARGIN, MARGIN);
+            }
+            else
+            {
+                // Two-columns mode: draw the console below the map tracker
+                float y = draw_map_tracker_window(right_panel_x_start,
+                                                  MARGIN,
+                                                  (float)_window_width - right_panel_x_start - MARGIN,
+                                                  0.f);
+                draw_console_window(right_panel_x_start, y);
+            }
+        }
 
         ImGui::SFML::Render(window);
         window.display();
     }
-
-    ImGui::SFML::Shutdown();
-
-    this->save_personal_settings();
-    this->save_client_settings();
 }
 
 static std::string color_to_string(const float color[3])
@@ -607,6 +776,11 @@ void UserInterface::load_personal_settings()
     _nigel_color_dark[0] = color[0];
     _nigel_color_dark[1] = color[1];
     _nigel_color_dark[2] = color[2];
+
+    if(personal_settings.contains("removeMusic"))
+        _remove_music = personal_settings.at("removeMusic");
+    if(personal_settings.contains("swapOverworldMusic"))
+        _swap_overworld_music = personal_settings.at("swapOverworldMusic");
 }
 
 void UserInterface::load_client_settings()
@@ -643,6 +817,11 @@ void UserInterface::load_client_settings()
         sprintf(_output_rom_path, "%s", output_rom_path.c_str());
     }
 
+    if(client_settings.contains("window_x"))
+        _window_x = client_settings["window_x"];
+    if(client_settings.contains("window_y"))
+        _window_y = client_settings["window_y"];
+
     if(client_settings.contains("window_width"))
     {
         _window_width = client_settings["window_width"];
@@ -674,6 +853,9 @@ void UserInterface::save_personal_settings()
     personal_settings["nigelColor"].emplace_back(color_to_string(_nigel_color_light));
     personal_settings["nigelColor"].emplace_back(color_to_string(_nigel_color_dark));
 
+    personal_settings["removeMusic"] = _remove_music;
+    personal_settings["swapOverworldMusic"] = _swap_overworld_music;
+
     std::ofstream output_file("./personal_settings.json");
     if(output_file.is_open())
     {
@@ -689,6 +871,8 @@ void UserInterface::save_client_settings()
     client_settings["slot_name"] = _slot_name;
     client_settings["input_rom_path"] = _input_rom_path;
     client_settings["output_rom_path"] = _output_rom_path;
+    client_settings["window_x"] = _window_x;
+    client_settings["window_y"] = _window_y;
     client_settings["window_width"] = _window_width;
     client_settings["window_height"] = _window_height;
 
@@ -701,7 +885,7 @@ void UserInterface::save_client_settings()
     }
 }
 
-void UserInterface::init_tracker()
+void UserInterface::init_item_tracker()
 {
     constexpr float ICON_SIZE = 55.f;
     _trackable_items = {
@@ -754,6 +938,43 @@ void UserInterface::init_tracker()
         new TrackableItem("Gola's Fang",      "gola_fang.gif",      ITEM_GOLA_FANG,     sf::Vector2f(ICON_SIZE*4+25,ICON_SIZE*6+35)),
         new TrackableItem("Gola's Horn",      "gola_horn.gif",      ITEM_GOLA_HORN,     sf::Vector2f(ICON_SIZE*5,   ICON_SIZE*6)),
     };
+}
+
+void UserInterface::init_map_tracker()
+{
+    json input_json = json::parse(TRACKABLE_REGIONS_JSON);
+    for(json& region_data : input_json)
+        _trackable_regions.emplace_back(new TrackableRegion(region_data));
+
+    _tex_location = new sf::Texture();
+    _tex_location->loadFromFile("images/chest.png");
+
+    _tex_location_checked = new sf::Texture();
+    _tex_location_checked->loadFromFile("images/chest_open.png");
+}
+
+#define SOLVE_LOGIC_PRESET_FILE_PATH "./_solve_logic.json"
+
+void UserInterface::update_map_tracker_logic()
+{
+    nlohmann::json logic_solve_preset = game_state.preset_json();
+    for(TrackableItem* item : _trackable_items)
+        if(game_state.owned_item_quantity(item->item_id()) > 0)
+            logic_solve_preset["gameSettings"]["startingItems"][item->name()] = 1;
+
+    std::ofstream preset_file(SOLVE_LOGIC_PRESET_FILE_PATH);
+    preset_file << logic_solve_preset.dump(4);
+    preset_file.close();
+
+    std::string command = "randstalker.exe";
+    command += " --preset=\"" SOLVE_LOGIC_PRESET_FILE_PATH "\"";
+    command += " --solvelogic";
+
+    std::set<std::string> reachable_locations = invoke_randstalker_to_solve_logic(command);
+    for(Location& loc : game_state.locations())
+        loc.reachable(reachable_locations.contains(loc.name()));
+
+    std::filesystem::path(SOLVE_LOGIC_PRESET_FILE_PATH).remove_filename();
 }
 
 UserInterface::~UserInterface()

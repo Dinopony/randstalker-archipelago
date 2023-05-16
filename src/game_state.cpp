@@ -33,7 +33,10 @@ void GameState::reset()
     _must_send_death = false;
 
     for(Location& location : _locations)
+    {
         location.was_checked(false);
+        location.reachable(false);
+    }
 }
 
 uint8_t GameState::item_with_index(uint16_t received_item_index) const
@@ -53,6 +56,14 @@ void GameState::set_received_item(uint16_t index, uint8_t item)
         Logger::warning("Setting a received item without resizing received items array.");
 
     _received_items[index] = item;
+}
+
+const Location* GameState::location(const std::string& name) const
+{
+    for(const Location& loc : _locations)
+        if(loc.name() == name)
+            return &loc;
+    return nullptr;
 }
 
 std::vector<int64_t> GameState::checked_locations() const

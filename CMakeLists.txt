@@ -58,6 +58,7 @@ endmacro()
 
 # Wrap JSON model files and assets into automated .hxx headers
 wrapped_dependency(TEXT src/data/item_source.json ITEM_SOURCES_JSON)
+wrapped_dependency(TEXT src/data/trackable_regions.json TRACKABLE_REGIONS_JSON)
 
 set(SOURCES
         extlibs/imgui/imgui.cpp
@@ -68,6 +69,7 @@ set(SOURCES
         extlibs/imgui/imgui_demo.cpp
 
         src/data/item_source.json.hxx
+        src/data/trackable_regions.json.hxx
 
         src/main.cpp
         src/client.hpp
@@ -91,8 +93,10 @@ set(SOURCES
         src/emulator_interface.hpp
         src/retroarch_mem_interface.cpp
         src/retroarch_mem_interface.hpp
+
         src/trackable_item.hpp
-)
+        src/trackable_region.hpp
+        src/trackable_region.cpp)
 
 add_executable(randstalker_archipelago "${SOURCES}")
 target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32 libssl libcrypto crypt32)

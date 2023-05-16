@@ -34,6 +34,7 @@ public:
 
     [[nodiscard]] const std::vector<Location>& locations() const { return _locations; }
     [[nodiscard]] std::vector<Location>& locations() { return _locations; }
+    [[nodiscard]] const Location* location(const std::string& name) const;
 
     [[nodiscard]] bool must_send_checked_locations() const { return _must_send_checked_locations; }
     void must_send_checked_locations(bool val) { _must_send_checked_locations = val; }

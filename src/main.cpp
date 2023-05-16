@@ -41,6 +41,8 @@ constexpr uint8_t DEATHLINK_STATE_WAIT_FOR_RESURRECT = 2;
 constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
 #define PRESET_FILE_PATH "./_ap_preset.json"
 
+void poll_emulator();
+
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
 // =============================================================================================
@@ -96,6 +98,9 @@ void connect_emu()
         }
 
         Logger::info("Successfully connected to Retroarch.");
+
+        poll_emulator();
+        ui.update_map_tracker_logic();
     }
     catch(EmulatorException& e)
     {
@@ -123,7 +128,12 @@ void poll_archipelago()
 
     if(game_state.must_send_checked_locations())
     {
+        // Send newly checked locations to server
         archipelago->send_checked_locations_to_server(game_state.checked_locations());
+
+        // Update logic for the map tracker
+        ui.update_map_tracker_logic();
+
         game_state.must_send_checked_locations(false);
     }
 
