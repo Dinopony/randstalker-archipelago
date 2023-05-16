@@ -339,9 +339,9 @@ float UserInterface::draw_item_tracker_window() const
     return window_height + MARGIN*2;
 }
 
-void UserInterface::draw_status_window()
+void UserInterface::draw_status_window() const
 {
-    ImGui::SetNextWindowPos(ImVec2(MARGIN, _window_height - (MARGIN + STATUS_WINDOW_H)));
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, (float)_window_height - (MARGIN + STATUS_WINDOW_H)));
     ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, STATUS_WINDOW_H));
     ImGui::Begin("Status", nullptr, WINDOW_FLAGS);
     {
@@ -478,10 +478,7 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
 
             ImGui::DrawRectFilled(rectangle, color, 0.f, 0);
             if(draw_border)
-            {
-                sf::Color border_color = (_selected_region == region) ? sf::Color(255, 220, 0) : sf::Color::Black;
-                ImGui::DrawRect(rectangle, border_color);
-            }
+                ImGui::DrawRect(rectangle, sf::Color::Black);
 
             ImGui::SetCursorPos(ImVec2(map_origin_x + rectangle.left, map_origin_y + rectangle.top));
             ImGui::Dummy(ImVec2(rectangle.width, rectangle.height));
@@ -500,6 +497,21 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
                         _selected_region = nullptr;
                 }
             }
+        }
+
+        // Draw a yellow outline around the selected region if there is one
+        if(_selected_region)
+        {
+            ImGui::SetCursorPos(ImVec2(map_origin_x, map_origin_y));
+            sf::Color border_color =  sf::Color(255, 220, 0);
+            sf::FloatRect rectangle((float)_selected_region->x() * SIZE_UNIT,
+                                    (float)_selected_region->y() * SIZE_UNIT,
+                                    (float)_selected_region->width() * SIZE_UNIT,
+                                    (float)_selected_region->height() * SIZE_UNIT);
+            sf::FloatRect bigger_rect(rectangle.left-1, rectangle.top-1,
+                                      rectangle.width+2, rectangle.height+2);
+            ImGui::DrawRect(rectangle, border_color);
+            ImGui::DrawRect(bigger_rect, border_color);
         }
     }
     float window_height = ImGui::GetWindowHeight();

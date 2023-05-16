@@ -60,7 +60,7 @@ private:
     void draw_emulator_connection_window();
     float draw_item_tracker_window() const;
     void draw_map_tracker_details_window(float y) const;
-    void draw_status_window();
+    void draw_status_window() const;
 
     float draw_map_tracker_window(float x, float y, float width, float height);
     void draw_console_window(float x, float y);
