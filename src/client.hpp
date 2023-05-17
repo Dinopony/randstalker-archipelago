@@ -10,6 +10,7 @@ extern ArchipelagoInterface* archipelago;
 extern EmulatorInterface* emulator;
 extern Logger logger;
 
+void update_map_tracker_logic();
 void connect_ap(std::string host, const std::string& slot_name, const std::string& password);
 void disconnect_ap();
 void connect_emu();

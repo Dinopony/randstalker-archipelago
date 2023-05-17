@@ -137,6 +137,15 @@ bool GameState::item_exists_in_game(uint8_t item_id) const
     return true;
 }
 
+bool GameState::update_inventory_byte(uint8_t byte_id, uint8_t value)
+{
+    if(_inventory_bytes[byte_id] == value)
+        return false;
+
+    _inventory_bytes[byte_id] = value;
+    return true;
+}
+
 uint8_t GameState::owned_item_quantity(uint8_t item_id) const
 {
     uint8_t byte = (item_id / 2);

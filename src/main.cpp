@@ -39,12 +39,39 @@ constexpr uint8_t DEATHLINK_STATE_WAIT_FOR_RESURRECT = 2;
 
 constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
 #define PRESET_FILE_PATH "./_ap_preset.json"
-
-void poll_emulator();
+#define SOLVE_LOGIC_PRESET_FILE_PATH "./_solve_logic.json"
 
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
 // =============================================================================================
+
+void update_map_tracker_logic()
+{
+    if(!ui.map_tracker_open())
+        return;
+
+    nlohmann::json logic_solve_preset = game_state.preset_json();
+    logic_solve_preset["world"].erase("itemSources");
+    logic_solve_preset["world"].erase("hints");
+    logic_solve_preset.erase("seed");
+    for(TrackableItem* item : ui.trackable_items())
+        if(game_state.owned_item_quantity(item->item_id()) > 0)
+            logic_solve_preset["gameSettings"]["startingItems"][item->name()] = 1;
+
+    std::ofstream preset_file(SOLVE_LOGIC_PRESET_FILE_PATH);
+    preset_file << logic_solve_preset.dump();
+    preset_file.close();
+
+    std::string command = "randstalker.exe";
+    command += " --preset=\"" SOLVE_LOGIC_PRESET_FILE_PATH "\"";
+    command += " --solvelogic";
+
+    std::set<std::string> reachable_locations = invoke_randstalker_to_solve_logic(command);
+    for(Location& loc : game_state.locations())
+        loc.reachable(reachable_locations.contains(loc.name()));
+
+    std::filesystem::path(SOLVE_LOGIC_PRESET_FILE_PATH).remove_filename();
+}
 
 void connect_ap(std::string host, const std::string& slot_name, const std::string& password)
 {
@@ -97,9 +124,6 @@ void connect_emu()
         }
 
         Logger::info("Successfully connected to Retroarch.");
-
-        poll_emulator();
-        ui.update_map_tracker_logic();
     }
     catch(EmulatorException& e)
     {
@@ -129,9 +153,6 @@ void poll_archipelago()
     {
         // Send newly checked locations to server
         archipelago->send_checked_locations_to_server(game_state.checked_locations());
-
-        // Update logic for the map tracker
-        ui.update_map_tracker_logic();
 
         game_state.must_send_checked_locations(false);
     }
@@ -203,9 +224,18 @@ void poll_emulator()
     }
 
     // Update inventory bytes for the item tracker
+    bool inventory_changed = false;
     constexpr uint32_t INVENTORY_START_ADDR = 0xFF1040;
     for(uint8_t i=0 ; i<0x20 ; ++i)
-        game_state.update_inventory_byte(i, emulator->read_game_byte(INVENTORY_START_ADDR + i));
+    {
+        uint8_t byte_value = emulator->read_game_byte(INVENTORY_START_ADDR + i);
+        if(game_state.update_inventory_byte(i, byte_value))
+            inventory_changed = true;
+    }
+
+    // If any of the inventory values changed, update logic for the map tracker
+    if(inventory_changed)
+        update_map_tracker_logic();
 
     // Handle deathlink, both ways
     if(game_state.has_deathlink())

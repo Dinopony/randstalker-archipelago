@@ -46,10 +46,11 @@ public:
     void load_personal_settings();
     void save_personal_settings();
 
-    void update_map_tracker_logic();
-
     [[nodiscard]] const char* input_rom_path() const { return _input_rom_path; }
     [[nodiscard]] const char* output_rom_path() const { return _output_rom_path; }
+
+    [[nodiscard]] const std::vector<TrackableItem*>& trackable_items() const { return _trackable_items; }
+    [[nodiscard]] bool map_tracker_open() const { return _map_tracker_open; }
 
 private:
     void init_item_tracker();

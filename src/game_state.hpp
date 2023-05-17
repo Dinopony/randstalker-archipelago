@@ -71,6 +71,6 @@ public:
     [[nodiscard]] const std::string& built_rom_path() const { return _built_rom_path; }
     void built_rom_path(const std::string& val) { _built_rom_path = val; }
 
-    void update_inventory_byte(uint8_t byte_id, uint8_t value) { _inventory_bytes[byte_id] = value; }
+    bool update_inventory_byte(uint8_t byte_id, uint8_t value);
     [[nodiscard]] uint8_t owned_item_quantity(uint8_t item_id) const;
 };

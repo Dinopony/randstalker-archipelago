@@ -225,7 +225,10 @@ void UserInterface::draw_emulator_connection_window()
         ImGui::Dummy(ImVec2(0.f, 1.f));
 
         if(ImGui::Button("Connect to emulator"))
+        {
+            _map_tracker_open = false; // Ensure map tracker is closed by default
             connect_emu();
+        }
     }
     ImGui::End();
 }
@@ -245,7 +248,10 @@ void UserInterface::draw_map_tracker_details_window(float y)
             ImGui::PopStyleColor();
 
             if(ImGui::Button("Open map tracker"))
+            {
                 _map_tracker_open = true;
+                update_map_tracker_logic();
+            }
         }
         ImGui::End();
         return;
@@ -465,7 +471,7 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
     float map_width = SIZE_UNIT * 23;
     float map_height = SIZE_UNIT * 38;
     float map_origin_x = std::round((width - map_width) / 2.f);
-    float map_origin_y = 8;
+    float map_origin_y = 24.f;
     if(height != 0.f)
         map_origin_y = std::round((height - map_height) / 2.f);
 
@@ -959,30 +965,6 @@ void UserInterface::init_map_tracker()
 
     _tex_location_checked = new sf::Texture();
     _tex_location_checked->loadFromFile("images/chest_open.png");
-}
-
-#define SOLVE_LOGIC_PRESET_FILE_PATH "./_solve_logic.json"
-
-void UserInterface::update_map_tracker_logic()
-{
-    nlohmann::json logic_solve_preset = game_state.preset_json();
-    for(TrackableItem* item : _trackable_items)
-        if(game_state.owned_item_quantity(item->item_id()) > 0)
-            logic_solve_preset["gameSettings"]["startingItems"][item->name()] = 1;
-
-    std::ofstream preset_file(SOLVE_LOGIC_PRESET_FILE_PATH);
-    preset_file << logic_solve_preset.dump(4);
-    preset_file.close();
-
-    std::string command = "randstalker.exe";
-    command += " --preset=\"" SOLVE_LOGIC_PRESET_FILE_PATH "\"";
-    command += " --solvelogic";
-
-    std::set<std::string> reachable_locations = invoke_randstalker_to_solve_logic(command);
-    for(Location& loc : game_state.locations())
-        loc.reachable(reachable_locations.contains(loc.name()));
-
-    std::filesystem::path(SOLVE_LOGIC_PRESET_FILE_PATH).remove_filename();
 }
 
 UserInterface::~UserInterface()
