@@ -60,7 +60,6 @@ static json build_randomizer_settings_json(const json& slot_data)
 
     rando_settings["allowSpoilerLog"] = false;
 
-    rando_settings["spawnLocation"] = slot_data["spawn_region"];
     rando_settings["shuffleTrees"] = false;
     rando_settings["enemyJumpingInLogic"] = (slot_data["handle_enemy_jumping_in_logic"] == 1);
     rando_settings["damageBoostingInLogic"] = (slot_data["handle_damage_boosting_in_logic"] == 1);
@@ -74,6 +73,7 @@ static json build_world_json(const json& slot_data, const std::string& player_na
 {
     json world = json::object();
 
+    world["spawnLocation"] = slot_data["spawn_region"];
     world["darkRegion"] = slot_data.at("dark_region");
     world["itemSources"] = json::object();
 
