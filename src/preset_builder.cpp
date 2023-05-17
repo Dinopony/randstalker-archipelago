@@ -115,9 +115,7 @@ static json build_world_json(const json& slot_data, const std::string& player_na
     for(const json& pair : pairs)
         world["teleportTreePairs"].emplace_back(pair);
 
-    world["hints"] = json::object();
-    world["hints"]["Lithograph"] = slot_data["hints"]["Lithograph"];
-    world["hints"]["Oracle Stone"] = slot_data["hints"]["Oracle Stone"];
+    world["hints"] = slot_data["hints"];
 
     return world;
 }
