@@ -15,7 +15,7 @@ private:
     uint16_t _y = 0;
     uint16_t _width = 1;
     uint16_t _height = 1;
-    std::vector<const Location*> _locations;
+    std::vector<Location*> _locations;
     std::set<uint8_t> _hidden_for_goals;
 
 public:
@@ -27,8 +27,8 @@ public:
     [[nodiscard]] uint16_t width() const { return _width; }
     [[nodiscard]] uint16_t height() const { return _height; }
 
-    [[nodiscard]] const std::vector<const Location*>& locations() const { return _locations; }
-    [[nodiscard]] uint32_t checked_locations_count() const;
+    void sort_locations();
+    [[nodiscard]] const std::vector<Location*>& locations() const { return _locations; }
 
     [[nodiscard]] bool is_hidden_for_goal(uint8_t goal_id) const { return _hidden_for_goals.count(goal_id); }
 };

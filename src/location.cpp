@@ -1,7 +1,6 @@
 #include "location.hpp"
 
 #include <iostream>
-#include "retroarch_mem_interface.hpp"
 
 constexpr uint16_t BASE_LOCATION_ID = 4000;
 constexpr uint16_t BASE_GROUND_LOCATION_ID = BASE_LOCATION_ID + 256;
@@ -43,4 +42,11 @@ Location::Location(nlohmann::json& location_data)
         _checked_flag_bit = location_data["flag"]["bit"];
         _id = BASE_REWARD_LOCATION_ID + reward_id;
     }
+}
+
+void Location::reset()
+{
+    _was_checked = false;
+    _reachable = false;
+    _ignored = false;
 }

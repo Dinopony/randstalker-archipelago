@@ -300,21 +300,50 @@ void UserInterface::draw_map_tracker_details_window(float y)
     ImGui::Begin("Locations details", nullptr, WINDOW_FLAGS);
     {
         // Display unchecked locations
-        for(const Location* loc : _selected_region->locations())
+        for(Location* loc : _selected_region->locations())
         {
-            if(loc->was_checked())
-                continue;
+            // Chest icon next to the
+            ImVec4 color_multiplier(1.f, 1.f, 1.f, 1.f);
+            if(loc->ignored() && !loc->was_checked())
+                color_multiplier.w = 0.4;
 
             float initial_cursor_y = ImGui::GetCursorPosY();
-            ImGui::Image((ImTextureID)(uintptr_t)_tex_location->getNativeHandle(), ImVec2(39.f, 39.f));
+
+            sf::Texture* texture = (loc->was_checked()) ? _tex_location_checked : _tex_location;
+            ImTextureID texture_id = (ImTextureID)(uintptr_t)texture->getNativeHandle();
+            ImGui::Image(texture_id, ImVec2(39.f, 39.f), ImVec2(0,0), ImVec2(1,1), color_multiplier);
+            if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(1))
+                loc->toggle_ignored();
+
             float cursor_x_after_image = ImGui::GetCursorStartPos().x + 39.f + 6.f;
             float cursor_y_after_image = ImGui::GetCursorPos().y;
+
+            // Location name
+            if(loc->ignored() || loc->was_checked())
+                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,255,255,128));
 
             ImGui::SetCursorPos(ImVec2(cursor_x_after_image, initial_cursor_y));
             ImGui::TextWrapped("%s", loc->name().c_str());
 
+            if(loc->ignored() || loc->was_checked())
+                ImGui::PopStyleColor();
+
+            // Location status
             ImGui::SetCursorPosX(cursor_x_after_image);
-            if(loc->reachable())
+            if(loc->was_checked())
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,128));
+                ImGui::TextWrapped("Already checked");
+            }
+            else if(loc->ignored())
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 128));
+                if(loc->reachable())
+                    ImGui::TextWrapped("Ignored (can be checked)");
+                else
+                    ImGui::TextWrapped("Ignored (cannot be checked)");
+            }
+            else if(loc->reachable())
             {
                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100, 255, 100, 255));
                 ImGui::TextWrapped("Can be checked");
@@ -328,43 +357,23 @@ void UserInterface::draw_map_tracker_details_window(float y)
 
             ImGui::SetCursorPosX(cursor_x_after_image);
 
-            std::string hint_btn_id = "Hint contents##" + loc->name();
-            if(ImGui::Button(hint_btn_id.c_str()))
-                process_console_input("!hint_location " + loc->name());
-
-            ImGui::SameLine();
-            std::string where_is_it_btn_id = "Where is it?##" + loc->name();
-            if(ImGui::Button(where_is_it_btn_id.c_str()))
-            {
-                std::string url = "https://imgur.com/a/FnN7Akx";
-                ShellExecuteA(nullptr, "open", url.c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
-            }
-
-            if(ImGui::GetCursorPosY() < cursor_y_after_image)
-                ImGui::SetCursorPosY(cursor_y_after_image);
-            ImGui::Separator();
-        }
-
-        // Display already checked locations
-        for(const Location* loc : _selected_region->locations())
-        {
             if(!loc->was_checked())
-                continue;
+            {
+                std::string hint_btn_id = "Hint contents##" + loc->name();
+                if(ImGui::Button(hint_btn_id.c_str()))
+                    process_console_input("!hint_location " + loc->name());
 
-            float initial_cursor_y = ImGui::GetCursorPosY();
-            ImGui::Image((ImTextureID)(uintptr_t)_tex_location_checked->getNativeHandle(), ImVec2(39.f, 39.f));
-            float cursor_x_after_image = ImGui::GetCursorStartPos().x + 39.f + 6.f;
-            float cursor_y_after_image = ImGui::GetCursorPos().y;
+                ImGui::SameLine();
+                std::string ignore_button_label = (loc->ignored()) ? "Restore" : "Ignore";
+                ignore_button_label += "##" + loc->name();
+                if(ImGui::Button(ignore_button_label.c_str()))
+                    loc->toggle_ignored();
 
-            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,255,255,128));
-            ImGui::SetCursorPos(ImVec2(cursor_x_after_image, initial_cursor_y));
-            ImGui::TextWrapped("%s", loc->name().c_str());
-            ImGui::PopStyleColor();
-
-            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,128));
-            ImGui::SetCursorPosX(cursor_x_after_image);
-            ImGui::TextWrapped("Already checked");
-            ImGui::PopStyleColor();
+                    ImGui::SameLine();
+                    std::string where_is_it_btn_id = "Where is it?##" + loc->name();
+                    if(ImGui::Button(where_is_it_btn_id.c_str()))
+                        ShellExecuteA(nullptr, "open", loc->url().c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
+            }
 
             if(ImGui::GetCursorPosY() < cursor_y_after_image)
                 ImGui::SetCursorPosY(cursor_y_after_image);
@@ -531,39 +540,35 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
                                     (float)region->width() * SIZE_UNIT, (float)region->height() * SIZE_UNIT);
 
             uint32_t locations_count = region->locations().size();
-            uint32_t checked_locations_count = region->checked_locations_count();
-
             bool draw_border = (locations_count > 0);
 
-            bool contains_at_least_one_reachable = false;
-            bool contains_at_least_one_unreachable = false;
+            uint32_t checked_count = 0;
+            uint32_t reachable_count = 0;
+            uint32_t unreachable_count = 0;
+            uint32_t ignored_count = 0;
             for(const Location* loc : region->locations())
             {
                 if(loc->was_checked())
-                    continue;
-
-                if(loc->reachable())
-                    contains_at_least_one_reachable = true;
+                    checked_count += 1;
+                else if(loc->ignored())
+                    ignored_count += 1;
+                else if(loc->reachable())
+                    reachable_count += 1;
                 else
-                    contains_at_least_one_unreachable = true;
+                    unreachable_count += 1;
             }
 
             sf::Color color(128,128,128);
             if(locations_count > 0)
             {
-                if(locations_count == checked_locations_count)
-                    color = sf::Color(20, 80, 20);
-                else if(contains_at_least_one_unreachable)
-                {
-                    if(contains_at_least_one_reachable)
-                        color = sf::Color(255, 160, 60); // Mixed reachable / unreachable => orange
-                    else
-                        color = sf::Color(200, 60, 60); // Fully unreachable => red
-                }
-                else if(contains_at_least_one_reachable)
-                {
+                if((checked_count + ignored_count) == locations_count)
+                    color = sf::Color(20, 80, 20); // All locations are either checked or ignored => dark green
+                else if(reachable_count > 0 && unreachable_count > 0)
+                    color = sf::Color(255, 160, 60); // Mixed reachable / unreachable => orange
+                else if(reachable_count > 0)
                     color = sf::Color(60, 200, 60); // Fully reachable => green
-                }
+                else /* if(unreachable_count > 0) */
+                    color = sf::Color(200, 60, 60); // Fully unreachable => red
             }
 
             ImGui::DrawRectFilled(rectangle, color, 0.f, 0);
@@ -574,17 +579,24 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
             ImGui::Dummy(ImVec2(rectangle.width, rectangle.height));
             if (!region->name().empty() && ImGui::IsItemHovered())
             {
-                ImGui::SetTooltip("%s\n%u/%u locations checked",
-                                  region->name().c_str(),
-                                  checked_locations_count,
-                                  locations_count);
+                ImGui::SetTooltip("%s\n%u/%u locations checked", region->name().c_str(), checked_count, locations_count);
 
                 if(locations_count > 0 && ImGui::IsMouseReleased(0))
                 {
                     if(_selected_region != region)
+                    {
                         _selected_region = region;
+                        _selected_region->sort_locations();
+                    }
                     else
                         _selected_region = nullptr;
+                }
+
+                if(ImGui::IsMouseReleased(1))
+                {
+                    for(Location* loc : region->locations())
+                        if(loc->reachable() && !loc->was_checked())
+                            loc->ignored(true);
                 }
             }
         }

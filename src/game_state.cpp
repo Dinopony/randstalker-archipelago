@@ -38,10 +38,7 @@ void GameState::reset()
     _jewel_count = 0;
 
     for(Location& location : _locations)
-    {
-        location.was_checked(false);
-        location.reachable(false);
-    }
+        location.reset();
 }
 
 uint8_t GameState::item_with_index(uint16_t received_item_index) const
@@ -63,9 +60,9 @@ void GameState::set_received_item(uint16_t index, uint8_t item)
     _received_items[index] = item;
 }
 
-const Location* GameState::location(const std::string& name) const
+Location* GameState::location(const std::string& name)
 {
-    for(const Location& loc : _locations)
+    for(Location& loc : _locations)
         if(loc.name() == name)
             return &loc;
     return nullptr;

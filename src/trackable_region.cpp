@@ -17,7 +17,7 @@ TrackableRegion::TrackableRegion(const nlohmann::json& json)
     {
         for(std::string loc_name : json.at("locations"))
         {
-            const Location* loc = game_state.location(loc_name);
+            Location* loc = game_state.location(loc_name);
             if(loc)
                 _locations.emplace_back(loc);
         }
@@ -29,11 +29,28 @@ TrackableRegion::TrackableRegion(const nlohmann::json& json)
     }
 }
 
-uint32_t TrackableRegion::checked_locations_count() const
+void TrackableRegion::sort_locations()
 {
-    uint32_t count = 0;
-    for(const Location* loc : _locations)
+    auto get_location_value = [](const Location* loc) -> uint8_t
+    {
         if(loc->was_checked())
-            count += 1;
-    return count;
+            return 3;
+        else if(loc->ignored())
+            return 2;
+        else if(!loc->reachable())
+            return 1;
+        return 0;
+    };
+
+    auto sorting_func = [get_location_value](const Location* a, const Location* b) -> bool
+    {
+        int a_value = get_location_value(a);
+        int b_value = get_location_value(b);
+
+        if(a_value != b_value)
+            return a_value < b_value;
+        return a->name() < b->name();
+    };
+
+    std::sort(_locations.begin(), _locations.end(), sorting_func);
 }

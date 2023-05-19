@@ -11,10 +11,13 @@ private:
     uint8_t _checked_flag_bit = 0x00;
     bool _was_checked = false;
     bool _reachable = false;
+    bool _ignored = false;
 
 public:
     Location() = default;
     explicit Location(nlohmann::json& location_data);
+
+    void reset();
 
     [[nodiscard]] uint16_t id() const { return _id; }
     [[nodiscard]] const std::string& name() const { return _name; }
@@ -26,4 +29,8 @@ public:
 
     [[nodiscard]] bool reachable() const { return _reachable; }
     void reachable(bool reachable) { _reachable = reachable; }
+
+    [[nodiscard]] bool ignored() const { return _ignored; }
+    void ignored(bool val) { _ignored = val; }
+    void toggle_ignored() { _ignored = !_ignored; }
 };
