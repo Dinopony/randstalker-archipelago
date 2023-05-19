@@ -100,10 +100,12 @@ void UserInterface::draw_archipelago_connection_window()
         ImGui::Separator(); // --------------------------------------------------------
         ImGui::Dummy(ImVec2(0.f, 1.f));
 
-        if(!archipelago)
+        if(!multiworld)
         {
             if(ImGui::Button("Connect to Archipelago"))
                 connect_ap(_host, _slot_name, _password);
+            if(ImGui::Button("Play offline (single world)"))
+                initiate_solo_session();
         }
         else
         {
@@ -176,21 +178,55 @@ void UserInterface::draw_rom_generation_window()
             }
         }
 
-        ImGui::Dummy(ImVec2(0.f, 2.f));
-        ImGui::Separator(); // --------------------------------------------------------
-        ImGui::Dummy(ImVec2(0.f, 1.f));
+        ImGui::Dummy(ImVec2(0.f, 4.f));
 
         ImGui::Checkbox("Remove music", &_remove_music);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+        if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Removes in-game music, but keeps sound effects untouched");
 
         ImGui::Checkbox("Swap overworld music", &_swap_overworld_music);
-        if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+        if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Swap the music before and after taking boat to Verla");
 
         ImGui::Dummy(ImVec2(0.f, 2.f));
         ImGui::Separator(); // --------------------------------------------------------
         ImGui::Dummy(ImVec2(0.f, 1.f));
+
+        if(multiworld->is_offline_session())
+        {
+            if(_presets.empty())
+                ImGui::BeginDisabled();
+
+            ImGui::RadioButton("Generate from preset", &_offline_generation_mode, 0);
+            ImGui::RadioButton("Generate from permalink", &_offline_generation_mode, 1);
+
+            ImGui::Dummy(ImVec2(0.f, 2.f));
+            ImGui::PushItemWidth(-1);
+            if(_offline_generation_mode == 0)
+            {
+                const char* preview_value = (_presets.empty()) ? "No preset found" : _presets[_selected_preset].c_str();
+                if (ImGui::BeginCombo("##presetCombo", preview_value))
+                {
+                    for (int i=0 ; i<_presets.size() ; ++i)
+                    {
+                        bool is_selected = (_selected_preset == i);
+                        if (ImGui::Selectable(_presets[i].c_str(), is_selected))
+                            _selected_preset = i;
+                        if (is_selected)
+                            ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+            }
+            else // if(_offline_generation_mode == 1)
+            {
+                ImGui::InputText("##Permalink", _permalink, 1024);
+            }
+
+            ImGui::Dummy(ImVec2(0.f, 2.f));
+            ImGui::Separator(); // --------------------------------------------------------
+            ImGui::Dummy(ImVec2(0.f, 1.f));
+        }
 
         if(ImGui::Button("Build ROM"))
         {
@@ -358,7 +394,7 @@ float UserInterface::draw_item_tracker_window() const
 
             ImGui::SetCursorPos(ImVec2(MARGIN + item->x(), MARGIN + item->y()));
             ImGui::Image((ImTextureID) item->get_texture_id(), wsize, ImVec2(0,0), ImVec2(1,1), color_multipler);
-            if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if (ImGui::IsItemHovered())
             {
                 std::string suffix = (!item_owned) ? "\n\n(Right-click to get a hint for this item)" : "";
                 if(item_owned)
@@ -388,13 +424,16 @@ void UserInterface::draw_status_window() const
     {
         ImGui::Text("Archipelago Server:");
         ImGui::SameLine();
-        if(archipelago && archipelago->is_connected())
+        if(multiworld && multiworld->is_connected())
         {
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-            ImGui::Text("Connected");
+            if(multiworld->is_offline_session())
+                ImGui::Text("Offline session");
+            else
+                ImGui::Text("Connected");
             ImGui::PopStyleColor();
         }
-        else if(archipelago)
+        else if(multiworld)
         {
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 200, 0, 255));
             ImGui::Text("Connecting...");
@@ -444,7 +483,7 @@ void UserInterface::draw_status_window() const
         ImGui::Separator(); // --------------------------------------------
         ImGui::Dummy(ImVec2(0.f, 1.f));
 
-        if(archipelago && archipelago->is_connected())
+        if(multiworld && multiworld->is_connected())
         {
             if(ImGui::Button("Disconnect from server"))
                 disconnect_ap();
@@ -533,7 +572,7 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
 
             ImGui::SetCursorPos(ImVec2(map_origin_x + rectangle.left, map_origin_y + rectangle.top));
             ImGui::Dummy(ImVec2(rectangle.width, rectangle.height));
-            if (!region->name().empty() && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if (!region->name().empty() && ImGui::IsItemHovered())
             {
                 ImGui::SetTooltip("%s\n%u/%u locations checked",
                                   region->name().c_str(),
@@ -649,6 +688,7 @@ void UserInterface::draw_console_window(float x, float y)
 
 void UserInterface::open()
 {
+    this->init_presets_list();
     this->init_item_tracker();
     this->init_map_tracker();
     this->load_personal_settings();
@@ -721,7 +761,7 @@ void UserInterface::loop(sf::RenderWindow& window)
         ImGui::SFML::Update(window, delta_clock.restart());
 
         // Draw left panel windows
-        if(!archipelago || !archipelago->is_connected())
+        if(!multiworld || !multiworld->is_connected())
             draw_archipelago_connection_window();
         else if(!game_state.has_built_rom())
             draw_rom_generation_window();
@@ -736,7 +776,7 @@ void UserInterface::loop(sf::RenderWindow& window)
 
         // Draw right panel windows
         float right_panel_x_start = LEFT_PANEL_WIDTH + 2*MARGIN;
-        if(!archipelago || !archipelago->is_connected() || !game_state.has_built_rom() || !emulator)
+        if(!multiworld || !multiworld->is_connected() || !game_state.has_built_rom() || !emulator)
         {
             // Map tracker doesn't need to be drawn, just fill the remaining space with the console window
             draw_console_window(right_panel_x_start, MARGIN);
@@ -965,6 +1005,32 @@ void UserInterface::init_map_tracker()
 
     _tex_location_checked = new sf::Texture();
     _tex_location_checked->loadFromFile("images/chest_open.png");
+}
+
+void UserInterface::init_presets_list()
+{
+    std::string path = "./presets/";
+    if(!std::filesystem::exists(path))
+        std::filesystem::create_directory(path);
+
+    for(const auto& file : std::filesystem::directory_iterator(path))
+    {
+        if(!file.path().string().ends_with(".json"))
+            return;
+
+        // Remove both the directory and the file extension parts of the path, only to keep the preset filename
+        std::string preset_name = file.path().string();
+        size_t idx = preset_name.find_last_of('/') + 1;
+        preset_name = preset_name.substr(idx, preset_name.size() - idx - 5);
+
+        if(preset_name == "default")
+            _selected_preset = _presets.size();
+
+        _presets.emplace_back(preset_name);
+    }
+
+    if(_presets.empty())
+        _offline_generation_mode = 1; // Force permalink mode if there are no presets
 }
 
 UserInterface::~UserInterface()

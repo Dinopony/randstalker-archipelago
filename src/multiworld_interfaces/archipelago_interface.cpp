@@ -1,13 +1,13 @@
 #include "archipelago_interface.hpp"
 
 #include <utility>
-#include <apclient.hpp>
-#include <apuuid.hpp>
+#include "apclient.hpp"
+#include "apuuid.hpp"
 #include <fstream>
 
-#include "client.hpp"
-#include "game_state.hpp"
-#include "logger.hpp"
+#include "../client.hpp"
+#include "../game_state.hpp"
+#include "../logger.hpp"
 
 #define GAME_NAME "Landstalker - The Treasures of King Nole"
 #define DATAPACKAGE_CACHE_FILE "datapackage.json"

@@ -70,8 +70,23 @@ set(SOURCES
         extlibs/imgui/imgui_demo.cpp
 
         src/data/item_source.json.hxx
+
         src/data/trackable_regions.json.hxx
+        src/trackable_region.hpp
+        src/trackable_region.cpp
+
         src/data/trackable_items.json.hxx
+        src/trackable_item.hpp
+        src/trackable_item.cpp
+
+        src/emulator_interfaces/emulator_interface.hpp
+        src/emulator_interfaces/retroarch_mem_interface.cpp
+        src/emulator_interfaces/retroarch_mem_interface.hpp
+
+        src/multiworld_interfaces/multiworld_interface.hpp
+        src/multiworld_interfaces/archipelago_interface.hpp
+        src/multiworld_interfaces/archipelago_interface.cpp
+        src/multiworld_interfaces/offline_play_interface.hpp
 
         src/main.cpp
         src/client.hpp
@@ -85,21 +100,9 @@ set(SOURCES
         src/user_interface.cpp
         src/logger.hpp
         src/logger.cpp
-
-        src/archipelago_interface.hpp
-        src/archipelago_interface.cpp
-
         src/randstalker_invoker.cpp
         src/randstalker_invoker.hpp
-
-        src/emulator_interface.hpp
-        src/retroarch_mem_interface.cpp
-        src/retroarch_mem_interface.hpp
-
-        src/trackable_item.hpp
-        src/trackable_item.cpp
-        src/trackable_region.hpp
-        src/trackable_region.cpp)
+        )
 
 add_executable(randstalker_archipelago "${SOURCES}")
 target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32 libssl libcrypto crypt32)

@@ -1,13 +1,14 @@
 #pragma once
 
-#include "preset_builder.hpp"
+#include "multiworld_interface.hpp"
+#include "../preset_builder.hpp"
 #include <set>
 
 using nlohmann::json;
 
 class APClient;
 
-class ArchipelagoInterface {
+class ArchipelagoInterface : public MultiworldInterface {
 private:
     APClient* _client = nullptr;
     bool _connected = false;
@@ -17,17 +18,18 @@ private:
 
 public:
     explicit ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password);
-    virtual ~ArchipelagoInterface();
+    ~ArchipelagoInterface() override;
 
-    void poll();
-    void send_checked_locations_to_server(const std::vector<int64_t>& checked_locations);
+    void poll() override;
+    void send_checked_locations_to_server(const std::vector<int64_t>& checked_locations) override;
+    void say(const std::string& msg) override;
+    void notify_game_completed() override;
+    void notify_death() override;
 
-    void say(const std::string& msg);
-    [[nodiscard]] bool is_connected() const;
-    [[nodiscard]] bool connection_failed() const { return _connection_failed; }
-    [[nodiscard]] const std::string& player_name() const { return _slot_name; }
-    void notify_game_completed();
-    void notify_death();
+    [[nodiscard]] bool is_connected() const override;
+    [[nodiscard]] bool is_offline_session() const override { return false; }
+    [[nodiscard]] bool connection_failed() const override { return _connection_failed; }
+    [[nodiscard]] std::string player_name() const override { return _slot_name; }
 
 private:
     void init_handlers();

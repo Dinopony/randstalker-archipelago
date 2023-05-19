@@ -22,6 +22,11 @@ private:
     bool _remove_music = false;
     bool _swap_overworld_music = false;
 
+    int _offline_generation_mode = 0; ///< 0 = preset, 1 = permalink
+    int _selected_preset = 0;
+    char _permalink[1024] = "";
+    std::vector<std::string> _presets;
+
     int _window_x = -1;
     int _window_y = -1;
     uint32_t _window_width = 1000;
@@ -52,9 +57,14 @@ public:
     [[nodiscard]] const std::vector<TrackableItem*>& trackable_items() const { return _trackable_items; }
     [[nodiscard]] bool map_tracker_open() const { return _map_tracker_open; }
 
+    [[nodiscard]] int offline_generation_mode() const { return _offline_generation_mode; }
+    [[nodiscard]] const std::string& selected_preset() const { return _presets.at(_selected_preset); }
+    [[nodiscard]] std::string permalink() const { return _permalink; }
+
 private:
     void init_item_tracker();
     void init_map_tracker();
+    void init_presets_list();
 
     void loop(sf::RenderWindow& window);
 

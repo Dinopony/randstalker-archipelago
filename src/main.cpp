@@ -3,10 +3,12 @@
 #include <thread>
 #include <fstream>
 #include <filesystem>
+#include <random>
 #include <landstalker_lib/constants/item_codes.hpp>
 
-#include "archipelago_interface.hpp"
-#include "retroarch_mem_interface.hpp"
+#include "multiworld_interfaces/archipelago_interface.hpp"
+#include "multiworld_interfaces/offline_play_interface.hpp"
+#include "emulator_interfaces/retroarch_mem_interface.hpp"
 #include "game_state.hpp"
 #include "user_interface.hpp"
 #include "logger.hpp"
@@ -21,7 +23,7 @@
 
 UserInterface ui;
 GameState game_state;
-ArchipelagoInterface* archipelago = nullptr;
+MultiworldInterface* multiworld = nullptr;
 EmulatorInterface* emulator = nullptr;
 std::mutex session_mutex;
 
@@ -38,8 +40,17 @@ constexpr uint8_t DEATHLINK_STATE_RECEIVED_DEATH = 1;
 constexpr uint8_t DEATHLINK_STATE_WAIT_FOR_RESURRECT = 2;
 
 constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
-#define PRESET_FILE_PATH "./_ap_preset.json"
+
+#define INTERNAL_PRESET_FILE_PATH "./_preset.json"
 #define SOLVE_LOGIC_PRESET_FILE_PATH "./_solve_logic.json"
+
+static uint32_t generate_random_seed()
+{
+    std::random_device seeder;
+    std::mt19937 rng(seeder());
+    std::uniform_int_distribution<> distribution(INT32_MIN, INT32_MAX);
+    return static_cast<uint32_t>(distribution(rng));
+}
 
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
@@ -51,9 +62,14 @@ void update_map_tracker_logic()
         return;
 
     nlohmann::json logic_solve_preset = game_state.preset_json();
-    logic_solve_preset["world"].erase("itemSources");
-    logic_solve_preset["world"].erase("hints");
-    logic_solve_preset.erase("seed");
+    if(logic_solve_preset.contains("world"))
+    {
+        if(logic_solve_preset["world"].contains("itemSources"))
+            logic_solve_preset["world"].erase("itemSources");
+        if(logic_solve_preset["world"].contains("hints"))
+            logic_solve_preset["world"].erase("hints");
+    }
+
     for(TrackableItem* item : ui.trackable_items())
         if(game_state.owned_item_quantity(item->item_id()) > 0)
             logic_solve_preset["gameSettings"]["startingItems"][item->name()] = 1;
@@ -73,6 +89,14 @@ void update_map_tracker_logic()
     std::filesystem::path(SOLVE_LOGIC_PRESET_FILE_PATH).remove_filename();
 }
 
+void initiate_solo_session()
+{
+    session_mutex.lock();
+    game_state.reset();
+    multiworld = new OfflinePlayInterface();
+    session_mutex.unlock();
+}
+
 void connect_ap(std::string host, const std::string& slot_name, const std::string& password)
 {
     if(host.empty())
@@ -81,7 +105,7 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
         return;
     }
 
-    if(archipelago)
+    if(multiworld)
     {
         Logger::error("Cannot connect when there is an active connection going on. Please disconnect first.");
         return;
@@ -93,7 +117,7 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
     session_mutex.lock();
     Logger::info("Attempting to connect to Archipelago server at '" + host + "'...");
     game_state.reset();
-    archipelago = new ArchipelagoInterface(host, slot_name, password);
+    multiworld = new ArchipelagoInterface(host, slot_name, password);
     session_mutex.unlock();
 }
 
@@ -101,8 +125,8 @@ void disconnect_ap()
 {
     Logger::info("Disconnecting from Archipelago server...");
     session_mutex.lock();
-    delete archipelago;
-    archipelago = nullptr;
+    delete multiworld;
+    multiworld = nullptr;
     delete emulator;
     emulator = nullptr;
     game_state.reset();
@@ -116,7 +140,7 @@ void connect_emu()
     {
         emulator = new RetroarchMemInterface();
 
-        if(emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
+        if(!multiworld->is_offline_session() && emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
         {
             delete emulator;
             emulator = nullptr;
@@ -134,35 +158,35 @@ void connect_emu()
 
 void poll_archipelago()
 {
-    if(!archipelago)
+    if(!multiworld)
         return;
 
-    archipelago->poll();
+    multiworld->poll();
 
-    if(archipelago->connection_failed())
+    if(multiworld->connection_failed())
     {
-        delete archipelago;
-        archipelago = nullptr;
+        delete multiworld;
+        multiworld = nullptr;
         return;
     }
 
-    if(!archipelago->is_connected())
+    if(!multiworld->is_connected())
         return;
 
     if(game_state.must_send_checked_locations())
     {
         // Send newly checked locations to server
-        archipelago->send_checked_locations_to_server(game_state.checked_locations());
+        multiworld->send_checked_locations_to_server(game_state.checked_locations());
 
         game_state.must_send_checked_locations(false);
     }
 
     if(game_state.has_won())
-        archipelago->notify_game_completed();
+        multiworld->notify_game_completed();
 
     if(game_state.must_send_death())
     {
-        archipelago->notify_death();
+        multiworld->notify_death();
         game_state.must_send_death(false);
     }
 }
@@ -274,9 +298,10 @@ static std::string get_output_rom_path()
     if(!output_path.ends_with("/"))
         output_path += "/";
 
-    output_path += "AP_";
-    if(archipelago)
-        output_path += archipelago->player_name() + "_";
+    if(multiworld && !multiworld->is_offline_session())
+        output_path += "AP_" + multiworld->player_name() + "_";
+    else
+        output_path += "SP_";
     output_path += std::to_string(game_state.expected_seed()) + ".md";
 
     return output_path;
@@ -295,14 +320,44 @@ void check_rom_existence()
 
 std::string build_rom()
 {
-    session_mutex.lock();
-    std::string output_path = get_output_rom_path();
-
     Logger::info("Building ROM...");
 
-    std::ofstream preset_file(PRESET_FILE_PATH);
-    preset_file << game_state.preset_json().dump(4);
+    session_mutex.lock();
+
+    if(multiworld->is_offline_session())
+    {
+        if(ui.offline_generation_mode() == 0)
+        {
+            // If we are building an offline seed from a preset file, update GameState with the preset JSON contents
+            nlohmann::json preset_json;
+            std::ifstream preset_file("./presets/" + ui.selected_preset() + ".json");
+            if(preset_file.is_open())
+            {
+                preset_file >> preset_json;
+                preset_file.close();
+            }
+
+            game_state.expected_seed(generate_random_seed());
+            preset_json["seed"] = game_state.expected_seed();
+            game_state.preset_json(preset_json);
+        }
+        else
+        {
+            // If we are building an offline seed from a permalink, create a "permalink shell" preset JSON and update
+            // GameState accordingly
+            nlohmann::json preset_json = nlohmann::json::object();
+            preset_json["permalink"] = ui.permalink();
+            game_state.preset_json(preset_json);
+        }
+    }
+
+    // Save the preset as a internal file that can be used by randstalker.exe
+    std::ofstream preset_file(INTERNAL_PRESET_FILE_PATH);
+    preset_file << game_state.preset_json().dump();
     preset_file.close();
+
+    std::string output_path = get_output_rom_path();
+
     session_mutex.unlock();
 
     ui.save_personal_settings();
@@ -310,12 +365,13 @@ std::string build_rom()
     std::string command = "randstalker.exe";
     command += " --inputrom=\"" + std::string(ui.input_rom_path()) + "\"";
     command += " --outputrom=\"" + output_path + "\"";
-    command += " --preset=\"" PRESET_FILE_PATH "\"";
+    command += " --preset=\"" INTERNAL_PRESET_FILE_PATH "\"";
     command += " --nostdin";
 
     bool success = invoke(command);
+
 #ifndef DEBUG
-    std::filesystem::path(PRESET_FILE_PATH).remove_filename();
+    std::filesystem::path(INTERNAL_PRESET_FILE_PATH).remove_filename();
 #endif
 
     if(success)
@@ -387,9 +443,9 @@ void process_console_input(const std::string& input)
 
         Logger::message("Thanks for playing :)");
     }
-    else if(archipelago)
+    else if(multiworld)
     {
-        archipelago->say(input);
+        multiworld->say(input);
     }
     else
     {
