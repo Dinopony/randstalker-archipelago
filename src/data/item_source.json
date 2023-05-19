@@ -3,55 +3,64 @@
         "name": "Swamp Shrine (0F): chest in room to the right",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 0
+        "chestId": 0,
+        "url": "https://imgur.com/VArXgLi"
     },
     {
         "name": "Swamp Shrine (0F): chest in carpet room",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 1
+        "chestId": 1,
+        "url": "https://imgur.com/0FPH4CV"
     },
     {
         "name": "Swamp Shrine (0F): chest in left hallway (accessed by falling from upstairs)",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 2
+        "chestId": 2,
+        "url": "https://imgur.com/MJVtTJl"
     },
     {
         "name": "Swamp Shrine (0F): falling chest after beating orc",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 3
+        "chestId": 3,
+        "url": "https://imgur.com/HQw2aFO"
     },
     {
         "name": "Swamp Shrine (0F): chest in room visible from second entrance",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 4
+        "chestId": 4,
+        "url": "https://imgur.com/dr7WqP8"
     },
     {
         "name": "Swamp Shrine (1F): lower chest in wooden bridges room",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 5
+        "chestId": 5,
+        "url": "https://imgur.com/8w8lwZ9"
     },
     {
         "name": "Swamp Shrine (2F): upper chest in wooden bridges room",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 6
+        "chestId": 6,
+        "url": "https://imgur.com/ViOvGsm"
     },
     {
         "name": "Swamp Shrine (2F): chest on spiked floor room balcony",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 7
+        "chestId": 7,
+        "url": "https://imgur.com/Fqy4SrC"
     },
     {
         "name": "Swamp Shrine (3F): chest in boss arena",
         "type": "chest",
         "nodeId": "swamp_shrine",
-        "chestId": 8
+        "chestId": 8,
+        "url": "https://imgur.com/5PvovM0"
     },
     {
         "name": "Mercator Dungeon (-1F): chest on elevated path near entrance",
@@ -60,7 +69,8 @@
         "hints": [
             "hidden in the depths of Mercator"
         ],
-        "chestId": 9
+        "chestId": 9,
+        "url": "https://imgur.com/iauhhjc"
     },
     {
         "name": "Mercator Dungeon (-1F): chest in Moralis's cell",
@@ -69,7 +79,8 @@
         "hints": [
             "hidden in the depths of Mercator"
         ],
-        "chestId": 10
+        "chestId": 10,
+        "url": "https://imgur.com/PazFAhl"
     },
     {
         "name": "Mercator Dungeon (-1F): left chest in undeground double chest room",
@@ -78,7 +89,8 @@
         "hints": [
             "hidden in the depths of Mercator"
         ],
-        "chestId": 11
+        "chestId": 11,
+        "url": "https://imgur.com/p4zrnoj"
     },
     {
         "name": "Mercator Dungeon (-1F): right chest in undeground double chest room",
@@ -87,19 +99,22 @@
         "hints": [
             "hidden in the depths of Mercator"
         ],
-        "chestId": 12
+        "chestId": 12,
+        "url": "https://imgur.com/p4zrnoj"
     },
     {
         "name": "Mercator: castle kitchen chest",
         "type": "chest",
         "nodeId": "mercator",
-        "chestId": 13
+        "chestId": 13,
+        "url": "https://imgur.com/nekJQYv"
     },
     {
         "name": "Mercator: chest in special shop backroom",
         "type": "chest",
         "nodeId": "mercator",
-        "chestId": 14
+        "chestId": 14,
+        "url": "https://imgur.com/Lwv13xE"
     },
     {
         "name": "Mercator Dungeon (1F): left chest in tower double chest room",
@@ -108,7 +123,8 @@
         "hints": [
             "inside a tower"
         ],
-        "chestId": 15
+        "chestId": 15,
+        "url": "https://imgur.com/tK7u0Xl"
     },
     {
         "name": "Mercator Dungeon (1F): right chest in tower double chest room",
@@ -117,7 +133,8 @@
         "hints": [
             "inside a tower"
         ],
-        "chestId": 16
+        "chestId": 16,
+        "url": "https://imgur.com/tK7u0Xl"
     },
     {
         "name": "Mercator: chest in castle tower (ladder revealed by slashing armor)",
@@ -126,7 +143,8 @@
         "hints": [
             "inside a tower"
         ],
-        "chestId": 17
+        "chestId": 17,
+        "url": "https://imgur.com/B8mRu6W"
     },
     {
         "name": "Mercator Dungeon (4F): chest in topmost tower room",
@@ -135,7 +153,8 @@
         "hints": [
             "inside a tower"
         ],
-        "chestId": 18
+        "chestId": 18,
+        "url": "https://imgur.com/4KKIBWu"
     },
     {
         "name": "King Nole's Palace: chest at entrance",
@@ -195,169 +214,197 @@
         "name": "Waterfall Shrine: chest under entrance hallway",
         "type": "chest",
         "nodeId": "waterfall_shrine",
-        "chestId": 33
+        "chestId": 33,
+        "url": "https://imgur.com/vWOK9Co"
     },
     {
         "name": "Waterfall Shrine: chest near Prospero",
         "type": "chest",
         "nodeId": "waterfall_shrine",
-        "chestId": 34
+        "chestId": 34,
+        "url": "https://imgur.com/SXPjavA"
     },
     {
         "name": "Waterfall Shrine: chest on right branch of biggest room",
         "type": "chest",
         "nodeId": "waterfall_shrine",
-        "chestId": 35
+        "chestId": 35,
+        "url": "https://imgur.com/7BiOKd6"
     },
     {
         "name": "Waterfall Shrine: upstairs chest",
         "type": "chest",
         "nodeId": "waterfall_shrine",
-        "chestId": 36
+        "chestId": 36,
+        "url": "https://imgur.com/QkGSJml"
     },
     {
         "name": "Thieves Hideout: chest under water in entrance room",
         "type": "chest",
         "nodeId": "thieves_hideout_pre_key",
-        "chestId": 38
+        "chestId": 38,
+        "url": "https://imgur.com/SDl3VcF"
     },
     {
         "name": "Thieves Hideout (back): right chest after teal knight mini-boss",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 41
+        "chestId": 41,
+        "url": "https://imgur.com/LEdVwRT"
     },
     {
         "name": "Thieves Hideout (back): left chest after teal knight mini-boss",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 42
+        "chestId": 42,
+        "url": "https://imgur.com/LEdVwRT"
     },
     {
         "name": "Thieves Hideout: left chest in Pockets cell",
         "type": "chest",
         "nodeId": "thieves_hideout_pre_key",
-        "chestId": 43
+        "chestId": 43,
+        "url": "https://imgur.com/a6QVhRH"
     },
     {
         "name": "Thieves Hideout: right chest in Pockets cell",
         "type": "chest",
         "nodeId": "thieves_hideout_pre_key",
-        "chestId": 44
+        "chestId": 44,
+        "url": "https://imgur.com/a6QVhRH"
     },
     {
         "name": "Thieves Hideout (back): second chest in hallway after quick climb trial",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 45
+        "chestId": 45,
+        "url": "https://imgur.com/1mKW9pN"
     },
     {
         "name": "Thieves Hideout (back): first chest in hallway after quick climb trial",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 46
+        "chestId": 46,
+        "url": "https://imgur.com/1mKW9pN"
     },
     {
         "name": "Thieves Hideout (back): chest in moving platforms room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 47
+        "chestId": 47,
+        "url": "https://imgur.com/LneBc1Q"
     },
     {
         "name": "Thieves Hideout (back): chest in falling platforms room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 48
+        "chestId": 48,
+        "url": "https://imgur.com/m2UMsbM"
     },
     {
         "name": "Thieves Hideout (back): reward chest after moving balls room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 49
+        "chestId": 49,
+        "url": "https://imgur.com/lueFoB8"
     },
     {
         "name": "Thieves Hideout: rolling boulder chest near entrance",
         "type": "chest",
         "nodeId": "thieves_hideout_pre_key",
-        "chestId": 50
+        "chestId": 50,
+        "url": "https://imgur.com/jun9Ghd"
     },
     {
         "name": "Thieves Hideout: left chest in room on the way to goddess statue",
         "type": "chest",
         "nodeId": "thieves_hideout_pre_key",
-        "chestId": 52
+        "chestId": 52,
+        "url": "https://imgur.com/tiR27Mj"
     },
     {
         "name": "Thieves Hideout: right chest in room on the way to goddess statue",
         "type": "chest",
         "nodeId": "thieves_hideout_pre_key",
-        "chestId": 53
+        "chestId": 53,
+        "url": "https://imgur.com/tiR27Mj"
     },
     {
         "name": "Thieves Hideout (back): left chest in room before boss",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 54
+        "chestId": 54,
+        "url": "https://imgur.com/QQjE127"
     },
     {
         "name": "Thieves Hideout (back): right chest in room before boss",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 55
+        "chestId": 55,
+        "url": "https://imgur.com/QQjE127"
     },
     {
         "name": "Thieves Hideout (back): chest #1 in boss reward room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 56
+        "chestId": 56,
+        "url": "https://imgur.com/Oy78tzV"
     },
     {
         "name": "Thieves Hideout (back): chest #2 in boss reward room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 57
+        "chestId": 57,
+        "url": "https://imgur.com/Oy78tzV"
     },
     {
         "name": "Thieves Hideout (back): chest #3 in boss reward room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 58
+        "chestId": 58,
+        "url": "https://imgur.com/Oy78tzV"
     },
     {
         "name": "Thieves Hideout (back): chest #4 in boss reward room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 59
+        "chestId": 59,
+        "url": "https://imgur.com/Oy78tzV"
     },
     {
         "name": "Thieves Hideout (back): chest #5 in boss reward room",
         "type": "chest",
         "nodeId": "thieves_hideout_post_key",
-        "chestId": 60
+        "chestId": 60,
+        "url": "https://imgur.com/Oy78tzV"
     },
     {
         "name": "Verla Mines: right chest in double chest room near entrance",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 66
+        "chestId": 66,
+        "url": "https://imgur.com/RaXpCau"
     },
     {
         "name": "Verla Mines: left chest in double chest room near entrance",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 67
+        "chestId": 67,
+        "url": "https://imgur.com/RaXpCau"
     },
     {
         "name": "Verla Mines: chest on jar staircase room balcony",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 68
+        "chestId": 68,
+        "url": "https://imgur.com/TgwfzgO"
     },
     {
         "name": "Verla Mines: Dex reward chest",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 69
+        "chestId": 69,
+        "url": "https://imgur.com/lCabDLe"
     },
     {
         "name": "Verla Mines: Slasher reward chest",
@@ -366,37 +413,43 @@
         "hints": [
             "kept by a threatening guardian"
         ],
-        "chestId": 70
+        "chestId": 70,
+        "url": "https://imgur.com/fQ0N2Gp"
     },
     {
         "name": "Verla Mines: left chest in 3-chests room near Slasher",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 71
+        "chestId": 71,
+        "url": "https://imgur.com/h15368S"
     },
     {
         "name": "Verla Mines: middle chest in 3-chests room near Slasher",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 72
+        "chestId": 72,
+        "url": "https://imgur.com/h15368S"
     },
     {
         "name": "Verla Mines: right chest in 3-chests room near Slasher",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 73
+        "chestId": 73,
+        "url": "https://imgur.com/h15368S"
     },
     {
         "name": "Verla Mines: right chest in button room near elevator shaft leading to Marley",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 74
+        "chestId": 74,
+        "url": "https://imgur.com/yrnEr28"
     },
     {
         "name": "Verla Mines: left chest in button room near elevator shaft leading to Marley",
         "type": "chest",
         "nodeId": "verla_mines",
-        "chestId": 75
+        "chestId": 75,
+        "url": "https://imgur.com/yrnEr28"
     },
     {
         "name": "Verla Mines: chest in hidden room accessed by walking on lava",
@@ -405,7 +458,8 @@
         "hints": [
             "in a very hot place"
         ],
-        "chestId": 76
+        "chestId": 76,
+        "url": "https://imgur.com/YzWc8SL"
     },
     {
         "name": "Destel Well (0F): 4 crates puzzle room chest",
@@ -784,7 +838,8 @@
         "name": "Route between Gumi and Ryuma: chest on the way to Swordsman Kado",
         "type": "chest",
         "nodeId": "route_gumi_ryuma",
-        "chestId": 134
+        "chestId": 134,
+        "url": "https://imgur.com/uW2LTF6"
     },
     {
         "name": "Route between Massan and Gumi: chest on cliff",
@@ -793,49 +848,57 @@
         "hints": [
             "near a swamp"
         ],
-        "chestId": 135
+        "chestId": 135,
+        "url": "https://imgur.com/9UTYm5C"
     },
     {
         "name": "Route between Mercator and Verla: chest on cliff next to tree",
         "type": "chest",
         "nodeId": "mir_tower_sector",
-        "chestId": 136
+        "chestId": 136,
+        "url": "https://imgur.com/IgJNRgE"
     },
     {
         "name": "Route between Mercator and Verla: chest on cliff next to blocked cave",
         "type": "chest",
         "nodeId": "mir_tower_sector",
-        "chestId": 137
+        "chestId": 137,
+        "url": "https://imgur.com/SNTYZDf"
     },
     {
         "name": "Route between Mercator and Verla: chest near Twinkle village",
         "type": "chest",
         "nodeId": "mir_tower_sector",
-        "chestId": 138
+        "chestId": 138,
+        "url": "https://imgur.com/H1LF1mn"
     },
     {
         "name": "Verla Shore: chest on corner cliff after Verla tunnel",
         "type": "chest",
         "nodeId": "verla_shore",
-        "chestId": 139
+        "chestId": 139,
+        "url": "https://imgur.com/ZFIUrEi"
     },
     {
         "name": "Verla Shore: chest on highest cliff after Verla tunnel (accessible through Verla mines)",
         "type": "chest",
         "nodeId": "verla_shore_cliff",
-        "chestId": 140
+        "chestId": 140,
+        "url": "https://imgur.com/y06HTIs"
     },
     {
         "name": "Route to Mir Tower: chest on cliff accessed by pressing hidden switch",
         "type": "chest",
         "nodeId": "mir_tower_sector",
-        "chestId": 141
+        "chestId": 141,
+        "url": "https://imgur.com/fsoJFDX"
     },
     {
         "name": "Route to Mir Tower: chest behind first sacred tree",
         "type": "chest",
         "nodeId": "mir_tower_sector_tree_ledge",
-        "chestId": 142
+        "chestId": 142,
+        "url": "https://imgur.com/0bZHPaV"
     },
     {
         "name": "Verla Shore: chest behind cabin",
@@ -844,7 +907,8 @@
         "hints": [
             "in a well-hidden chest"
         ],
-        "chestId": 143
+        "chestId": 143,
+        "url": "https://imgur.com/3i0lb6s"
     },
     {
         "name": "Route to Destel: chest in map right after Verla mines exit",
@@ -862,7 +926,8 @@
         "name": "Route to Mir Tower: chest behind second sacred tree",
         "type": "chest",
         "nodeId": "mir_tower_sector_tree_coast",
-        "chestId": 146
+        "chestId": 146,
+        "url": "https://imgur.com/Gkbomlh"
     },
     {
         "name": "Route to Destel: hidden chest in map right before Destel",
@@ -1018,37 +1083,43 @@
         "name": "Greenmaze: chest on path to Cutter",
         "type": "chest",
         "nodeId": "greenmaze_pre_whistle",
-        "chestId": 168
+        "chestId": 168,
+        "url": "https://imgur.com/e9BdEL8"
     },
     {
         "name": "Greenmaze: chest on cliff near the swamp",
         "type": "chest",
         "nodeId": "greenmaze_pre_whistle",
-        "chestId": 169
+        "chestId": 169,
+        "url": "https://imgur.com/B1LisN1"
     },
     {
         "name": "Greenmaze: chest between Sunstone and Massan shortcut",
         "type": "chest",
         "nodeId": "greenmaze_post_whistle",
-        "chestId": 170
+        "chestId": 170,
+        "url": "https://imgur.com/QoCXQhg"
     },
     {
         "name": "Greenmaze: chest in mages room",
         "type": "chest",
         "nodeId": "greenmaze_pre_whistle",
-        "chestId": 171
+        "chestId": 171,
+        "url": "https://imgur.com/WFYJOyH"
     },
     {
         "name": "Greenmaze: left chest in elbow cave",
         "type": "chest",
         "nodeId": "greenmaze_pre_whistle",
-        "chestId": 172
+        "chestId": 172,
+        "url": "https://imgur.com/mdNLywi"
     },
     {
         "name": "Greenmaze: right chest in elbow cave",
         "type": "chest",
         "nodeId": "greenmaze_pre_whistle",
-        "chestId": 173
+        "chestId": 173,
+        "url": "https://imgur.com/mdNLywi"
     },
     {
         "name": "Greenmaze: chest in waterfall cave",
@@ -1057,7 +1128,8 @@
         "hints": [
             "close to a waterfall"
         ],
-        "chestId": 174
+        "chestId": 174,
+        "url": "https://imgur.com/jj6PDwB"
     },
     {
         "name": "Greenmaze: left chest in hidden room behind waterfall",
@@ -1066,7 +1138,8 @@
         "hints": [
             "close to a waterfall"
         ],
-        "chestId": 175
+        "chestId": 175,
+        "url": "https://imgur.com/t7l9IP3"
     },
     {
         "name": "Greenmaze: right chest in hidden room behind waterfall",
@@ -1075,7 +1148,8 @@
         "hints": [
             "close to a waterfall"
         ],
-        "chestId": 176
+        "chestId": 176,
+        "url": "https://imgur.com/t7l9IP3"
     },
     {
         "name": "Massan: chest triggered by dog statue",
@@ -1084,61 +1158,71 @@
         "hints": [
             "in a well-hidden chest"
         ],
-        "chestId": 177
+        "chestId": 177,
+        "url": "https://imgur.com/ut8SYfT"
     },
     {
         "name": "Massan: chest in house nearest to elder house",
         "type": "chest",
         "nodeId": "massan",
-        "chestId": 178
+        "chestId": 178,
+        "url": "https://imgur.com/Abz7U1R"
     },
     {
         "name": "Massan: chest in middle house",
         "type": "chest",
         "nodeId": "massan",
-        "chestId": 179
+        "chestId": 179,
+        "url": "https://imgur.com/coNz3ds"
     },
     {
         "name": "Massan: chest in house farthest from elder house",
         "type": "chest",
         "nodeId": "massan",
-        "chestId": 180
+        "chestId": 180,
+        "url": "https://imgur.com/CnGUdJQ"
     },
     {
         "name": "Gumi: chest on top of bed in house",
         "type": "chest",
         "nodeId": "gumi",
-        "chestId": 181
+        "chestId": 181,
+        "url": "https://imgur.com/bMI5A2Z"
     },
     {
         "name": "Gumi: chest in elder house after saving Fara",
         "type": "chest",
         "nodeId": "gumi_after_swamp_shrine",
-        "chestId": 182
+        "chestId": 182,
+        "url": "https://imgur.com/Ti9PhIO"
     },
     {
         "name": "Ryuma: chest in mayor's house",
         "type": "chest",
         "nodeId": "ryuma",
-        "chestId": 183
+        "chestId": 183,
+        "url": "https://imgur.com/7sbuOch"
     },
     {
         "name": "Ryuma: chest in repaired lighthouse",
         "type": "chest",
         "nodeId": "ryuma_lighthouse_repaired",
-        "chestId": 184
+        "chestId": 184,
+        "url": "https://imgur.com/TrlQOex"
     },
     {
         "name": "Crypt: chest in main room",
         "type": "chest",
         "nodeId": "crypt",
-        "chestId": 185
+        "chestId": 185,
+        "url": "https://imgur.com/3dBu49d"
     },
     {
         "name": "Crypt: reward chest",
         "type": "chest",
         "nodeId": "crypt",
-        "chestId": 186
+        "chestId": 186,
+        "url": "https://imgur.com/XwLqqjt"
     },
     {
         "name": "Mercator: hidden casino chest",
@@ -1148,19 +1232,22 @@
             "hidden in the depths of Mercator",
             "in a well-hidden chest"
         ],
-        "chestId": 191
+        "chestId": 191,
+        "url": "https://imgur.com/6YC8eU4"
     },
     {
         "name": "Mercator: chest in Greenpea's house",
         "type": "chest",
         "nodeId": "mercator",
-        "chestId": 192
+        "chestId": 192,
+        "url": "https://imgur.com/fFhqt8M"
     },
     {
         "name": "Mercator: chest in grandma's house (pot shelving trial)",
         "type": "chest",
         "nodeId": "mercator",
-        "chestId": 193
+        "chestId": 193,
+        "url": "https://imgur.com/U9rYqgQ"
     },
     {
         "name": "Verla: chest in well after beating Marley",
@@ -1169,7 +1256,8 @@
         "hints": [
             "in a well-hidden chest"
         ],
-        "chestId": 194
+        "chestId": 194,
+        "url": "https://imgur.com/CtQM8RE"
     },
     {
         "name": "Destel: chest in inn next to innkeeper",
@@ -1181,55 +1269,64 @@
         "name": "Mir Tower: timed jump trial chest",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 197
+        "chestId": 197,
+        "url": "https://imgur.com/eVQPIOM"
     },
     {
         "name": "Mir Tower: chest after mimic room",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 198
+        "chestId": 198,
+        "url": "https://imgur.com/C1ud1Co"
     },
     {
         "name": "Mir Tower: mimic room chest #1",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 199
+        "chestId": 199,
+        "url": "https://imgur.com/N4BSp3r"
     },
     {
         "name": "Mir Tower: mimic room chest #2",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 200
+        "chestId": 200,
+        "url": "https://imgur.com/N4BSp3r"
     },
     {
         "name": "Mir Tower: mimic room chest #3",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 201
+        "chestId": 201,
+        "url": "https://imgur.com/N4BSp3r"
     },
     {
         "name": "Mir Tower: mimic room chest #4",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 202
+        "chestId": 202,
+        "url": "https://imgur.com/N4BSp3r"
     },
     {
         "name": "Mir Tower: chest in mushroom pit room",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 203
+        "chestId": 203,
+        "url": "https://imgur.com/uAoUCyZ"
     },
     {
         "name": "Mir Tower: chest in room next to mummy switch room",
         "type": "chest",
         "nodeId": "mir_tower_pre_garlic",
-        "chestId": 204
+        "chestId": 204,
+        "url": "https://imgur.com/yQfEaZ0"
     },
     {
         "name": "Mir Tower: chest in library accessible from teleporter maze",
         "type": "chest",
         "nodeId": "mir_tower_post_garlic",
-        "chestId": 205
+        "chestId": 205,
+        "url": "https://imgur.com/52oMMZG"
     },
     {
         "name": "Mir Tower: hidden chest in room before library",
@@ -1238,31 +1335,36 @@
         "hints": [
             "in a well-hidden chest"
         ],
-        "chestId": 206
+        "chestId": 206,
+        "url": "https://imgur.com/zepRe2C"
     },
     {
         "name": "Mir Tower: chest in falling spikeballs room",
         "type": "chest",
         "nodeId": "mir_tower_post_garlic",
-        "chestId": 207
+        "chestId": 207,
+        "url": "https://imgur.com/pMUf48S"
     },
     {
         "name": "Mir Tower: chest in timed challenge room",
         "type": "chest",
         "nodeId": "mir_tower_post_garlic",
-        "chestId": 208
+        "chestId": 208,
+        "url": "https://imgur.com/oWANYu8"
     },
     {
         "name": "Mir Tower: chest in room where Miro closes the door",
         "type": "chest",
         "nodeId": "mir_tower_post_garlic",
-        "chestId": 209
+        "chestId": 209,
+        "url": "https://imgur.com/dg6HRmy"
     },
     {
         "name": "Mir Tower: chest after room where Miro closes the door",
         "type": "chest",
         "nodeId": "mir_tower_post_garlic",
-        "chestId": 210
+        "chestId": 210,
+        "url": "https://imgur.com/RmzT0WB"
     },
     {
         "name": "Mir Tower: reward chest",
@@ -1271,7 +1373,8 @@
         "hints": [
             "kept by a threatening guardian"
         ],
-        "chestId": 211
+        "chestId": 211,
+        "url": "https://imgur.com/6Gc24kO"
     },
     {
         "name": "Mir Tower: right chest in reward room",
@@ -1280,7 +1383,8 @@
         "hints": [
             "kept by a threatening guardian"
         ],
-        "chestId": 212
+        "chestId": 212,
+        "url": "https://imgur.com/6Gc24kO"
     },
     {
         "name": "Mir Tower: left chest in reward room",
@@ -1289,7 +1393,8 @@
         "hints": [
             "kept by a threatening guardian"
         ],
-        "chestId": 213
+        "chestId": 213,
+        "url": "https://imgur.com/6Gc24kO"
     },
     {
         "name": "Mir Tower: chest behind wall accessible after beating Mir",
@@ -1298,63 +1403,73 @@
         "hints": [
             "kept by a threatening guardian"
         ],
-        "chestId": 214
+        "chestId": 214,
+        "url": "https://imgur.com/HwATv4J"
     },
     {
         "name": "Witch Helga's Hut: end chest",
         "type": "chest",
         "nodeId": "helga_hut",
-        "chestId": 215
+        "chestId": 215,
+        "url": "https://imgur.com/ggAwP3X"
     },
     {
         "name": "Massan Cave: right chest",
         "type": "chest",
         "nodeId": "massan_cave",
-        "chestId": 216
+        "chestId": 216,
+        "url": "https://imgur.com/KmBMZWL"
     },
     {
         "name": "Massan Cave: left chest",
         "type": "chest",
         "nodeId": "massan_cave",
-        "chestId": 217
+        "chestId": 217,
+        "url": "https://imgur.com/KmBMZWL"
     },
     {
         "name": "Tibor: reward chest after boss",
         "type": "chest",
         "nodeId": "tibor",
-        "chestId": 218
+        "chestId": 218,
+        "url": "https://imgur.com/QTketcb"
     },
     {
         "name": "Tibor: chest in spike balls room",
         "type": "chest",
         "nodeId": "tibor",
-        "chestId": 219
+        "chestId": 219,
+        "url": "https://imgur.com/lasT2xi"
     },
     {
         "name": "Tibor: left chest on 2 chest group",
         "type": "chest",
         "nodeId": "tibor",
-        "chestId": 220
+        "chestId": 220,
+        "url": "https://imgur.com/6rDYgd9"
     },
     {
         "name": "Tibor: right chest on 2 chest group",
         "type": "chest",
         "nodeId": "tibor",
-        "chestId": 221
+        "chestId": 221,
+        "url": "https://imgur.com/6rDYgd9"
     },
     {
         "name": "Gumi: item on furniture in elder's house",
         "type": "ground",
         "nodeId": "gumi",
         "entity": { "mapId": 605, "entityId": 2 },
-        "groundItemId": 1
+        "groundItemId": 1,
+        "url": "https://imgur.com/Oj9qZPE"
     },
     {
         "name": "Greenmaze: item behind trees requiring Cutter",
         "type": "ground",
         "nodeId": "greenmaze_post_whistle",
         "entity": { "mapId": 564, "entityId": 0 },
-        "groundItemId": 2
+        "groundItemId": 2,
+        "url": "https://imgur.com/BddTaOU"
     },
     {
         "name": "Verla Mines: item in the corner of lava filled room",
@@ -1364,7 +1479,8 @@
             "in a very hot place"
         ],
         "entity": { "mapId": 263, "entityId": 7 },
-        "groundItemId": 3
+        "groundItemId": 3,
+        "url": "https://imgur.com/DFv2wpG"
     },
     {
         "name": "Lake Shrine (-3F): item on ground at the SE exit of the golden golems roundabout",
@@ -1405,7 +1521,8 @@
         "type": "ground",
         "nodeId": "massan_cave",
         "entity": { "mapId": 807, "entityId": 4 },
-        "groundItemId": 8
+        "groundItemId": 8,
+        "url": "https://imgur.com/KmBMZWL"
     },
     {
         "name": "King Nole's Labyrinth (-3F): item on floating hands",
@@ -1454,7 +1571,8 @@
         "type": "ground",
         "nodeId": "helga_hut",
         "entity": { "mapId": 479, "entityId": 1 },
-        "groundItemId": 14
+        "groundItemId": 14,
+        "url": "https://imgur.com/LLGNXKE"
     },
     {
         "name": "King Nole's Labyrinth (-3F): item on ground climbing back from Firedemon",
@@ -1471,7 +1589,8 @@
         "type": "ground",
         "nodeId": "mercator",
         "entity": { "mapId": 32, "entityId": 2 },
-        "groundItemId": 16
+        "groundItemId": 16,
+        "url": "https://imgur.com/LrQmDDe"
     },
     {
         "name": "Lake Shrine (-2F): north item on ground in quadruple items room",
@@ -1506,21 +1625,24 @@
         "type": "ground",
         "nodeId": "twinkle_village",
         "entity": { "mapId": 462, "entityId": 5 },
-        "groundItemId": 21
+        "groundItemId": 21,
+        "url": "https://imgur.com/KEbBtc4"
     },
     {
         "name": "Twinkle Village: second item on ground",
         "type": "ground",
         "nodeId": "twinkle_village",
         "entity": { "mapId": 462, "entityId": 4 },
-        "groundItemId": 22
+        "groundItemId": 22,
+        "url": "https://imgur.com/KEbBtc4"
     },
     {
         "name": "Twinkle Village: third item on ground",
         "type": "ground",
         "nodeId": "twinkle_village",
         "entity": { "mapId": 462, "entityId": 3 },
-        "groundItemId": 23
+        "groundItemId": 23,
+        "url": "https://imgur.com/KEbBtc4"
     },
     {
         "name": "Mir Tower: Priest room item #1",
@@ -1572,147 +1694,168 @@
         "type": "shop",
         "nodeId": "massan",
         "entity": { "mapId": 596, "entityId": 1 },
-        "shopItemId": 1
+        "shopItemId": 1,
+        "url": "https://imgur.com/C8p7ydm"
     },
     {
         "name": "Massan: Shop item #2",
         "type": "shop",
         "nodeId": "massan",
         "entity": { "mapId": 596, "entityId": 2 },
-        "shopItemId": 2
+        "shopItemId": 2,
+        "url": "https://imgur.com/C8p7ydm"
     },
     {
         "name": "Massan: Shop item #3",
         "type": "shop",
         "nodeId": "massan",
         "entity": { "mapId": 596, "entityId": 3 },
-        "shopItemId": 3
+        "shopItemId": 3,
+        "url": "https://imgur.com/C8p7ydm"
     },
     {
         "name": "Gumi: Inn item #1",
         "type": "shop",
         "nodeId": "gumi",
         "entity": { "mapId": 608, "entityId": 4 },
-        "shopItemId": 4
+        "shopItemId": 4,
+        "url": "https://imgur.com/aplX02K"
     },
     {
         "name": "Gumi: Inn item #2",
         "type": "shop",
         "nodeId": "gumi",
         "entity": { "mapId": 608, "entityId": 2 },
-        "shopItemId": 5
+        "shopItemId": 5,
+        "url": "https://imgur.com/aplX02K"
     },
     {
         "name": "Ryuma: Shop item #1",
         "type": "shop",
         "nodeId": "ryuma_after_thieves_hideout",
         "entity": { "mapId": 615, "entityId": 2 },
-        "shopItemId": 6
+        "shopItemId": 6,
+        "url": "https://imgur.com/9Z0b0gi"
     },
     {
         "name": "Ryuma: Shop item #2",
         "type": "shop",
         "nodeId": "ryuma_after_thieves_hideout",
         "entity": { "mapId": 615, "entityId": 3 },
-        "shopItemId": 7
+        "shopItemId": 7,
+        "url": "https://imgur.com/9Z0b0gi"
     },
     {
         "name": "Ryuma: Shop item #3",
         "type": "shop",
         "nodeId": "ryuma_after_thieves_hideout",
         "entity": { "mapId": 615, "entityId": 4 },
-        "shopItemId": 8
+        "shopItemId": 8,
+        "url": "https://imgur.com/9Z0b0gi"
     },
     {
         "name": "Ryuma: Shop item #4",
         "type": "shop",
         "nodeId": "ryuma_after_thieves_hideout",
         "entity": { "mapId": 615, "entityId": 5 },
-        "shopItemId": 9
+        "shopItemId": 9,
+        "url": "https://imgur.com/9Z0b0gi"
     },
     {
         "name": "Ryuma: Shop item #5",
         "type": "shop",
         "nodeId": "ryuma_after_thieves_hideout",
         "entity": { "mapId": 615, "entityId": 6 },
-        "shopItemId": 10
+        "shopItemId": 10,
+        "url": "https://imgur.com/9Z0b0gi"
     },
     {
         "name": "Ryuma: Inn item",
         "type": "shop",
         "nodeId": "ryuma",
         "entity": { "mapId": 624, "entityId": 3 },
-        "shopItemId": 11
+        "shopItemId": 11,
+        "url": "https://imgur.com/noQveHQ"
     },
     {
         "name": "Mercator: Shop item #1",
         "type": "shop",
         "nodeId": "mercator",
         "entity": { "mapId": 679, "entityId": 1 },
-        "shopItemId": 12
+        "shopItemId": 12,
+        "url": "https://imgur.com/cmdlpJs"
     },
     {
         "name": "Mercator: Shop item #2",
         "type": "shop",
         "nodeId": "mercator",
         "entity": { "mapId": 679, "entityId": 2 },
-        "shopItemId": 13
+        "shopItemId": 13,
+        "url": "https://imgur.com/cmdlpJs"
     },
     {
         "name": "Mercator: Shop item #3",
         "type": "shop",
         "nodeId": "mercator",
         "entity": { "mapId": 679, "entityId": 3 },
-        "shopItemId": 14
+        "shopItemId": 14,
+        "url": "https://imgur.com/cmdlpJs"
     },
     {
         "name": "Mercator: Shop item #4",
         "type": "shop",
         "nodeId": "mercator",
         "entity": { "mapId": 679, "entityId": 4 },
-        "shopItemId": 15
+        "shopItemId": 15,
+        "url": "https://imgur.com/cmdlpJs"
     },
     {
         "name": "Mercator: Shop item #5",
         "type": "shop",
         "nodeId": "mercator",
         "entity": { "mapId": 679, "entityId": 5 },
-        "shopItemId": 16
+        "shopItemId": 16,
+        "url": "https://imgur.com/cmdlpJs"
     },
     {
         "name": "Mercator: Shop item #6",
         "type": "shop",
         "nodeId": "mercator",
         "entity": { "mapId": 679, "entityId": 6 },
-        "shopItemId": 17
+        "shopItemId": 17,
+        "url": "https://imgur.com/cmdlpJs"
     },
     {
         "name": "Mercator: Special shop item #1",
         "type": "shop",
         "nodeId": "mercator_special_shop",
         "entity": { "mapId": 696, "entityId": 1 },
-        "shopItemId": 18
+        "shopItemId": 18,
+        "url": "https://imgur.com/7fF0EvT"
     },
     {
         "name": "Mercator: Special shop item #2",
         "type": "shop",
         "nodeId": "mercator_special_shop",
         "entity": { "mapId": 696, "entityId": 2 },
-        "shopItemId": 19
+        "shopItemId": 19,
+        "url": "https://imgur.com/7fF0EvT"
     },
     {
         "name": "Mercator: Special shop item #3",
         "type": "shop",
         "nodeId": "mercator_special_shop",
         "entity": { "mapId": 696, "entityId": 3 },
-        "shopItemId": 20
+        "shopItemId": 20,
+        "url": "https://imgur.com/7fF0EvT"
     },
     {
         "name": "Mercator: Special shop item #4",
         "type": "shop",
         "nodeId": "mercator_special_shop",
         "entity": { "mapId": 696, "entityId": 4 },
-        "shopItemId": 21
+        "shopItemId": 21,
+        "url": "https://imgur.com/7fF0EvT"
     },
     {
         "name": "Mercator: Docks shop item #1",
@@ -1722,7 +1865,8 @@
             { "mapId": 644, "entityId": 3 },
             { "mapId": 643, "entityId": 9 }
         ],
-        "shopItemId": 22
+        "shopItemId": 22,
+        "url": "https://imgur.com/XmXFSL9"
     },
     {
         "name": "Mercator: Docks shop item #2",
@@ -1732,7 +1876,8 @@
             { "mapId": 644, "entityId": 4 },
             { "mapId": 643, "entityId": 10 }
         ],
-        "shopItemId": 23
+        "shopItemId": 23,
+        "url": "https://imgur.com/XmXFSL9"
     },
     {
         "name": "Mercator: Docks shop item #3",
@@ -1742,7 +1887,8 @@
             { "mapId": 644, "entityId": 5 },
             { "mapId": 643, "entityId": 11 }
         ],
-        "shopItemId": 24
+        "shopItemId": 24,
+        "url": "https://imgur.com/XmXFSL9"
     },
     {
         "name": "Verla: Shop item #1",
@@ -1752,7 +1898,8 @@
             { "mapId": 719, "entityId": 0 },
             { "mapId": 720, "entityId": 1 }
         ],
-        "shopItemId": 25
+        "shopItemId": 25,
+        "url": "https://imgur.com/eZVYJtu"
     },
     {
         "name": "Verla: Shop item #2",
@@ -1762,7 +1909,8 @@
             { "mapId": 719, "entityId": 1 },
             { "mapId": 720, "entityId": 2 }
         ],
-        "shopItemId": 26
+        "shopItemId": 26,
+        "url": "https://imgur.com/eZVYJtu"
     },
     {
         "name": "Verla: Shop item #3",
@@ -1772,7 +1920,8 @@
             { "mapId": 719, "entityId": 2 },
             { "mapId": 720, "entityId": 3 }
         ],
-        "shopItemId": 27
+        "shopItemId": 27,
+        "url": "https://imgur.com/eZVYJtu"
     },
     {
         "name": "Verla: Shop item #4",
@@ -1782,14 +1931,16 @@
             { "mapId": 719, "entityId": 4 },
             { "mapId": 720, "entityId": 4 }
         ],
-        "shopItemId": 28
+        "shopItemId": 28,
+        "url": "https://imgur.com/eZVYJtu"
     },
     {
         "name": "Verla: Shop item #5 (extra item after saving town)",
         "type": "shop",
         "nodeId": "verla_after_mines",
         "entity": { "mapId": 720, "entityId": 5 },
-        "shopItemId": 29
+        "shopItemId": 29,
+        "url": "https://imgur.com/ZHEZi0z"
     },
     {
         "name": "Route from Verla to Destel: Kelketo shop item #1",
@@ -1937,7 +2088,8 @@
         "nodeId": "massan_after_swamp_shrine",
         "address": 162337,
         "flag": { "byte": "0x1004", "bit": 2 },
-        "rewardId": 0
+        "rewardId": 0,
+        "url": "https://imgur.com/Qeqr1h7"
     },
     {
         "name": "Lake Shrine: Mir reward after beating Duke",
@@ -1953,7 +2105,8 @@
         "nodeId": "greenmaze_pre_whistle",
         "address": 166021,
         "flag": { "byte": "0x1024", "bit": 4 },
-        "rewardId": 2
+        "rewardId": 2,
+        "url": "https://imgur.com/4B08mRN"
     },
     {
         "name": "Mountainous Area: Zak reward after fighting",
@@ -1972,7 +2125,8 @@
         "nodeId": "route_gumi_ryuma",
         "address": 166219,
         "flag": { "byte": "0x101B", "bit": 7 },
-        "rewardId": 4
+        "rewardId": 4,
+        "url": "https://imgur.com/OkS9fQ0"
     },
     {
         "name": "Greenmaze: dwarf hidden in the trees",
@@ -1980,7 +2134,8 @@
         "nodeId": "greenmaze_pre_whistle",
         "address": 166111,
         "flag": { "byte": "0x1022", "bit": 7 },
-        "rewardId": 5
+        "rewardId": 5,
+        "url": "https://imgur.com/FfsLcE1"
     },
     {
         "name": "Mercator: Arthur reward (in castle throne room)",
@@ -1988,7 +2143,8 @@
         "nodeId": "mercator",
         "address": 164191,
         "flag": { "byte": "0x101B", "bit": 6 },
-        "rewardId": 6
+        "rewardId": 6,
+        "url": "https://imgur.com/Kqp7cQh"
     },
     {
         "name": "Mercator: Fahl's dojo challenge reward",
@@ -1996,7 +2152,8 @@
         "nodeId": "mercator",
         "address": 165029,
         "flag": { "byte": "0x101C", "bit": 4 },
-        "rewardId": 7
+        "rewardId": 7,
+        "url": "https://imgur.com/SHakF3b"
     },
     {
         "name": "Ryuma: Mayor's first reward",
@@ -2004,7 +2161,8 @@
         "nodeId": "ryuma_after_thieves_hideout",
         "address": 164731,
         "flag": { "byte": "0x1004", "bit": 3 },
-        "rewardId": 8
+        "rewardId": 8,
+        "url": "https://imgur.com/e3rGWnU"
     },
     {
         "name": "Ryuma: Mayor's second reward",
@@ -2012,6 +2170,7 @@
         "nodeId": "ryuma_after_thieves_hideout",
         "address": 164735,
         "flag": { "byte": "0x1004", "bit": 3 },
-        "rewardId": 9
+        "rewardId": 9,
+        "url": "https://imgur.com/e3rGWnU"
     }
 ]

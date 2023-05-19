@@ -12,6 +12,7 @@ private:
     bool _was_checked = false;
     bool _reachable = false;
     bool _ignored = false;
+    std::string _url;
 
 public:
     Location() = default;
@@ -23,6 +24,7 @@ public:
     [[nodiscard]] const std::string& name() const { return _name; }
     [[nodiscard]] uint16_t checked_flag_byte() const { return _checked_flag_byte; }
     [[nodiscard]] uint8_t checked_flag_bit() const { return _checked_flag_bit; }
+    [[nodiscard]] const std::string& url() const { return _url; }
 
     [[nodiscard]] bool was_checked() const { return _was_checked; }
     void was_checked(bool value) { _was_checked = value; }

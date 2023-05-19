@@ -426,12 +426,13 @@ void process_console_input(const std::string& input)
     if(input == "/about")
     {
         Logger::info("About Randstalker Archipelago Client v" RELEASE);
-        Logger::message("Developement of Randstalker, this client and the whole Landstalker integration in Archipelago");
+        Logger::message("Development of Randstalker, this client and the whole Landstalker integration in Archipelago");
         Logger::message("-> Dinopony");
         Logger::message("");
 
         Logger::message("\"Where is it?\" checks screenshots");
         Logger::message("-> Lucy");
+        Logger::message("-> Wiz");
         Logger::message("");
 
         Logger::message("Testing");

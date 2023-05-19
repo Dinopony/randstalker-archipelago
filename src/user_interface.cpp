@@ -369,10 +369,13 @@ void UserInterface::draw_map_tracker_details_window(float y)
                 if(ImGui::Button(ignore_button_label.c_str()))
                     loc->toggle_ignored();
 
+                if(!loc->url().empty())
+                {
                     ImGui::SameLine();
                     std::string where_is_it_btn_id = "Where is it?##" + loc->name();
                     if(ImGui::Button(where_is_it_btn_id.c_str()))
                         ShellExecuteA(nullptr, "open", loc->url().c_str(), nullptr, nullptr, SW_SHOWDEFAULT);
+                }
             }
 
             if(ImGui::GetCursorPosY() < cursor_y_after_image)

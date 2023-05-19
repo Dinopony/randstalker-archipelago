@@ -11,6 +11,8 @@ Location::Location(nlohmann::json& location_data)
 {
     std::string debug_dump = location_data.dump(4);
     _name = location_data["name"];
+    if(location_data.contains("url"))
+        _url = location_data["url"];
 
     const std::string& type = location_data["type"];
     if(type == "chest")
