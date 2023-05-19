@@ -329,13 +329,17 @@ std::string build_rom()
         if(ui.offline_generation_mode() == 0)
         {
             // If we are building an offline seed from a preset file, update GameState with the preset JSON contents
-            nlohmann::json preset_json;
             std::ifstream preset_file("./presets/" + ui.selected_preset() + ".json");
-            if(preset_file.is_open())
+            if(!preset_file.is_open())
             {
-                preset_file >> preset_json;
-                preset_file.close();
+                Logger::error("Failed to open preset file at './presets/" + ui.selected_preset() + ".json'.");
+                session_mutex.unlock();
+                return "";
             }
+
+            nlohmann::json preset_json;
+            preset_file >> preset_json;
+            preset_file.close();
 
             game_state.expected_seed(generate_random_seed());
             preset_json["seed"] = game_state.expected_seed();
@@ -343,11 +347,58 @@ std::string build_rom()
         }
         else
         {
-            // If we are building an offline seed from a permalink, create a "permalink shell" preset JSON and update
-            // GameState accordingly
-            nlohmann::json preset_json = nlohmann::json::object();
-            preset_json["permalink"] = ui.permalink();
+            // If we are build an offline seed from a permalink, parse the permalink settings first to extract
+            // the few required settings for the trackers (goal, jewel count...)
+            std::string command = "randstalker.exe";
+            command += " --inputrom=\"" + std::string(ui.input_rom_path()) + "\"";
+            command += " --permalink=\"" + ui.permalink() + "\"";
+            command += " --outputlog=\"" INTERNAL_PRESET_FILE_PATH "\"";
+            command += " --outputrom=\"\"";
+            command += " --nostdin";
+
+            bool success = invoke(command);
+            if(!success)
+            {
+                Logger::error("Failed to parse permalink, please check it is correct.");
+                session_mutex.unlock();
+                return "";
+            }
+
+            std::ifstream preset_file(INTERNAL_PRESET_FILE_PATH);
+            if(!preset_file.is_open())
+            {
+                Logger::error("Failed to open parsed permalink settings.");
+                session_mutex.unlock();
+                return "";
+            }
+
+            nlohmann::json preset_json;
+            preset_file >> preset_json;
+            preset_file.close();
+
+            // Filter any unwanted / unneeded preset contents
+            if(preset_json.contains("world"))
+                preset_json.erase("world");
+            if(preset_json.contains("playthrough"))
+                preset_json.erase("playthrough");
+            std::string hash = preset_json.at("hashSentence");
+            preset_json.erase("hashSentence");
+
+            // Store this preset as the one that will be used later on to solve logic for the map tracker
             game_state.preset_json(preset_json);
+
+            // Store a fake seed number since we cannot know the real seed for sure (e.g. permalinks with forbidden
+            // spoiler log output). This fake seed is built from the hash characters and is used to make a unique
+            // output ROM filename.
+            uint32_t hash_as_number = 0;
+            uint32_t exponent = 1;
+            for(uint8_t c : hash)
+            {
+                uint32_t c_as_number = static_cast<uint32_t>(c);
+                hash_as_number += (c_as_number * exponent);
+                exponent *= 2;
+            }
+            game_state.expected_seed(hash_as_number);
         }
     }
 
