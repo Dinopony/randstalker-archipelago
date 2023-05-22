@@ -127,7 +127,7 @@ json build_preset_json(const json& slot_data, const std::string& player_name)
     preset["gameSettings"] = build_game_settings_json(slot_data);
     preset["randomizerSettings"] = build_randomizer_settings_json(slot_data);
     preset["world"] = build_world_json(slot_data, player_name);
-    preset["seed"] = slot_data["seed"];
+    preset["world"]["seed"] = slot_data["seed"];
 
     return preset;
 }

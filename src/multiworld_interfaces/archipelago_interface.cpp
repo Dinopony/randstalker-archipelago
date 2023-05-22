@@ -158,7 +158,7 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
     json preset = build_preset_json(slot_data, _slot_name);
     game_state.preset_json(preset);
 
-    game_state.expected_seed(preset["seed"]);
+    game_state.expected_seed(slot_data["seed"]);
     game_state.has_deathlink(slot_data["death_link"] == 1);
     if (game_state.has_deathlink())
     {
