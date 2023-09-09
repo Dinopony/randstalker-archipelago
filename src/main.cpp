@@ -56,23 +56,98 @@ static uint32_t generate_random_seed()
 //      GLOBAL FUNCTIONS (Callable from UI)
 // =============================================================================================
 
+static TrackerConfig build_tracker_config_from_preset(const nlohmann::json& preset_json)
+{
+    TrackerConfig tracker_config(ui.trackable_regions());
+    if(preset_json.contains("gameSettings"))
+    {
+        if(preset_json["gameSettings"].contains("goal"))
+        {
+            tracker_config.autofilled_goal = true;
+            std::string goal_str = preset_json["gameSettings"]["goal"];
+
+            if(goal_str == "beat_dark_nole")
+                tracker_config.goal = GOAL_BEAT_DARK_NOLE;
+            else if(goal_str == "reach_kazalt")
+                tracker_config.goal = GOAL_REACH_KAZALT;
+            else
+                tracker_config.goal = GOAL_BEAT_GOLA;
+        }
+
+        if(preset_json["gameSettings"].contains("jewelCount"))
+        {
+            tracker_config.autofilled_jewel_count = true;
+            tracker_config.jewel_count = preset_json["gameSettings"]["jewelCount"];
+        }
+
+        if(preset_json["gameSettings"].contains("allTreesVisitedAtStart"))
+        {
+            tracker_config.autofilled_open_trees = true;
+            tracker_config.open_trees = preset_json["gameSettings"]["allTreesVisitedAtStart"];
+        }
+
+        if(preset_json["gameSettings"].contains("removeTiborRequirement"))
+        {
+            tracker_config.autofilled_tibor_required = true;
+            tracker_config.tibor_required = !(bool) (preset_json["gameSettings"]["removeTiborRequirement"]);
+        }
+    }
+
+    if(preset_json.contains("randomizerSettings"))
+    {
+        if(preset_json["randomizerSettings"].contains("shuffleTrees"))
+        {
+            tracker_config.autofilled_shuffled_trees = true;
+            tracker_config.shuffled_trees = preset_json["randomizerSettings"]["shuffleTrees"];
+        }
+    }
+
+    return tracker_config;
+}
+
 void update_map_tracker_logic()
 {
     if(!ui.map_tracker_open())
         return;
 
-    nlohmann::json logic_solve_preset = game_state.preset_json();
-    if(logic_solve_preset.contains("world"))
-    {
-        if(logic_solve_preset["world"].contains("itemSources"))
-            logic_solve_preset["world"].erase("itemSources");
-        if(logic_solve_preset["world"].contains("hints"))
-            logic_solve_preset["world"].erase("hints");
-    }
+    nlohmann::json logic_solve_preset;
+
+    logic_solve_preset["gameSettings"]["goal"] = ui.tracker_config().goal_internal_string();
+    logic_solve_preset["gameSettings"]["jewelCount"] = ui.tracker_config().jewel_count;
+    logic_solve_preset["gameSettings"]["allTreesVisitedAtStart"] = ui.tracker_config().open_trees;
+    logic_solve_preset["gameSettings"]["removeTiborRequirement"] = !(ui.tracker_config().tibor_required);
 
     for(TrackableItem* item : ui.trackable_items())
         if(game_state.owned_item_quantity(item->item_id()) > 0)
             logic_solve_preset["gameSettings"]["startingItems"][item->name()] = 1;
+
+    std::string spawn_location = ui.tracker_config().spawn_location;
+    for(char& c : spawn_location)
+        c = (c == ' ') ? '_' : (char)tolower(c);
+    logic_solve_preset["world"]["spawnLocation"] = spawn_location;
+
+    if(ui.tracker_config().dark_dungeon != "???")
+        logic_solve_preset["world"]["darkRegion"] = ui.tracker_config().dark_dungeon;
+
+    // If trees are shuffled, don't pass the "shuffled trees" parameter that would have no effect by itself, but
+    // pass the tree connections noted by the player inside the tracker
+    if(ui.tracker_config().open_trees && ui.tracker_config().shuffled_trees)
+    {
+        logic_solve_preset["world"]["teleportTreePairs"] = nlohmann::json::array();
+        std::set<std::string> already_processed_trees;
+        for(auto& [tree_1, tree_2] : ui.tracker_config().teleport_tree_connections)
+        {
+            if(tree_1 == tree_2)
+                continue;
+            if(already_processed_trees.contains(tree_1) || already_processed_trees.contains(tree_2))
+                continue;
+
+            already_processed_trees.insert(tree_1);
+            already_processed_trees.insert(tree_2);
+            std::vector<std::string> tree_pair = { tree_1, tree_2 };
+            logic_solve_preset["world"]["teleportTreePairs"].emplace_back(tree_pair);
+        }
+    }
 
     std::ofstream preset_file(SOLVE_LOGIC_PRESET_FILE_PATH);
     preset_file << logic_solve_preset.dump();
@@ -307,6 +382,10 @@ static std::string get_output_rom_path()
     return output_path;
 }
 
+/**
+ * Check if the ROM with the expected output name was already built on a previous connection to the same server.
+ * If that is the case, notify the player and "skip" the ROM building window.
+ */
 void check_rom_existence()
 {
     std::string output_path = get_output_rom_path();
@@ -324,6 +403,8 @@ std::string build_rom()
 
     session_mutex.lock();
 
+    nlohmann::json preset_json;
+
     if(multiworld->is_offline_session())
     {
         if(ui.offline_generation_mode() == 0)
@@ -337,13 +418,12 @@ std::string build_rom()
                 return "";
             }
 
-            nlohmann::json preset_json;
             preset_file >> preset_json;
             preset_file.close();
 
-            game_state.expected_seed(generate_random_seed());
-            preset_json["seed"] = game_state.expected_seed();
-            game_state.preset_json(preset_json);
+            uint32_t seed = generate_random_seed();
+            game_state.expected_seed(seed);
+            preset_json["seed"] = seed;
         }
         else
         {
@@ -372,7 +452,6 @@ std::string build_rom()
                 return "";
             }
 
-            nlohmann::json preset_json;
             preset_file >> preset_json;
             preset_file.close();
 
@@ -383,9 +462,6 @@ std::string build_rom()
                 preset_json.erase("playthrough");
             std::string hash = preset_json.at("hashSentence");
             preset_json.erase("hashSentence");
-
-            // Store this preset as the one that will be used later on to solve logic for the map tracker
-            game_state.preset_json(preset_json);
 
             // Store a fake seed number since we cannot know the real seed for sure (e.g. permalinks with forbidden
             // spoiler log output). This fake seed is built from the hash characters and is used to make a unique
@@ -401,10 +477,31 @@ std::string build_rom()
             game_state.expected_seed(hash_as_number);
         }
     }
+    else
+    {
+        ArchipelagoInterface* archipelago = reinterpret_cast<ArchipelagoInterface*>(multiworld);
+        if(archipelago->locations_data().empty())
+        {
+            Logger::error("Client is still waiting for data from the server. Please wait before trying again.");
+            session_mutex.unlock();
+            return "";
+        }
+
+        preset_json = build_preset_json(archipelago->slot_data(), archipelago->locations_data(), archipelago->player_name());
+    }
+
+    std::string dump = preset_json.dump(4);
+
+    // Autofill all tracker settings that can be deduced from the preset
+    ui.tracker_config(build_tracker_config_from_preset(preset_json));
+
+    // Remove shuffle trees if teleport tree pairs are explicitly defined
+    if(preset_json.contains("world") && preset_json["world"].contains("teleportTreePairs"))
+        preset_json["randomizerSettings"]["shuffleTrees"] = false;
 
     // Save the preset as a internal file that can be used by randstalker.exe
     std::ofstream preset_file(INTERNAL_PRESET_FILE_PATH);
-    preset_file << game_state.preset_json().dump();
+    preset_file << preset_json.dump();
     preset_file.close();
 
     std::string output_path = get_output_rom_path();

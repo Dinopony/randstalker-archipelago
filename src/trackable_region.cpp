@@ -27,6 +27,12 @@ TrackableRegion::TrackableRegion(const nlohmann::json& json)
         for(uint8_t goal_id : json.at("hiddenForGoals"))
             _hidden_for_goals.insert(goal_id);
     }
+    if(json.contains("darkDungeonName"))
+        _dark_dungeon_name = json.at("darkDungeonName");
+    if(json.contains("spawnLocationName"))
+        _spawn_location_name = json.at("spawnLocationName");
+    if(json.contains("teleportTreeName"))
+        _teleport_tree_name = json.at("teleportTreeName");
 }
 
 void TrackableRegion::sort_locations()

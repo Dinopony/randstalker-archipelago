@@ -124,10 +124,6 @@ void ArchipelagoInterface::notify_death()
 
 void ArchipelagoInterface::on_socket_connected()
 {
-    // if the socket (re)connects we actually don't know the server's state. clear game's cache to not desync
-    // TODO: in future set game's location cache from AP's checked_locations instead
-    //        if (game) game->clear_cache();
-
     _connected = true;
     Logger::info("Established connection to Archipelago server.");
 }
@@ -143,9 +139,7 @@ void ArchipelagoInterface::on_room_info()
     if(!_client)
         return;
 
-    std::list<std::string> tags;
-    // if (game->want_deathlink()) tags.push_back("DeathLink"); // TODO: Handle deathlink
-    _client->ConnectSlot(_slot_name, _password, 1, tags, {0, 4, 0});
+    _client->ConnectSlot(_slot_name, _password, 1, {}, {0, 4, 0});
 }
 
 void ArchipelagoInterface::on_slot_connected(const json& slot_data)
@@ -154,11 +148,8 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
         return;
 
     Logger::info("Connected to slot.");
+    _slot_data = slot_data;
 
-    json preset = build_preset_json(slot_data, _slot_name);
-    game_state.preset_json(preset);
-
-    game_state.expected_seed(slot_data["seed"]);
     game_state.has_deathlink(slot_data["death_link"] == 1);
     if (game_state.has_deathlink())
     {
@@ -166,6 +157,8 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
         _client->ConnectUpdate(false, 0, true, { "DeathLink" });
     }
 
+    // Update the expected seed to know which filename to look for during ROM existence check
+    game_state.expected_seed(_slot_data["seed"]);
     check_rom_existence();
 }
 

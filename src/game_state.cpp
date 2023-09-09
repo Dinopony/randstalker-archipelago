@@ -22,7 +22,6 @@ GameState::GameState()
 
 void GameState::reset()
 {
-    _preset_json = {};
     _built_rom_path = "";
 
     _received_items.clear();
@@ -32,10 +31,6 @@ void GameState::reset()
     _has_deathlink = false;
     _received_death = false;
     _must_send_death = false;
-
-    _goal_id = -1;
-    _goal_string = "";
-    _jewel_count = 0;
 
     for(Location& location : _locations)
         location.reset();
@@ -78,60 +73,6 @@ std::vector<int64_t> GameState::checked_locations() const
             ret.emplace_back((int64_t)loc.id());
 
     return ret;
-}
-
-void GameState::preset_json(nlohmann::json json)
-{
-    _preset_json = std::move(json);
-
-    std::string goal_short_str = _preset_json.at("gameSettings").at("goal");
-    if(goal_short_str == "beat_gola")
-    {
-        _goal_id = 0;
-        _goal_string = "Beat Gola";
-    }
-    else if(goal_short_str == "reach_kazalt")
-    {
-        _goal_id = 1;
-        _goal_string = "Reach Kazalt";
-    }
-    else if(goal_short_str == "beat_dark_nole")
-    {
-        _goal_id = 2;
-        _goal_string = "Beat Dark Nole";
-    }
-    else
-    {
-        _goal_id = -1;
-        _goal_string = "Unknown";
-    }
-
-    _jewel_count = _preset_json.at("gameSettings").at("jewelCount");
-}
-
-bool GameState::item_exists_in_game(uint8_t item_id) const
-{
-    // Depending on the jewel count, some jewels don't exist
-    if(item_id == ITEM_RED_JEWEL && _jewel_count < 1)
-        return false;
-    if(item_id == ITEM_PURPLE_JEWEL && _jewel_count < 2)
-        return false;
-    if(item_id == ITEM_GREEN_JEWEL && _jewel_count < 3)
-        return false;
-    if(item_id == ITEM_BLUE_JEWEL && _jewel_count < 4)
-        return false;
-    if(item_id == ITEM_YELLOW_JEWEL && _jewel_count < 5)
-        return false;
-
-    // No Gola items in "reach_kazalt" goal
-    if(item_id == ITEM_GOLA_NAIL && _goal_id == 1)
-        return false;
-    if(item_id == ITEM_GOLA_FANG && _goal_id == 1)
-        return false;
-    if(item_id == ITEM_GOLA_HORN && _goal_id == 1)
-        return false;
-
-    return true;
 }
 
 bool GameState::update_inventory_byte(uint8_t byte_id, uint8_t value)

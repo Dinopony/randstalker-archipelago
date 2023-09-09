@@ -269,19 +269,195 @@ void UserInterface::draw_emulator_connection_window()
     ImGui::End();
 }
 
-void UserInterface::draw_map_tracker_details_window(float y)
+float UserInterface::draw_item_tracker_window() const
+{
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
+
+    ImGui::Begin("Tracker", nullptr, WINDOW_FLAGS);
+    {
+        ImVec2 wsize(46.f, 46.f);
+        for(TrackableItem* item : _trackable_items)
+        {
+            if(!_tracker_config.item_exists_in_game(item->item_id()))
+                continue;
+
+            bool item_owned = (game_state.owned_item_quantity(item->item_id()) > 0);
+            ImVec4 color_multipler(1, 1, 1, 1);
+            if(!item_owned)
+                color_multipler = ImVec4(0.4, 0.4, 0.4, 0.6);
+
+            ImGui::SetCursorPos(ImVec2(MARGIN + item->x(), MARGIN + item->y()));
+            ImGui::Image((ImTextureID) item->get_texture_id(), wsize, ImVec2(0,0), ImVec2(1,1), color_multipler);
+            if (ImGui::IsItemHovered())
+            {
+                std::string tooltip_text = item->name();
+                if(!item_owned && !multiworld->is_offline_session())
+                    tooltip_text += "\n\n(Right-click to get a hint for this item)";
+
+                if(item_owned)
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,255));
+                else
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,100,100,255));
+
+                ImGui::SetTooltip("%s", tooltip_text.c_str());
+                ImGui::PopStyleColor();
+
+                if(!item_owned && ImGui::IsMouseReleased(1))
+                    process_console_input("!hint " + item->name());
+            }
+        }
+    }
+    float window_height = ImGui::GetWindowHeight();
+    ImGui::End();
+
+    return window_height + MARGIN*2;
+}
+
+float UserInterface::draw_tracker_config_window(float y)
 {
     ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
 
-    if(!_map_tracker_open)
+    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
+    if(ImGui::Begin("Tracker settings", nullptr, WINDOW_FLAGS & (~ImGuiWindowFlags_NoTitleBar) & (~ImGuiWindowFlags_NoCollapse)))
     {
-        ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
+        uint8_t elems_count = 0;
+        if(!_tracker_config.autofilled_goal)
+            ++elems_count;
+        if(!_tracker_config.autofilled_jewel_count)
+            ++elems_count;
+        if(!_tracker_config.autofilled_spawn_location)
+            ++elems_count;
+        if(!_tracker_config.autofilled_dark_dungeon)
+            ++elems_count;
 
-        ImGui::Begin("Locations details", nullptr, WINDOW_FLAGS);
+        ImGui::Columns(2, nullptr, false);
+        ImGui::PushItemWidth(-1.f);
+
+        uint8_t current_elem = 0;
+
+        if(!_tracker_config.autofilled_goal)
         {
-            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
-            ImGui::Text("Goal: %s", game_state.goal_string().c_str());
-            ImGui::PopStyleColor();
+            ImGui::Text("Goal");
+
+            const char* goal_options[] = { "Beat Gola", "Reach Kazalt", "Beat Dark Nole" };
+            if(ImGui::BeginCombo("##goalCombo", goal_options[_tracker_config.goal]))
+            {
+                for(int i = 0 ; i < IM_ARRAYSIZE(goal_options) ; ++i)
+                {
+                    bool is_selected = (_tracker_config.goal == i);
+                    if(ImGui::Selectable(goal_options[i], is_selected))
+                    {
+                        _tracker_config.goal = i;
+                        update_map_tracker_logic();
+                    }
+                    if(is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            if(++current_elem == elems_count / 2)
+            {
+                ImGui::NextColumn();
+                ImGui::PushItemWidth(-1.f);
+            }
+        }
+
+        if(!_tracker_config.autofilled_jewel_count)
+        {
+            ImGui::Text("Jewel count");
+
+            int jewel_buffer = _tracker_config.jewel_count;
+            if(ImGui::InputInt("##jewel_count", &jewel_buffer, 1, 1))
+            {
+                jewel_buffer = std::max(jewel_buffer, 0);
+                jewel_buffer = std::min(jewel_buffer, 5);
+                _tracker_config.jewel_count = jewel_buffer;
+                update_map_tracker_logic();
+            }
+
+            if(++current_elem == elems_count / 2)
+            {
+                ImGui::NextColumn();
+                ImGui::PushItemWidth(-1.f);
+            }
+        }
+
+        if(!_tracker_config.autofilled_spawn_location)
+        {
+            ImGui::Text("Starting region");
+
+            const char* spawn_options[] = { "Massan", "Gumi", "Waterfall", "Kado", "Ryuma",
+                                            "Mercator", "Verla", "Destel", "Greenmaze" };
+            if(ImGui::BeginCombo("##spawnCombo", _tracker_config.spawn_location.c_str()))
+            {
+                for(auto& spawn_option : spawn_options)
+                {
+                    bool is_selected = (_tracker_config.spawn_location == spawn_option);
+                    if(ImGui::Selectable(spawn_option, is_selected))
+                    {
+                        _tracker_config.spawn_location = spawn_option;
+                        update_map_tracker_logic();
+                    }
+                    if(is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            if(++current_elem == elems_count / 2)
+            {
+                ImGui::NextColumn();
+                ImGui::PushItemWidth(-1.f);
+            }
+        }
+
+        if(!_tracker_config.autofilled_dark_dungeon)
+        {
+            ImGui::Text("Dark dungeon");
+
+            const char* dark_dungeon_options[] = { "???", "Crypt", "Destel Well",
+                                                   "King Nole's Cave", "King Nole's Labyrinth", "King Nole's Palace",
+                                                   "Lake Shrine", "Massan Cave", "Mercator Dungeon", "Mir Tower",
+                                                   "Swamp Shrine", "Thieves Hideout", "Tibor",
+                                                   "Verla Mines", "Waterfall Shrine" };
+            if(ImGui::BeginCombo("##darkdungeonCombo", _tracker_config.dark_dungeon.c_str()))
+            {
+                for(auto& dark_dungeon_option : dark_dungeon_options)
+                {
+                    bool is_selected = (_tracker_config.dark_dungeon == dark_dungeon_option);
+                    if(ImGui::Selectable(dark_dungeon_option, is_selected))
+                    {
+                        _tracker_config.dark_dungeon = dark_dungeon_option;
+                        update_map_tracker_logic();
+                    }
+                    if(is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+        }
+
+        ImGui::Columns(1);
+
+        if(!_tracker_config.autofilled_shuffled_trees)
+            if(ImGui::Checkbox("Shuffled trees", &_tracker_config.shuffled_trees))
+                update_map_tracker_logic();
+
+        if(!_tracker_config.autofilled_open_trees)
+            if(ImGui::Checkbox("Trees open without visit", &_tracker_config.open_trees))
+                update_map_tracker_logic();
+
+        if(!_tracker_config.autofilled_tibor_required)
+            if(ImGui::Checkbox("Tibor required to use trees", &_tracker_config.tibor_required))
+                update_map_tracker_logic();
+
+        if(!_map_tracker_open)
+        {
+            ImGui::Dummy(ImVec2(0.f, 2.f));
+            ImGui::Separator(); // --------------------------------------------------------
+            ImGui::Dummy(ImVec2(0.f, 1.f));
 
             if(ImGui::Button("Open map tracker"))
             {
@@ -289,9 +465,19 @@ void UserInterface::draw_map_tracker_details_window(float y)
                 update_map_tracker_logic();
             }
         }
-        ImGui::End();
-        return;
     }
+    float window_height = ImGui::GetWindowHeight();
+    ImGui::End();
+
+    return y + window_height + MARGIN;
+}
+
+void UserInterface::draw_map_tracker_details_window(float y)
+{
+    ImGui::SetNextWindowPos(ImVec2(MARGIN, y));
+
+    if(!_map_tracker_open)
+        return;
 
     if(!_selected_region)
         return;
@@ -299,10 +485,60 @@ void UserInterface::draw_map_tracker_details_window(float y)
     ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, (float)_window_height - y - STATUS_WINDOW_H - 2*MARGIN));
     ImGui::Begin("Locations details", nullptr, WINDOW_FLAGS);
     {
+        // Display first the teleportation tree for this region if there is one and there is a need to display those
+        if(_tracker_config.shuffled_trees && !_selected_region->teleport_tree_name().empty())
+        {
+            float initial_cursor_y = ImGui::GetCursorPosY();
+
+            ImGui::Image((ImTextureID)(uintptr_t) _tex_tree->getNativeHandle(), ImVec2(39.f, 39.f));
+
+            float cursor_x_after_image = ImGui::GetCursorStartPos().x + 39.f + 6.f;
+            float cursor_y_after_image = ImGui::GetCursorPos().y;
+
+            // Tree name
+            ImGui::SetCursorPos(ImVec2(cursor_x_after_image, initial_cursor_y));
+            ImGui::TextWrapped("%s", _selected_region->teleport_tree_name().c_str());
+
+            // Tree connection combo
+            ImGui::SetCursorPosX(cursor_x_after_image);
+            ImGui::Text("Connected to: ");
+
+            ImGui::SetCursorPosX(cursor_x_after_image);
+            auto& tree_connections = _tracker_config.teleport_tree_connections;
+            const std::string& tree_name = _selected_region->teleport_tree_name();
+            const char* preview_value = tree_connections[tree_name].c_str();
+            if (ImGui::BeginCombo("##treesCombo", preview_value))
+            {
+                for (auto& [other_tree_name, _] : tree_connections)
+                {
+                    bool is_selected = (other_tree_name == preview_value);
+                    if (ImGui::Selectable(other_tree_name.c_str(), is_selected))
+                    {
+                        // Disconnect the trees were previously connected to
+                        tree_connections[tree_connections[tree_name]] = tree_connections[tree_name];
+                        tree_connections[tree_connections[other_tree_name]] = tree_connections[other_tree_name];
+
+                        // Connect the trees together
+                        tree_connections[tree_name] = other_tree_name;
+                        tree_connections[other_tree_name] = tree_name;
+
+                        update_map_tracker_logic();
+                    }
+                    if (is_selected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            if(ImGui::GetCursorPosY() < cursor_y_after_image)
+                ImGui::SetCursorPosY(cursor_y_after_image);
+            ImGui::Separator();
+        }
+
         // Display unchecked locations
         for(Location* loc : _selected_region->locations())
         {
-            // Chest icon next to the
+            // Chest icon
             ImVec4 color_multiplier(1.f, 1.f, 1.f, 1.f);
             if(loc->ignored() && !loc->was_checked())
                 color_multiplier.w = 0.4;
@@ -359,11 +595,14 @@ void UserInterface::draw_map_tracker_details_window(float y)
 
             if(!loc->was_checked())
             {
-                std::string hint_btn_id = "Hint contents##" + loc->name();
-                if(ImGui::Button(hint_btn_id.c_str()))
-                    process_console_input("!hint_location " + loc->name());
+                if(!multiworld->is_offline_session())
+                {
+                    std::string hint_btn_id = "Hint contents##" + loc->name();
+                    if(ImGui::Button(hint_btn_id.c_str()))
+                        process_console_input("!hint_location " + loc->name());
+                    ImGui::SameLine();
+                }
 
-                ImGui::SameLine();
                 std::string ignore_button_label = (loc->ignored()) ? "Restore" : "Ignore";
                 ignore_button_label += "##" + loc->name();
                 if(ImGui::Button(ignore_button_label.c_str()))
@@ -384,48 +623,6 @@ void UserInterface::draw_map_tracker_details_window(float y)
         }
     }
     ImGui::End();
-}
-
-float UserInterface::draw_item_tracker_window() const
-{
-    ImGui::SetNextWindowPos(ImVec2(MARGIN, MARGIN));
-    ImGui::SetNextWindowSize(ImVec2(LEFT_PANEL_WIDTH, 0.f));
-
-    ImGui::Begin("Tracker", nullptr, WINDOW_FLAGS);
-    {
-        ImVec2 wsize(46.f, 46.f);
-        for(TrackableItem* item : _trackable_items)
-        {
-            if(!game_state.item_exists_in_game(item->item_id()))
-                continue;
-
-            bool item_owned = (game_state.owned_item_quantity(item->item_id()) > 0);
-            ImVec4 color_multipler(1, 1, 1, 1);
-            if(!item_owned)
-                color_multipler = ImVec4(0.4, 0.4, 0.4, 0.6);
-
-            ImGui::SetCursorPos(ImVec2(MARGIN + item->x(), MARGIN + item->y()));
-            ImGui::Image((ImTextureID) item->get_texture_id(), wsize, ImVec2(0,0), ImVec2(1,1), color_multipler);
-            if (ImGui::IsItemHovered())
-            {
-                std::string suffix = (!item_owned) ? "\n\n(Right-click to get a hint for this item)" : "";
-                if(item_owned)
-                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,255));
-                else
-                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,100,100,255));
-
-                ImGui::SetTooltip("%s%s", item->name().c_str(), suffix.c_str());
-                ImGui::PopStyleColor();
-
-                if(!item_owned && ImGui::IsMouseReleased(1))
-                    process_console_input("!hint " + item->name());
-            }
-        }
-    }
-    float window_height = ImGui::GetWindowHeight();
-    ImGui::End();
-
-    return window_height + MARGIN*2;
 }
 
 void UserInterface::draw_status_window() const
@@ -528,13 +725,9 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
 
     ImGui::Begin("Map Tracker", &_map_tracker_open, WINDOW_FLAGS & (~ImGuiWindowFlags_NoTitleBar));
     {
-        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,180,0,255));
-        ImGui::Text("Goal: %s", game_state.goal_string().c_str());
-        ImGui::PopStyleColor();
-
         for(TrackableRegion* region : _trackable_regions)
         {
-            if(region->is_hidden_for_goal(game_state.goal_id()))
+            if(region->is_hidden_for_goal(_tracker_config.goal))
                 continue;
 
             ImGui::SetCursorPos(ImVec2(map_origin_x, map_origin_y));
@@ -578,11 +771,27 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
             if(draw_border)
                 ImGui::DrawRect(rectangle, sf::Color::Black);
 
+            bool is_dark_dungeon = (_tracker_config.dark_dungeon == region->dark_dungeon_name());
+            bool is_spawn_region = (_tracker_config.spawn_location == region->spawn_location_name());
+            if(is_dark_dungeon || is_spawn_region)
+            {
+                float icon_size = (rectangle.width < 24.f || rectangle.height < 24.f) ? 16.f : 24.f;
+                ImGui::SetCursorPos(ImVec2(map_origin_x + rectangle.left + (rectangle.width / 2) - (icon_size / 2),
+                                           map_origin_y + rectangle.top + (rectangle.height / 2) - (icon_size / 2)));
+                uintptr_t texture_id = (is_dark_dungeon) ? _tex_lantern_id : _tex_spell_book->getNativeHandle();
+                ImGui::Image((ImTextureID)texture_id, ImVec2(icon_size, icon_size));
+            }
+
             ImGui::SetCursorPos(ImVec2(map_origin_x + rectangle.left, map_origin_y + rectangle.top));
             ImGui::Dummy(ImVec2(rectangle.width, rectangle.height));
             if (!region->name().empty() && ImGui::IsItemHovered())
             {
-                ImGui::SetTooltip("%s\n%u/%u locations checked", region->name().c_str(), checked_count, locations_count);
+                std::string tooltip_text = "%s\n%u/%u locations checked";
+                if(is_spawn_region)
+                    tooltip_text += "\n(starting region)";
+                else if(is_dark_dungeon)
+                    tooltip_text += "\n(dark region)";
+                ImGui::SetTooltip(tooltip_text.c_str(), region->name().c_str(), checked_count, locations_count);
 
                 if(locations_count > 0 && ImGui::IsMouseReleased(0))
                 {
@@ -785,6 +994,7 @@ void UserInterface::loop(sf::RenderWindow& window)
         else
         {
             float y = draw_item_tracker_window();
+            y = draw_tracker_config_window(y);
             draw_map_tracker_details_window(y);
         }
         draw_status_window();
@@ -1006,7 +1216,12 @@ void UserInterface::init_item_tracker()
 {
     json input_json = json::parse(TRACKABLE_ITEMS_JSON);
     for(json& item_data : input_json)
-        _trackable_items.emplace_back(new TrackableItem(item_data));
+    {
+        TrackableItem* item = new TrackableItem(item_data);
+        _trackable_items.emplace_back(item);
+        if(item->name() == "Lantern")
+            _tex_lantern_id = item->get_texture_id();
+    }
 }
 
 void UserInterface::init_map_tracker()
@@ -1017,9 +1232,19 @@ void UserInterface::init_map_tracker()
 
     _tex_location = new sf::Texture();
     _tex_location->loadFromFile("images/chest.png");
+    _tex_location->setSmooth(true);
 
     _tex_location_checked = new sf::Texture();
     _tex_location_checked->loadFromFile("images/chest_open.png");
+    _tex_location_checked->setSmooth(true);
+
+    _tex_tree = new sf::Texture();
+    _tex_tree->loadFromFile("images/tree.png");
+    _tex_tree->setSmooth(true);
+
+    _tex_spell_book = new sf::Texture();
+    _tex_spell_book->loadFromFile("images/spell_book.gif");
+    _tex_spell_book->setSmooth(true);
 }
 
 void UserInterface::init_presets_list()

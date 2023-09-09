@@ -102,6 +102,7 @@ set(SOURCES
         src/logger.cpp
         src/randstalker_invoker.cpp
         src/randstalker_invoker.hpp
+        src/tracker_config.hpp
         )
 
 add_executable(randstalker_archipelago "${SOURCES}")

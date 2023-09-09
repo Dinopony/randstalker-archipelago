@@ -4,6 +4,7 @@
 #include <Psapi.h>
 #include <utility>
 #include <iostream>
+#include <sstream>
 #include "../logger.hpp"
 
 RetroarchMemInterface::RetroarchMemInterface()

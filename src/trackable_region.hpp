@@ -17,6 +17,9 @@ private:
     uint16_t _height = 1;
     std::vector<Location*> _locations;
     std::set<uint8_t> _hidden_for_goals;
+    std::string _dark_dungeon_name = "_";
+    std::string _spawn_location_name = "_";
+    std::string _teleport_tree_name;
 
 public:
     explicit TrackableRegion(const nlohmann::json& json);
@@ -26,6 +29,9 @@ public:
     [[nodiscard]] uint16_t y() const { return _y; }
     [[nodiscard]] uint16_t width() const { return _width; }
     [[nodiscard]] uint16_t height() const { return _height; }
+    [[nodiscard]] const std::string& dark_dungeon_name() const { return _dark_dungeon_name; }
+    [[nodiscard]] const std::string& spawn_location_name() const { return _spawn_location_name; }
+    [[nodiscard]] const std::string& teleport_tree_name() const { return _teleport_tree_name; }
 
     void sort_locations();
     [[nodiscard]] const std::vector<Location*>& locations() const { return _locations; }

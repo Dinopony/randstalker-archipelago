@@ -6,6 +6,7 @@
 #include "logger.hpp"
 #include "trackable_item.hpp"
 #include "trackable_region.hpp"
+#include "tracker_config.hpp"
 
 class UserInterface {
 private:
@@ -36,11 +37,14 @@ private:
     std::vector<TrackableItem*> _trackable_items;
     std::vector<TrackableRegion*> _trackable_regions;
     TrackableRegion* _selected_region = nullptr;
-
-    sf::Texture* _tex_location;
-    sf::Texture* _tex_location_checked;
-
+    TrackerConfig _tracker_config;
     bool _map_tracker_open = false;
+
+    sf::Texture* _tex_location = nullptr;
+    sf::Texture* _tex_location_checked = nullptr;
+    sf::Texture* _tex_tree = nullptr;
+    uint64_t _tex_lantern_id = -1;
+    sf::Texture* _tex_spell_book = nullptr;
 
 public:
     ~UserInterface();
@@ -55,11 +59,15 @@ public:
     [[nodiscard]] const char* output_rom_path() const { return _output_rom_path; }
 
     [[nodiscard]] const std::vector<TrackableItem*>& trackable_items() const { return _trackable_items; }
+    [[nodiscard]] const std::vector<TrackableRegion*>& trackable_regions() const { return _trackable_regions; }
     [[nodiscard]] bool map_tracker_open() const { return _map_tracker_open; }
 
     [[nodiscard]] int offline_generation_mode() const { return _offline_generation_mode; }
     [[nodiscard]] const std::string& selected_preset() const { return _presets.at(_selected_preset); }
     [[nodiscard]] std::string permalink() const { return _permalink; }
+
+    [[nodiscard]] const TrackerConfig& tracker_config() const { return _tracker_config; }
+    void tracker_config(const TrackerConfig& config) { _tracker_config = config; }
 
 private:
     void init_item_tracker();
@@ -72,6 +80,7 @@ private:
     void draw_rom_generation_window();
     void draw_emulator_connection_window();
     float draw_item_tracker_window() const;
+    float draw_tracker_config_window(float y);
     void draw_map_tracker_details_window(float y);
     void draw_status_window() const;
 

@@ -14,7 +14,9 @@
             "Massan: Shop item #2",
             "Massan: Shop item #3",
             "Massan: Elder reward after freeing Fara in Swamp Shrine"
-        ]
+        ],
+        "spawnLocationName": "Massan",
+        "teleportTreeName": "Massan tree"
     },
     {
         "name": "Massan Cave",
@@ -26,7 +28,8 @@
             "Massan Cave: right chest",
             "Massan Cave: left chest",
             "Massan Cave: item on ground in treasure room" 
-        ]
+        ],
+        "darkDungeonName": "Massan Cave"
     },
     {
         "x": 11,
@@ -51,7 +54,8 @@
             "Waterfall Shrine: chest near Prospero",
             "Waterfall Shrine: chest on right branch of biggest room",
             "Waterfall Shrine: upstairs chest"
-        ]
+        ],
+        "darkDungeonName": "Waterfall Shrine"
     },
     {        
         "name": "Route from Massan to Gumi",
@@ -85,7 +89,8 @@
             "Swamp Shrine (2F): upper chest in wooden bridges room",
             "Swamp Shrine (2F): chest on spiked floor room balcony",
             "Swamp Shrine (3F): chest in boss arena"
-        ]
+        ],
+        "darkDungeonName": "Swamp Shrine"
     },  
     {
         "x": 7,
@@ -105,7 +110,8 @@
             "Gumi: Inn item #1",
             "Gumi: Inn item #2",
             "Gumi: chest in elder house after saving Fara"
-        ]
+        ],
+        "spawnLocationName": "Gumi"
     },
     {
         "x": 4,
@@ -122,7 +128,8 @@
         "locations": [
             "Route between Gumi and Ryuma: chest on the way to Swordsman Kado",
             "Route between Gumi and Ryuma: Swordsman Kado reward"
-        ]
+        ],
+        "spawnLocationName": "Kado"
     },
     {
         "name": "Tibor",
@@ -135,7 +142,9 @@
             "Tibor: chest in spike balls room",
             "Tibor: left chest on 2 chest group",
             "Tibor: right chest on 2 chest group"
-        ]
+        ],
+        "darkDungeonName": "Tibor",
+        "teleportTreeName": "Tibor tree"
     },
     {
         "x": 2,
@@ -160,7 +169,8 @@
             "Ryuma: Mayor's first reward",
             "Ryuma: Mayor's second reward",
             "Ryuma: chest in repaired lighthouse"
-        ]
+        ],
+        "spawnLocationName": "Ryuma"
     },
     {
         "x": 1,
@@ -181,7 +191,8 @@
             "Thieves Hideout: rolling boulder chest near entrance",
             "Thieves Hideout: left chest in room on the way to goddess statue",
             "Thieves Hideout: right chest in room on the way to goddess statue"
-        ]
+        ],
+        "darkDungeonName": "Thieves Hideout"
     },
     {
         "name": "Thieves Hideout (back)",
@@ -204,7 +215,8 @@
             "Thieves Hideout (back): chest #3 in boss reward room",
             "Thieves Hideout (back): chest #4 in boss reward room",
             "Thieves Hideout (back): chest #5 in boss reward room"
-        ]
+        ],
+        "darkDungeonName": "Thieves Hideout"
     },
     {
         "name": "Witch Helga's Hut",
@@ -251,10 +263,22 @@
             "Mercator: Special shop item #1",
             "Mercator: Special shop item #2",
             "Mercator: Special shop item #3",
-            "Mercator: Special shop item #4",
+            "Mercator: Special shop item #4"
+        ],
+        "spawnLocationName": "Mercator",
+        "teleportTreeName": "Mercator front gate tree"
+    },
+    {
+        "name": "Crypt",
+        "x": 5,
+        "y": 22,
+        "width": 1,
+        "height": 1,
+        "locations": [
             "Crypt: chest in main room",
             "Crypt: reward chest"
-        ]
+        ],
+        "darkDungeonName": "Crypt"
     },
     {
         "name": "Mercator Dungeon",
@@ -270,7 +294,8 @@
             "Mercator Dungeon (1F): left chest in tower double chest room",
             "Mercator Dungeon (1F): right chest in tower double chest room",
             "Mercator Dungeon (4F): chest in topmost tower room"
-        ]
+        ],
+        "darkDungeonName": "Mercator Dungeon"
     },
     {
         "x": 0,
@@ -318,7 +343,8 @@
             "Twinkle Village: first item on ground",
             "Twinkle Village: second item on ground",
             "Twinkle Village: third item on ground"
-        ]
+        ],
+        "teleportTreeName": "Mir Tower sector tree"
     },
     {
         "x": 4,
@@ -341,7 +367,8 @@
             "Mir Tower: mimic room chest #4",
             "Mir Tower: chest in mushroom pit room",
             "Mir Tower: chest in room next to mummy switch room"
-        ]
+        ],
+        "darkDungeonName": "Mir Tower"
     },
     {
         "name": "Mir Tower (upper)",
@@ -363,7 +390,8 @@
             "Mir Tower: Priest room item #1",
             "Mir Tower: Priest room item #2",
             "Mir Tower: Priest room item #3"    
-        ]
+        ],
+        "darkDungeonName": "Mir Tower"
     },
     {
         "x": 7,
@@ -393,7 +421,8 @@
             "Verla Shore: chest on corner cliff after Verla tunnel",
             "Verla Shore: chest behind cabin",
             "Verla Shore: chest on highest cliff after Verla tunnel (accessible through Verla mines)"
-        ]
+        ],
+        "teleportTreeName": "Verla shore tree"
     },
     {
         "name": "Verla",
@@ -408,7 +437,8 @@
             "Verla: Shop item #4",
             "Verla: Shop item #5 (extra item after saving town)",
             "Verla: chest in well after beating Marley"
-        ]
+        ],
+        "spawnLocationName": "Verla"
     },
     {
         "x": 3,
@@ -435,7 +465,8 @@
             "Verla Mines: left chest in button room near elevator shaft leading to Marley",
             "Verla Mines: item in the corner of lava filled room",
             "Verla Mines: chest in hidden room accessed by walking on lava"
-        ]
+        ],
+        "darkDungeonName": "Verla Mines"
     },
     {
         "x": 7,
@@ -474,7 +505,8 @@
             "Destel: Shop item #3",
             "Destel: Shop item #4",
             "Destel: Shop item #5"
-        ]
+        ],
+        "spawnLocationName": "Destel"
     },
     {
         "name": "Route after Destel",
@@ -487,7 +519,8 @@
             "Route after Destel: hidden chest in map after seeing Duke raft",
             "Route after Destel: visible chest in map after seeing Duke raft",
             "Route after Destel: item on ground on the cliff"
-        ]
+        ],
+        "teleportTreeName": "Destel sector tree"
     },
     {
         "name": "Destel Well",
@@ -512,7 +545,8 @@
             "Destel Well (4F): bottom chest in room before boss",
             "Destel Well (4F): right chest in room before boss",
             "Destel Well: item on platform revealed after beating Quake"      
-        ]
+        ],
+        "darkDungeonName": "Destel Well"
     },
     {
         "x": 17,
@@ -541,7 +575,8 @@
             "Route to Lake Shrine: Greedly's shop item #3",
             "Route to Lake Shrine: Greedly's shop item #4",
             "Route to Lake Shrine: chest on middle cliff in crossroads map (reached from Mountainous Area)"
-        ]
+        ],
+        "teleportTreeName": "Lake Shrine sector tree"
     },
     {
         "name": "Lake Shrine",
@@ -573,7 +608,8 @@
             "Lake Shrine (-2F): west item on ground in quadruple items room",
             "Lake Shrine (-2F): east item on ground in quadruple items room",
             "Lake Shrine: Mir reward after beating Duke"
-        ]
+        ],
+        "darkDungeonName": "Lake Shrine"
     },
     {
         "name": "Mountainous Area",
@@ -597,7 +633,8 @@
             "Mountainous Area Cave: chest in small visible room",
             "Mountainous Area cave: item on ground behind hidden path",
             "Mountainous Area: Zak reward after fighting"
-        ]
+        ],
+        "teleportTreeName": "Mountainous area tree"
     },
     {
         "x": 18,
@@ -634,7 +671,9 @@
             "Greenmaze: right chest in hidden room behind waterfall",
             "Greenmaze: Cutter reward for saving Einstein",
             "Greenmaze: dwarf hidden in the trees"
-        ]
+        ],
+        "spawnLocationName": "Greenmaze",
+        "teleportTreeName": "Greenmaze entrance tree"
     },
     {
         "name": "Greenmaze (after Whistle)",
@@ -645,7 +684,9 @@
         "locations": [
             "Greenmaze: item behind trees requiring Cutter",
             "Greenmaze: chest between Sunstone and Massan shortcut"        
-        ]
+        ],
+        "spawnLocationName": "Waterfall",
+        "teleportTreeName": "Greenmaze end tree"
     },
     {
         "x": 17,
@@ -672,7 +713,8 @@
             "King Nole's Cave: chest in isolated room",
             "King Nole's Cave: chest in crate room",
             "King Nole's Cave: boulder chase hallway chest"
-        ]
+        ],
+        "darkDungeonName": "King Nole's Cave"
     },
     {
         "x": 12,
@@ -745,7 +787,8 @@
             "King Nole's Labyrinth (-2F): Left item dropped by sacred tree",
             "King Nole's Labyrinth (-2F): Right item dropped by sacred tree"
         ],
-        "hiddenForGoals": [ 1 ]
+        "hiddenForGoals": [ 1 ],
+        "darkDungeonName": "King Nole's Labyrinth"
     },
     {
         "x": 14,
@@ -765,6 +808,7 @@
             "King Nole's Palace: chest along central pit",
             "King Nole's Palace: chest in floating button room"
         ],
-        "hiddenForGoals": [ 1 ]
+        "hiddenForGoals": [ 1 ],
+        "darkDungeonName": "King Nole's Palace"
     }
 ]

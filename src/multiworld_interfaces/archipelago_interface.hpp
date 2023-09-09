@@ -15,6 +15,7 @@ private:
     bool _connection_failed = false;
     std::string _slot_name;
     std::string _password;
+    nlohmann::json _slot_data;
 
 public:
     explicit ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password);
@@ -30,6 +31,7 @@ public:
     [[nodiscard]] bool is_offline_session() const override { return false; }
     [[nodiscard]] bool connection_failed() const override { return _connection_failed; }
     [[nodiscard]] std::string player_name() const override { return _slot_name; }
+    [[nodiscard]] const nlohmann::json& slot_data() const { return _slot_data; }
 
 private:
     void init_handlers();
