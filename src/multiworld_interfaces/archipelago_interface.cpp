@@ -50,6 +50,12 @@ void ArchipelagoInterface::init_handlers()
             this->on_item_received(i.index, i.item, i.player, i.location);
     });
 
+    _client->set_location_info_handler([this](const std::list<APClient::NetworkItem>& items) {
+        _locations_data = json::object();
+        for (const auto& i : items)
+            this->on_item_scouted(i.index, i.item, i.player, i.location);
+    });
+
     _client->set_data_package_changed_handler([this](const json& data) { _client->save_data_package(DATAPACKAGE_CACHE_FILE); });
     _client->set_bounced_handler([this](const json& cmd) { this->on_bounced(cmd); });
 
@@ -160,6 +166,12 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
     // Update the expected seed to know which filename to look for during ROM existence check
     game_state.expected_seed(_slot_data["seed"]);
     check_rom_existence();
+
+    // Fetch all of the locations' data to know what to put in item sources when building the ROM
+    std::list<int64_t> all_location_ids;
+    for(const Location& loc : game_state.locations())
+        all_location_ids.emplace_back(loc.id());
+    _client->LocationScouts(all_location_ids);
 }
 
 void ArchipelagoInterface::on_slot_disconnected()
@@ -194,6 +206,22 @@ void ArchipelagoInterface::on_item_received(int index, int64_t item, int player,
     Logger::debug("Received " + item_name + " from " + player_name + " (" + location_name + ")");
     game_state.set_received_item(index, item - ITEM_BASE_ID);
 }
+
+void ArchipelagoInterface::on_item_scouted(int index, int64_t item, int player, int64_t location)
+{
+    if(!_client)
+        return;
+
+    std::string item_name = _client->get_item_name(item);
+    std::string player_name = _client->get_player_alias(player);
+    std::string location_name = _client->get_location_name(location);
+
+    _locations_data[location_name] = {
+            { "item", item_name },
+            { "player", player_name }
+    };
+}
+
 
 void ArchipelagoInterface::on_bounced(const json& packet)
 {

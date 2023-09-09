@@ -16,6 +16,7 @@ private:
     std::string _slot_name;
     std::string _password;
     nlohmann::json _slot_data;
+    nlohmann::json _locations_data;
 
 public:
     explicit ArchipelagoInterface(const std::string& uri, std::string slot_name, std::string password);
@@ -32,6 +33,7 @@ public:
     [[nodiscard]] bool connection_failed() const override { return _connection_failed; }
     [[nodiscard]] std::string player_name() const override { return _slot_name; }
     [[nodiscard]] const nlohmann::json& slot_data() const { return _slot_data; }
+    [[nodiscard]] const nlohmann::json& locations_data() const { return _locations_data; }
 
 private:
     void init_handlers();
@@ -43,6 +45,6 @@ private:
     void on_slot_disconnected();
     void on_slot_refused(const std::list<std::string>& errors);
     void on_item_received(int index, int64_t item, int player, int64_t location);
-
+    void on_item_scouted(int index, int64_t item, int player, int64_t location);
     void on_bounced(const json& cmd);
 };

@@ -69,45 +69,39 @@ static json build_randomizer_settings_json(const json& slot_data)
     return rando_settings;
 }
 
-static json build_world_json(const json& slot_data, const std::string& player_name)
+static json build_world_json(const json& slot_data, const json& locations_data, const std::string& player_name)
 {
     json world = json::object();
+
+    const json& prices = slot_data.at("location_prices");
 
     world["spawnLocation"] = slot_data["spawn_region"];
     world["darkRegion"] = slot_data.at("dark_region");
     world["itemSources"] = json::object();
 
-    std::map<std::string, json> locations = slot_data.at("locations");
+    std::map<std::string, json> locations = locations_data;
     for(auto& [item_source_name, data] : locations)
     {
         // Ignore the fake "End" location which only serves as a win condition
         if(item_source_name == "End")
             continue;
 
+        std::string item_name = data["item"];
         if(data["player"] == player_name)
         {
-            std::string item_name = data["item"];
             if(item_name == "1 Gold")
                 item_name += "s";
             else if(item_name == "Progressive Armor")
                 item_name = "Steel Breast";
+        }
 
-            if(data.contains("price"))
-            {
-                world["itemSources"][item_source_name] = {
-                    { "item", item_name },
-                    { "price", data["price"] },
-                };
-            }
-            else
-            {
-                world["itemSources"][item_source_name] = item_name;
-            }
-        }
-        else
-        {
-            world["itemSources"][item_source_name] = data;
-        }
+        json output = { { "item", item_name } };
+        if(prices.contains(item_source_name))
+            output["price"] = prices.at(item_source_name);
+        if(data["player"] != player_name)
+            output["player"] = data["player"];
+
+        world["itemSources"][item_source_name] = output;
     }
 
     world["teleportTreePairs"] = json::array();
@@ -120,13 +114,13 @@ static json build_world_json(const json& slot_data, const std::string& player_na
     return world;
 }
 
-json build_preset_json(const json& slot_data, const std::string& player_name)
+json build_preset_json(const json& slot_data, const json& locations_data, const std::string& player_name)
 {
     json preset = json::object();
 
     preset["gameSettings"] = build_game_settings_json(slot_data);
     preset["randomizerSettings"] = build_randomizer_settings_json(slot_data);
-    preset["world"] = build_world_json(slot_data, player_name);
+    preset["world"] = build_world_json(slot_data, locations_data, player_name);
     preset["world"]["seed"] = slot_data["seed"];
 
     return preset;
