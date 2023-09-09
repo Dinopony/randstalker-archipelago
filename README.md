@@ -1,4 +1,4 @@
-![version](https://img.shields.io/badge/Version-1.0.0-blue)
+![version](https://img.shields.io/badge/Version-1.2.0-blue)
 <a href="https://discord.gg/XNA76xc9sU">
   <img src="https://img.shields.io/badge/-Discord-lightgrey?logo=discord" alt="Join Discord">
 </a>
