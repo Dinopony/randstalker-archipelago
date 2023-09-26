@@ -9,6 +9,7 @@
 #include "multiworld_interfaces/archipelago_interface.hpp"
 #include "multiworld_interfaces/offline_play_interface.hpp"
 #include "emulator_interfaces/retroarch_mem_interface.hpp"
+#include "emulator_interfaces/bizhawk_mem_interface.hpp"
 #include "game_state.hpp"
 #include "user_interface.hpp"
 #include "logger.hpp"
@@ -214,20 +215,40 @@ void connect_emu()
     try
     {
         emulator = new RetroarchMemInterface();
-
-        if(!multiworld->is_offline_session() && emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
-        {
-            delete emulator;
-            emulator = nullptr;
-            throw EmulatorException("Invalid seed. Please ensure the right ROM was loaded.");
-        }
-
         Logger::info("Successfully connected to Retroarch.");
     }
     catch(EmulatorException& e)
     {
-        Logger::error(e.message());
+        emulator = nullptr;
+        std::cout << e.message() << std::endl;
     }
+
+    if(!emulator)
+    {
+        try
+        {
+            emulator = new BizhawkMemInterface();
+            Logger::info("Successfully connected to Bizhawk.");
+        }
+        catch(EmulatorException& e)
+        {
+            emulator = nullptr;
+            std::cout << e.message() << std::endl;
+        }
+    }
+
+    if(!emulator)
+    {
+        Logger::error("Could not find a valid emulator process currently running the game to connect to.");
+    }
+    else if(!multiworld->is_offline_session() && emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
+    {
+        delete emulator;
+        emulator = nullptr;
+        session_mutex.unlock();
+        throw EmulatorException("Invalid seed. Please ensure the right ROM was loaded.");
+    }
+
     session_mutex.unlock();
 }
 

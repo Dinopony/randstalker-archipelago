@@ -82,6 +82,8 @@ set(SOURCES
         src/emulator_interfaces/emulator_interface.hpp
         src/emulator_interfaces/retroarch_mem_interface.cpp
         src/emulator_interfaces/retroarch_mem_interface.hpp
+        src/emulator_interfaces/bizhawk_mem_interface.cpp
+        src/emulator_interfaces/bizhawk_mem_interface.hpp
 
         src/multiworld_interfaces/multiworld_interface.hpp
         src/multiworld_interfaces/archipelago_interface.hpp
