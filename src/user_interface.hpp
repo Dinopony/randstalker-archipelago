@@ -31,7 +31,7 @@ private:
     int _window_x = -1;
     int _window_y = -1;
     uint32_t _window_width = 1000;
-    uint32_t _window_height = 600;
+    uint32_t _window_height = 800;
     uint32_t _last_message_count = 0;
 
     std::vector<TrackableItem*> _trackable_items;
