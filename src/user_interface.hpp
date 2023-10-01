@@ -47,8 +47,6 @@ private:
     sf::Texture* _tex_spell_book = nullptr;
 
 public:
-    ~UserInterface();
-
     void open();
     void load_client_settings();
     void save_client_settings();
@@ -66,8 +64,7 @@ public:
     [[nodiscard]] const std::string& selected_preset() const { return _presets.at(_selected_preset); }
     [[nodiscard]] std::string permalink() const { return _permalink; }
 
-    [[nodiscard]] const TrackerConfig& tracker_config() const { return _tracker_config; }
-    void tracker_config(const TrackerConfig& config) { _tracker_config = config; }
+    [[nodiscard]] TrackerConfig& tracker_config() { return _tracker_config; }
 
 private:
     void init_item_tracker();

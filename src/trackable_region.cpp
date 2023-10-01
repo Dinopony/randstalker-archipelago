@@ -35,13 +35,13 @@ TrackableRegion::TrackableRegion(const nlohmann::json& json)
         _teleport_tree_name = json.at("teleportTreeName");
 }
 
-void TrackableRegion::sort_locations()
+void TrackableRegion::sort_locations(const std::set<uint16_t>& ignored_locations)
 {
-    auto get_location_value = [](const Location* loc) -> uint8_t
+    auto get_location_value = [ignored_locations](const Location* loc) -> uint8_t
     {
         if(loc->was_checked())
             return 3;
-        else if(loc->ignored())
+        else if(ignored_locations.contains(loc->id()))
             return 2;
         else if(!loc->reachable())
             return 1;

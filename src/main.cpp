@@ -4,6 +4,7 @@
 #include <fstream>
 #include <filesystem>
 #include <random>
+#include <regex>
 #include <landstalker_lib/constants/item_codes.hpp>
 
 #include "multiworld_interfaces/archipelago_interface.hpp"
@@ -56,55 +57,6 @@ static uint32_t generate_random_seed()
 // =============================================================================================
 //      GLOBAL FUNCTIONS (Callable from UI)
 // =============================================================================================
-
-static TrackerConfig build_tracker_config_from_preset(const nlohmann::json& preset_json)
-{
-    TrackerConfig tracker_config(ui.trackable_regions());
-    if(preset_json.contains("gameSettings"))
-    {
-        if(preset_json["gameSettings"].contains("goal"))
-        {
-            tracker_config.autofilled_goal = true;
-            std::string goal_str = preset_json["gameSettings"]["goal"];
-
-            if(goal_str == "beat_dark_nole")
-                tracker_config.goal = GOAL_BEAT_DARK_NOLE;
-            else if(goal_str == "reach_kazalt")
-                tracker_config.goal = GOAL_REACH_KAZALT;
-            else
-                tracker_config.goal = GOAL_BEAT_GOLA;
-        }
-
-        if(preset_json["gameSettings"].contains("jewelCount"))
-        {
-            tracker_config.autofilled_jewel_count = true;
-            tracker_config.jewel_count = preset_json["gameSettings"]["jewelCount"];
-        }
-
-        if(preset_json["gameSettings"].contains("allTreesVisitedAtStart"))
-        {
-            tracker_config.autofilled_open_trees = true;
-            tracker_config.open_trees = preset_json["gameSettings"]["allTreesVisitedAtStart"];
-        }
-
-        if(preset_json["gameSettings"].contains("removeTiborRequirement"))
-        {
-            tracker_config.autofilled_tibor_required = true;
-            tracker_config.tibor_required = !(bool) (preset_json["gameSettings"]["removeTiborRequirement"]);
-        }
-    }
-
-    if(preset_json.contains("randomizerSettings"))
-    {
-        if(preset_json["randomizerSettings"].contains("shuffleTrees"))
-        {
-            tracker_config.autofilled_shuffled_trees = true;
-            tracker_config.shuffled_trees = preset_json["randomizerSettings"]["shuffleTrees"];
-        }
-    }
-
-    return tracker_config;
-}
 
 void update_map_tracker_logic()
 {
@@ -245,8 +197,7 @@ void connect_emu()
     {
         delete emulator;
         emulator = nullptr;
-        session_mutex.unlock();
-        throw EmulatorException("Invalid seed. Please ensure the right ROM was loaded.");
+        Logger::error("Invalid seed. Please ensure the right ROM was loaded.");
     }
 
     session_mutex.unlock();
@@ -415,6 +366,10 @@ void check_rom_existence()
         game_state.built_rom_path(output_path);
         Logger::info("ROM already found at \"" + output_path + "\", press the \"Rebuild ROM with other settings\" "
                                                                "button if you want to rebuild it anyway.");
+
+        // Load the tracker data from a potential previous seating, since the ROM was already there
+        ui.tracker_config().file_path = std::regex_replace(output_path, std::regex("\\.md"), ".json");
+        ui.tracker_config().load_from_file();
     }
 }
 
@@ -513,8 +468,11 @@ std::string build_rom()
 
     std::string dump = preset_json.dump(4);
 
+    std::string output_path = get_output_rom_path();
+
     // Autofill all tracker settings that can be deduced from the preset
-    ui.tracker_config(build_tracker_config_from_preset(preset_json));
+    ui.tracker_config().build_from_preset(preset_json);
+    ui.tracker_config().file_path = std::regex_replace(output_path, std::regex("\\.md"), ".json");
 
     // Remove shuffle trees if teleport tree pairs are explicitly defined
     if(preset_json.contains("world") && preset_json["world"].contains("teleportTreePairs"))
@@ -524,8 +482,6 @@ std::string build_rom()
     std::ofstream preset_file(INTERNAL_PRESET_FILE_PATH);
     preset_file << preset_json.dump();
     preset_file.close();
-
-    std::string output_path = get_output_rom_path();
 
     session_mutex.unlock();
 
@@ -546,6 +502,7 @@ std::string build_rom()
     if(success)
     {
         Logger::info("ROM built successfully at \"" + output_path + "\".");
+        ui.tracker_config().save_to_file();
         return output_path;
     }
     else
@@ -662,6 +619,8 @@ int main()
             session_mutex.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(150));
         }
+
+        ui.tracker_config().save_to_file();
     });
 
     // UI thread

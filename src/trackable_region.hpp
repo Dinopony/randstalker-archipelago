@@ -33,7 +33,7 @@ public:
     [[nodiscard]] const std::string& spawn_location_name() const { return _spawn_location_name; }
     [[nodiscard]] const std::string& teleport_tree_name() const { return _teleport_tree_name; }
 
-    void sort_locations();
+    void sort_locations(const std::set<uint16_t>& ignored_locations);
     [[nodiscard]] const std::vector<Location*>& locations() const { return _locations; }
 
     [[nodiscard]] bool is_hidden_for_goal(uint8_t goal_id) const { return _hidden_for_goals.count(goal_id); }

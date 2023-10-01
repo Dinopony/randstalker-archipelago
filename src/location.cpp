@@ -50,5 +50,4 @@ void Location::reset()
 {
     _was_checked = false;
     _reachable = false;
-    _ignored = false;
 }

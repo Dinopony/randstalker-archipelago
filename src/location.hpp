@@ -11,7 +11,6 @@ private:
     uint8_t _checked_flag_bit = 0x00;
     bool _was_checked = false;
     bool _reachable = false;
-    bool _ignored = false;
     std::string _url;
 
 public:
@@ -31,8 +30,4 @@ public:
 
     [[nodiscard]] bool reachable() const { return _reachable; }
     void reachable(bool reachable) { _reachable = reachable; }
-
-    [[nodiscard]] bool ignored() const { return _ignored; }
-    void ignored(bool val) { _ignored = val; }
-    void toggle_ignored() { _ignored = !_ignored; }
 };

@@ -538,9 +538,11 @@ void UserInterface::draw_map_tracker_details_window(float y)
         // Display unchecked locations
         for(Location* loc : _selected_region->locations())
         {
+            bool loc_ignored = _tracker_config.ignored_locations.contains(loc->id());
+
             // Chest icon
             ImVec4 color_multiplier(1.f, 1.f, 1.f, 1.f);
-            if(loc->ignored() && !loc->was_checked())
+            if(loc_ignored && !loc->was_checked())
                 color_multiplier.w = 0.4;
 
             float initial_cursor_y = ImGui::GetCursorPosY();
@@ -549,19 +551,19 @@ void UserInterface::draw_map_tracker_details_window(float y)
             ImTextureID texture_id = (ImTextureID)(uintptr_t)texture->getNativeHandle();
             ImGui::Image(texture_id, ImVec2(39.f, 39.f), ImVec2(0,0), ImVec2(1,1), color_multiplier);
             if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(1))
-                loc->toggle_ignored();
+                _tracker_config.toggle_location_ignored(loc->id());
 
             float cursor_x_after_image = ImGui::GetCursorStartPos().x + 39.f + 6.f;
             float cursor_y_after_image = ImGui::GetCursorPos().y;
 
             // Location name
-            if(loc->ignored() || loc->was_checked())
+            if(loc_ignored || loc->was_checked())
                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,255,255,128));
 
             ImGui::SetCursorPos(ImVec2(cursor_x_after_image, initial_cursor_y));
             ImGui::TextWrapped("%s", loc->name().c_str());
 
-            if(loc->ignored() || loc->was_checked())
+            if(loc_ignored || loc->was_checked())
                 ImGui::PopStyleColor();
 
             // Location status
@@ -571,7 +573,7 @@ void UserInterface::draw_map_tracker_details_window(float y)
                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100,255,100,128));
                 ImGui::TextWrapped("Already checked");
             }
-            else if(loc->ignored())
+            else if(loc_ignored)
             {
                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 255, 128));
                 if(loc->reachable())
@@ -603,10 +605,10 @@ void UserInterface::draw_map_tracker_details_window(float y)
                     ImGui::SameLine();
                 }
 
-                std::string ignore_button_label = (loc->ignored()) ? "Restore" : "Ignore";
+                std::string ignore_button_label = loc_ignored ? "Restore" : "Ignore";
                 ignore_button_label += "##" + loc->name();
                 if(ImGui::Button(ignore_button_label.c_str()))
-                    loc->toggle_ignored();
+                    _tracker_config.toggle_location_ignored(loc->id());
 
                 if(!loc->url().empty())
                 {
@@ -746,7 +748,7 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
             {
                 if(loc->was_checked())
                     checked_count += 1;
-                else if(loc->ignored())
+                else if(_tracker_config.ignored_locations.contains(loc->id()))
                     ignored_count += 1;
                 else if(loc->reachable())
                     reachable_count += 1;
@@ -798,7 +800,7 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
                     if(_selected_region != region)
                     {
                         _selected_region = region;
-                        _selected_region->sort_locations();
+                        _selected_region->sort_locations(_tracker_config.ignored_locations);
                     }
                     else
                         _selected_region = nullptr;
@@ -808,7 +810,7 @@ float UserInterface::draw_map_tracker_window(float x, float y, float width, floa
                 {
                     for(Location* loc : region->locations())
                         if(loc->reachable() && !loc->was_checked())
-                            loc->ignored(true);
+                            _tracker_config.ignored_locations.insert(loc->id());
                 }
             }
         }
@@ -1230,6 +1232,8 @@ void UserInterface::init_map_tracker()
     for(json& region_data : input_json)
         _trackable_regions.emplace_back(new TrackableRegion(region_data));
 
+    _tracker_config.init_teleport_trees(_trackable_regions);
+
     _tex_location = new sf::Texture();
     _tex_location->loadFromFile("images/chest.png");
     _tex_location->setSmooth(true);
@@ -1271,10 +1275,4 @@ void UserInterface::init_presets_list()
 
     if(_presets.empty())
         _offline_generation_mode = 1; // Force permalink mode if there are no presets
-}
-
-UserInterface::~UserInterface()
-{
-    for(TrackableItem* ptr : _trackable_items)
-        delete ptr;
 }

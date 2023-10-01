@@ -1,10 +1,16 @@
 #pragma once
 
 #include <string>
+#include <map>
+#include <vector>
+#include <set>
+#include "nlohmann/json.hpp"
 
 #define GOAL_BEAT_GOLA 0
 #define GOAL_REACH_KAZALT 1
 #define GOAL_BEAT_DARK_NOLE 2
+
+class TrackableRegion;
 
 struct TrackerConfig
 {
@@ -30,62 +36,19 @@ struct TrackerConfig
     bool autofilled_dark_dungeon = false;
 
     std::map<std::string, std::string> teleport_tree_connections;
+    std::set<uint16_t> ignored_locations;
 
-    TrackerConfig(const std::vector<TrackableRegion*>& regions = {})
-    {
-        for(TrackableRegion* region : regions)
-            if(!region->teleport_tree_name().empty())
-                teleport_tree_connections[region->teleport_tree_name()] = region->teleport_tree_name();
-    }
+    std::string file_path;
 
-    [[nodiscard]] bool item_exists_in_game(uint8_t item_id) const
-    {
-        // Depending on the jewel count, some jewels don't exist
-        if(item_id == ITEM_RED_JEWEL && jewel_count < 1)
-            return false;
-        if(item_id == ITEM_PURPLE_JEWEL && jewel_count < 2)
-            return false;
-        if(item_id == ITEM_GREEN_JEWEL && jewel_count < 3)
-            return false;
-        if(item_id == ITEM_BLUE_JEWEL && jewel_count < 4)
-            return false;
-        if(item_id == ITEM_YELLOW_JEWEL && jewel_count < 5)
-            return false;
+    TrackerConfig() = default;
 
-        // No Gola items in "reach_kazalt" goal
-        if(item_id == ITEM_GOLA_NAIL && goal == GOAL_REACH_KAZALT)
-            return false;
-        if(item_id == ITEM_GOLA_FANG && goal == GOAL_REACH_KAZALT)
-            return false;
-        if(item_id == ITEM_GOLA_HORN && goal == GOAL_REACH_KAZALT)
-            return false;
+    void init_teleport_trees(const std::vector<TrackableRegion*>& regions);
+    [[nodiscard]] bool item_exists_in_game(uint8_t item_id) const;
+    [[nodiscard]] const char* goal_internal_string() const;
 
-        return true;
-    }
+    void toggle_location_ignored(uint16_t loc_id);
 
-    [[nodiscard]] const char* goal_display_string() const
-    {
-        if(goal == GOAL_BEAT_GOLA)
-            return "Beat Gola";
-        else if(goal == GOAL_REACH_KAZALT)
-            return "Reach Kazalt";
-        else if(goal == GOAL_BEAT_DARK_NOLE)
-            return "Beat Dark Nole";
-
-        // Unreachable, in theory
-        return "Unknown";
-    }
-
-    [[nodiscard]] const char* goal_internal_string() const
-    {
-        if(goal == GOAL_BEAT_GOLA)
-            return "beat_gola";
-        else if(goal == GOAL_REACH_KAZALT)
-            return "reach_kazalt";
-        else if(goal == GOAL_BEAT_DARK_NOLE)
-            return "beat_dark_nole";
-
-        // Unreachable, in theory
-        return "???";
-    }
+    void build_from_preset(const nlohmann::json& preset_json);
+    void save_to_file() const;
+    void load_from_file();
 };
