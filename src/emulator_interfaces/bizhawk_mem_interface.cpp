@@ -217,10 +217,12 @@ uint64_t BizhawkMemInterface::find_gpgx_ram_base_addr()
         previous_region_addr += info.RegionSize;
     }
 
-    //const uint32_t SIGNATURE = 0x4B616E26;
-    //const uint32_t SIGNATURE = 0x614B266E;
-    const uint32_t SIGNATURE = 0x6E264B61;
+    // If only one region matches in size, it *has* to be the right one
+    if(regions.size() == 1)
+        return regions[0].BaseAddress + 0x5D90;
 
+    // If more are matching, try to find the one that really contains the RAM
+    const uint32_t SIGNATURE = 0x6E264B61;
     for(MemoryRegion region : regions)
     {
         uint64_t ramBaseAddress = region.BaseAddress + 0x5D90;
