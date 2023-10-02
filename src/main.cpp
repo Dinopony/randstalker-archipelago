@@ -42,6 +42,7 @@ constexpr uint8_t DEATHLINK_STATE_RECEIVED_DEATH = 1;
 constexpr uint8_t DEATHLINK_STATE_WAIT_FOR_RESURRECT = 2;
 
 constexpr uint8_t ITEM_PROGRESSIVE_ARMOR = 69; // 0x45
+constexpr uint8_t ITEM_ARCHIPELAGO_KAZALT_JEWEL = 70; // 0x46
 
 #define INTERNAL_PRESET_FILE_PATH "./_preset.json"
 #define SOLVE_LOGIC_PRESET_FILE_PATH "./_solve_logic.json"
@@ -281,6 +282,11 @@ void poll_emulator()
                     item_id = ITEM_SHELL_BREAST;
                 else
                     item_id = ITEM_HYPER_BREAST;
+            }
+            else if(item_id == ITEM_ARCHIPELAGO_KAZALT_JEWEL)
+            {
+                // Kazalt Jewel over Archipelago is a fake item that needs to be converted into a Red Jewel on reception
+                item_id = ITEM_RED_JEWEL;
             }
 
             emulator->write_game_byte(ADDR_RECEIVED_ITEM, item_id);

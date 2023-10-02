@@ -12,6 +12,7 @@ class TrackableItem
 private:
     std::string _name;
     uint8_t _item_id;
+    uint8_t _quantity;
     float _x;
     float _y;
     sf::Texture _texture;
@@ -21,6 +22,7 @@ public:
 
     const std::string& name() const { return _name; }
     uint8_t item_id() const { return _item_id; }
+    uint8_t quantity() const { return _quantity; }
     float x() const { return _x; }
     float y() const { return _y; }
 

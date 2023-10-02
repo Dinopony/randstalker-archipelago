@@ -15,6 +15,10 @@ TrackableItem::TrackableItem(const nlohmann::json& json)
     if(json.contains("itemId"))
         _item_id = json.at("itemId");
 
+    _quantity = 0;
+    if(json.contains("quantity"))
+        _quantity = json.at("quantity");
+
     if(json.contains("x"))
         _x = json.at("x");
     _x *= ICON_SIZE;

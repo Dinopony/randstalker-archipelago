@@ -277,19 +277,21 @@ float UserInterface::draw_item_tracker_window() const
     ImGui::Begin("Tracker", nullptr, WINDOW_FLAGS);
     {
         ImVec2 wsize(46.f, 46.f);
+        bool tooltip_on = false;
         for(TrackableItem* item : _trackable_items)
         {
-            if(!_tracker_config.item_exists_in_game(item->item_id()))
+            if(!_tracker_config.item_exists_in_game(item))
                 continue;
 
-            bool item_owned = (game_state.owned_item_quantity(item->item_id()) > 0);
+            uint8_t target_quantity = (item->quantity()) ? item->quantity() : 1;
+            bool item_owned = (game_state.owned_item_quantity(item->item_id()) >= target_quantity);
             ImVec4 color_multipler(1, 1, 1, 1);
             if(!item_owned)
                 color_multipler = ImVec4(0.4, 0.4, 0.4, 0.6);
 
             ImGui::SetCursorPos(ImVec2(MARGIN + item->x(), MARGIN + item->y()));
             ImGui::Image((ImTextureID) item->get_texture_id(), wsize, ImVec2(0,0), ImVec2(1,1), color_multipler);
-            if (ImGui::IsItemHovered())
+            if (ImGui::IsItemHovered() && !tooltip_on)
             {
                 std::string tooltip_text = item->name();
                 if(!item_owned && !multiworld->is_offline_session())
@@ -302,6 +304,7 @@ float UserInterface::draw_item_tracker_window() const
 
                 ImGui::SetTooltip("%s", tooltip_text.c_str());
                 ImGui::PopStyleColor();
+                tooltip_on = true;
 
                 if(!item_owned && ImGui::IsMouseReleased(1))
                     process_console_input("!hint " + item->name());
@@ -372,7 +375,7 @@ float UserInterface::draw_tracker_config_window(float y)
             if(ImGui::InputInt("##jewel_count", &jewel_buffer, 1, 1))
             {
                 jewel_buffer = std::max(jewel_buffer, 0);
-                jewel_buffer = std::min(jewel_buffer, 5);
+                jewel_buffer = std::min(jewel_buffer, 9);
                 _tracker_config.jewel_count = jewel_buffer;
                 update_map_tracker_logic();
             }

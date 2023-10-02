@@ -1,5 +1,6 @@
 #include "tracker_config.hpp"
 #include "trackable_region.hpp"
+#include "trackable_item.hpp"
 #include <landstalker_lib/constants/item_codes.hpp>
 #include <fstream>
 #include <sstream>
@@ -18,18 +19,27 @@ void TrackerConfig::init_teleport_trees(const std::vector<TrackableRegion*>& reg
     }
 }
 
-[[nodiscard]] bool TrackerConfig::item_exists_in_game(uint8_t item_id) const
+[[nodiscard]] bool TrackerConfig::item_exists_in_game(TrackableItem* item) const
 {
+    uint8_t item_id = item->item_id();
+
     // Depending on the jewel count, some jewels don't exist
-    if(item_id == ITEM_RED_JEWEL && jewel_count < 1)
+    if(item->name() == "Kazalt Jewel")
+    {
+        if(jewel_count < 6)
+            return false;
+        if(jewel_count < item->quantity())
+            return false;
+    }
+    else if(item_id == ITEM_RED_JEWEL && (jewel_count < 1 || jewel_count > 5))
         return false;
-    if(item_id == ITEM_PURPLE_JEWEL && jewel_count < 2)
+    else if(item_id == ITEM_PURPLE_JEWEL && (jewel_count < 2 || jewel_count > 5))
         return false;
-    if(item_id == ITEM_GREEN_JEWEL && jewel_count < 3)
+    else if(item_id == ITEM_GREEN_JEWEL && (jewel_count < 3 || jewel_count > 5))
         return false;
-    if(item_id == ITEM_BLUE_JEWEL && jewel_count < 4)
+    else if(item_id == ITEM_BLUE_JEWEL && (jewel_count < 4 || jewel_count > 5))
         return false;
-    if(item_id == ITEM_YELLOW_JEWEL && jewel_count < 5)
+    else if(item_id == ITEM_YELLOW_JEWEL && (jewel_count < 5 || jewel_count > 5))
         return false;
 
     // No Gola items in "reach_kazalt" goal

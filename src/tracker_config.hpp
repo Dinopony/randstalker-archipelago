@@ -11,6 +11,7 @@
 #define GOAL_BEAT_DARK_NOLE 2
 
 class TrackableRegion;
+class TrackableItem;
 
 struct TrackerConfig
 {
@@ -43,7 +44,7 @@ struct TrackerConfig
     TrackerConfig() = default;
 
     void init_teleport_trees(const std::vector<TrackableRegion*>& regions);
-    [[nodiscard]] bool item_exists_in_game(uint8_t item_id) const;
+    [[nodiscard]] bool item_exists_in_game(TrackableItem* item_id) const;
     [[nodiscard]] const char* goal_internal_string() const;
 
     void toggle_location_ignored(uint16_t loc_id);
