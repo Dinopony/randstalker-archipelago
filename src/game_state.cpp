@@ -90,6 +90,11 @@ uint8_t GameState::owned_item_quantity(uint8_t item_id) const
     uint8_t upper_half_byte = (item_id % 2 == 1);
 
     uint8_t byte_value = _inventory_bytes.at(byte);
+
     uint8_t quantity = (upper_half_byte) ? (byte_value >> 4) : (byte_value & 0x0F);
+    // Quantity = 1 means "owned in the past but currently owns zero"
+    if(quantity > 0)
+        quantity -= 1;
+
     return quantity;
 }
