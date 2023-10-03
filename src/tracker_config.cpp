@@ -108,6 +108,11 @@ void TrackerConfig::build_from_preset(const nlohmann::json& preset_json)
             autofilled_tibor_required = true;
             tibor_required = !(bool) (preset_json["gameSettings"]["removeTiborRequirement"]);
         }
+
+        if(preset_json["gameSettings"].contains("armorUpgrades"))
+        {
+            progressive_armors = preset_json["gameSettings"]["armorUpgrades"];
+        }
     }
 
     if(preset_json.contains("randomizerSettings"))
@@ -141,6 +146,7 @@ void TrackerConfig::save_to_file() const
     contents["autofilled_spawn_location"] = autofilled_spawn_location;
     contents["dark_dungeon"] = dark_dungeon;
     contents["autofilled_dark_dungeon"] = autofilled_dark_dungeon;
+    contents["progressive_armors"] = progressive_armors;
     contents["teleport_tree_connections"] = teleport_tree_connections;
     contents["ignored_locations"] = ignored_locations;
 
@@ -178,7 +184,7 @@ void TrackerConfig::load_from_file()
         autofilled_spawn_location = contents["autofilled_spawn_location"];
         dark_dungeon = contents["dark_dungeon"];
         autofilled_dark_dungeon = contents["autofilled_dark_dungeon"];
-
+        progressive_armors = contents["progressive_armors"];
         contents["teleport_tree_connections"].get_to(teleport_tree_connections);
         contents["ignored_locations"].get_to(ignored_locations);
     }

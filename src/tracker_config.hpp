@@ -36,6 +36,8 @@ struct TrackerConfig
     std::string dark_dungeon = "???";
     bool autofilled_dark_dungeon = false;
 
+    bool progressive_armors = true;
+
     std::map<std::string, std::string> teleport_tree_connections;
     std::set<uint16_t> ignored_locations;
 

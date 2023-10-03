@@ -307,7 +307,12 @@ float UserInterface::draw_item_tracker_window() const
                 tooltip_on = true;
 
                 if(!item_owned && ImGui::IsMouseReleased(1))
-                    process_console_input("!hint " + item->name());
+                {
+                    if(item->name().ends_with("Breast") && _tracker_config.progressive_armors)
+                        process_console_input("!hint Progressive Armor");
+                    else
+                        process_console_input("!hint " + item->name());
+                }
             }
         }
     }
