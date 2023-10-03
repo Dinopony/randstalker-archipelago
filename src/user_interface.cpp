@@ -254,7 +254,7 @@ void UserInterface::draw_emulator_connection_window()
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0.f, 1.f));
 
-        ImGui::TextWrapped("Open the built ROM with Retroarch using Genesis Plus GX core, then click on the \"Connect to emulator\" button below.");
+        ImGui::TextWrapped("Open the built ROM with Bizhawk or Retroarch using Genesis Plus GX core, then click on the \"Connect to emulator\" button below.");
 
         ImGui::Dummy(ImVec2(0.f, 2.f));
         ImGui::Separator();

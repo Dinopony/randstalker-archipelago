@@ -20,7 +20,7 @@ BizhawkMemInterface::BizhawkMemInterface()
     {
         CloseHandle(_process_handle);
         throw EmulatorException("Could not find any known signature on this core version.\n"
-                                "Please notify the author with your version of Retroarch & Genesis Plus GX.");
+                                "Please notify the author with your version of Bizhawk.");
     }
 
     std::ostringstream oss2;
