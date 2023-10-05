@@ -73,7 +73,8 @@ void update_map_tracker_logic()
 
     for(TrackableItem* item : ui.trackable_items())
         if(game_state.owned_item_quantity(item->item_id()) > 0)
-            logic_solve_preset["gameSettings"]["startingItems"][item->name()] = 1;
+            if(item->name() != "Kazalt Jewel")
+                logic_solve_preset["gameSettings"]["startingItems"][item->name()] = game_state.owned_item_quantity(item->item_id());
 
     std::string spawn_location = ui.tracker_config().spawn_location;
     for(char& c : spawn_location)
