@@ -307,7 +307,7 @@
   },
   {
     "name": "Kazalt Jewel",
-    "image": "red_jewel.gif",
+    "image": "indigo_jewel.gif",
     "itemId": 40,
     "quantity": 6,
     "x": 2.3,
@@ -315,7 +315,7 @@
   },
   {
     "name": "Kazalt Jewel",
-    "image": "purple_jewel.gif",
+    "image": "orange_jewel.gif",
     "itemId": 40,
     "quantity": 7,
     "x": 2.6,
@@ -323,7 +323,7 @@
   },
   {
     "name": "Kazalt Jewel",
-    "image": "green_jewel.gif",
+    "image": "teal_jewel.gif",
     "itemId": 40,
     "quantity": 8,
     "x": 2.9,
@@ -331,7 +331,7 @@
   },
   {
     "name": "Kazalt Jewel",
-    "image": "blue_jewel.gif",
+    "image": "pink_jewel.gif",
     "itemId": 40,
     "quantity": 9,
     "x": 3.2,
