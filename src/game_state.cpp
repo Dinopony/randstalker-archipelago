@@ -92,8 +92,10 @@ uint8_t GameState::owned_item_quantity(uint8_t item_id) const
     uint8_t byte_value = _inventory_bytes.at(byte);
 
     uint8_t quantity = (upper_half_byte) ? (byte_value >> 4) : (byte_value & 0x0F);
-    // Quantity = 1 means "owned in the past but currently owns zero"
-    if(quantity > 0)
+
+    // Quantity = 1 means "owned in the past but currently owns zero". In that case, we return 1 anyway as if we still
+    // owned the item since we had it at some point, which is valid from a tracking standpoint.
+    if(quantity > 1)
         quantity -= 1;
 
     return quantity;
