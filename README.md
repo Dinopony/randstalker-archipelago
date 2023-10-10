@@ -8,7 +8,9 @@
 randstalker-archipelago is a client for the cross-game multiworld project [Archipelago](https://github.com/ArchipelagoMW/Archipelago).
 It enables players playing Landstalker in a multiworld context, sending and receiving items over network.
 
-It currently only works on Windows with the Retroarch emulator (using Genesis Plus GX core).
+It currently only works on Windows with the following emulators:
+- Retroarch (using Genesis Plus GX core)
+- Bizhawk 2.9.1 x64 (using Genesis Plus GX core)
 
 ## Dependencies
 
