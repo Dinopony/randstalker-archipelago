@@ -116,7 +116,9 @@ void update_map_tracker_logic()
     for(Location& loc : game_state.locations())
         loc.reachable(reachable_locations.contains(loc.name()));
 
-    std::filesystem::path(SOLVE_LOGIC_PRESET_FILE_PATH).remove_filename();
+#ifndef DEBUG
+    std::filesystem::remove(std::filesystem::path(SOLVE_LOGIC_PRESET_FILE_PATH));
+#endif
 }
 
 void initiate_solo_session()
@@ -503,7 +505,7 @@ std::string build_rom()
     bool success = invoke(command);
 
 #ifndef DEBUG
-    std::filesystem::path(INTERNAL_PRESET_FILE_PATH).remove_filename();
+    std::filesystem::remove(std::filesystem::path(INTERNAL_PRESET_FILE_PATH));
 #endif
 
     if(success)
