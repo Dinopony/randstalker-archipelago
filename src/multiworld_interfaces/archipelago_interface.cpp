@@ -145,7 +145,7 @@ void ArchipelagoInterface::on_room_info()
     if(!_client)
         return;
 
-    _client->ConnectSlot(_slot_name, _password, 1, {}, {0, 4, 0});
+    _client->ConnectSlot(_slot_name, _password, 5, {}, {0, 4, 4});
 }
 
 void ArchipelagoInterface::on_slot_connected(const json& slot_data)
