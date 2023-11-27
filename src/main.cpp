@@ -143,13 +143,54 @@ void connect_ap(std::string host, const std::string& slot_name, const std::strin
         return;
     }
 
-    if(!host.empty() && host.find("ws://") != 0 && host.find("wss://") != 0)
-        host = "ws://" + host;
-
     session_mutex.lock();
-    Logger::info("Attempting to connect to Archipelago server at '" + host + "'...");
     game_state.reset();
-    multiworld = new ArchipelagoInterface(host, slot_name, password);
+
+    Logger::info("Attempting to connect to Archipelago server at '" + host + "'...");
+
+    if(host.find("ws://") != 0 && host.find("wss://") != 0)
+    {
+        // Protocol not given: try both and see which one wins
+        ArchipelagoInterface* wss_multiworld = new ArchipelagoInterface("wss://" + host, slot_name, password);
+        ArchipelagoInterface* ws_multiworld = new ArchipelagoInterface("ws://" + host, slot_name, password);
+        multiworld = nullptr;
+
+        constexpr uint32_t WAIT_MILLIS = 100;
+        constexpr uint32_t TIMEOUT_MILLIS = 5000;
+        for(uint32_t i=0 ; i<TIMEOUT_MILLIS ; i += WAIT_MILLIS)
+        {
+            wss_multiworld->poll();
+            if(wss_multiworld->is_connected())
+            {
+                multiworld = wss_multiworld;
+                delete ws_multiworld;
+                break;
+            }
+
+            ws_multiworld->poll();
+            if(ws_multiworld->is_connected())
+            {
+                multiworld = ws_multiworld;
+                delete wss_multiworld;
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_MILLIS));
+        }
+
+        if(!multiworld)
+        {
+            Logger::error("Could not connect to Archipelago server");
+            delete ws_multiworld;
+            delete wss_multiworld;
+        }
+    }
+    else
+    {
+        // Protocol given: use the parameters that were explicitly passed
+        multiworld = new ArchipelagoInterface(host, slot_name, password);
+    }
+
     session_mutex.unlock();
 }
 
