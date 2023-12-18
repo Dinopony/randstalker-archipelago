@@ -15,6 +15,6 @@ void initiate_solo_session();
 void connect_ap(std::string host, const std::string& slot_name, const std::string& password);
 void disconnect_ap();
 void connect_emu();
-void check_rom_existence();
+void check_rom_existence(uint32_t seed, const std::string& player_name);
 std::string build_rom();
 void process_console_input(const std::string& input);

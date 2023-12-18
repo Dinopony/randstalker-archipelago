@@ -389,18 +389,18 @@ void poll_emulator()
     }
 }
 
-static std::string get_output_rom_path()
+static std::string get_output_rom_path(uint32_t seed, const std::string& player_name)
 {
     std::string output_path = std::string(ui.output_rom_path());
     if(!output_path.ends_with("/"))
         output_path += "/";
 
-    if(multiworld && !multiworld->is_offline_session())
-        output_path += "AP_" + multiworld->player_name() + "_";
+    if(!player_name.empty())
+        output_path += "AP_" + player_name + "_";
     else
         output_path += "SP_";
-    output_path += std::to_string(game_state.expected_seed()) + ".md";
 
+    output_path += std::to_string(seed) + ".md";
     return output_path;
 }
 
@@ -408,9 +408,11 @@ static std::string get_output_rom_path()
  * Check if the ROM with the expected output name was already built on a previous connection to the same server.
  * If that is the case, notify the player and "skip" the ROM building window.
  */
-void check_rom_existence()
+void check_rom_existence(uint32_t seed, const std::string& player_name)
 {
-    std::string output_path = get_output_rom_path();
+    std::string output_path = get_output_rom_path(seed, player_name);
+    Logger::info("Checking for ROM at path '" + output_path + "'...");
+
     if(std::filesystem::exists(std::filesystem::path(output_path)))
     {
         game_state.built_rom_path(output_path);
@@ -421,6 +423,7 @@ void check_rom_existence()
         ui.tracker_config().file_path = std::regex_replace(output_path, std::regex("\\.md"), ".json");
         ui.tracker_config().load_from_file();
     }
+    else Logger::info("ROM not found!");
 }
 
 std::string build_rom()
@@ -518,7 +521,7 @@ std::string build_rom()
 
     std::string dump = preset_json.dump(4);
 
-    std::string output_path = get_output_rom_path();
+    std::string output_path = get_output_rom_path(game_state.expected_seed(), multiworld->player_name());
 
     // Autofill all tracker settings that can be deduced from the preset
     ui.tracker_config().build_from_preset(preset_json);

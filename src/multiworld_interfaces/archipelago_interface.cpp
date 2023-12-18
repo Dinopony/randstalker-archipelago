@@ -165,7 +165,7 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
 
     // Update the expected seed to know which filename to look for during ROM existence check
     game_state.expected_seed(_slot_data["seed"]);
-    check_rom_existence();
+    check_rom_existence(game_state.expected_seed(), _slot_name);
 
     // Fetch all of the locations' data to know what to put in item sources when building the ROM
     std::list<int64_t> all_location_ids;

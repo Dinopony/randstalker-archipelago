@@ -17,7 +17,7 @@ public:
     [[nodiscard]] bool is_connected() const override { return true; }
     [[nodiscard]] bool is_offline_session() const override { return true; }
     [[nodiscard]] bool connection_failed() const override { return false; }
-    [[nodiscard]] std::string player_name() const override { return "Player"; }
+    [[nodiscard]] std::string player_name() const override { return ""; }
 
     void notify_game_completed() override {}
     void notify_death() override {}
