@@ -1,6 +1,6 @@
 #include "preset_builder.hpp"
 
-static json build_game_settings_json(const json& slot_data)
+static json build_game_settings_json(const json& slot_data, bool winter_theme)
 {
     json game_settings = json::object();
 
@@ -33,6 +33,7 @@ static json build_game_settings_json(const json& slot_data)
     game_settings["allTreesVisitedAtStart"] = (slot_data["teleport_tree_requirements"] < 2);
 
     game_settings["ekeekeAutoRevive"] = (slot_data["revive_using_ekeeke"] == 1);
+    game_settings["christmasEvent"] = winter_theme;
 
     const std::array<int, 5> DIFFICULTY_RATES = {
             60,     // Peaceful = 60% HP & Damage
@@ -114,11 +115,11 @@ static json build_world_json(const json& slot_data, const json& locations_data, 
     return world;
 }
 
-json build_preset_json(const json& slot_data, const json& locations_data, const std::string& player_name)
+json build_preset_json(const json& slot_data, const json& locations_data, const std::string& player_name, bool winter_theme)
 {
     json preset = json::object();
 
-    preset["gameSettings"] = build_game_settings_json(slot_data);
+    preset["gameSettings"] = build_game_settings_json(slot_data, winter_theme);
     preset["randomizerSettings"] = build_randomizer_settings_json(slot_data);
     preset["world"] = build_world_json(slot_data, locations_data, player_name);
     preset["world"]["seed"] = slot_data["seed"];

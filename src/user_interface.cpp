@@ -188,6 +188,10 @@ void UserInterface::draw_rom_generation_window()
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Swap the music before and after taking boat to Verla");
 
+        ImGui::Checkbox("Winter theme", &_winter_theme);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Covers the world with snow. Merry Christmas!");
+
         ImGui::Dummy(ImVec2(0.f, 2.f));
         ImGui::Separator(); // --------------------------------------------------------
         ImGui::Dummy(ImVec2(0.f, 1.f));

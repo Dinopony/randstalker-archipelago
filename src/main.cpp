@@ -513,7 +513,7 @@ std::string build_rom()
             return "";
         }
 
-        preset_json = build_preset_json(archipelago->slot_data(), archipelago->locations_data(), archipelago->player_name());
+        preset_json = build_preset_json(archipelago->slot_data(), archipelago->locations_data(), archipelago->player_name(), ui.use_winter_theme());
     }
 
     std::string dump = preset_json.dump(4);
