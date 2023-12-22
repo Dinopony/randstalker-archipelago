@@ -1122,6 +1122,8 @@ void UserInterface::load_personal_settings()
         _remove_music = personal_settings.at("removeMusic");
     if(personal_settings.contains("swapOverworldMusic"))
         _swap_overworld_music = personal_settings.at("swapOverworldMusic");
+    if(personal_settings.contains("winterTheme"))
+        _winter_theme = personal_settings.at("winterTheme");
 }
 
 void UserInterface::load_client_settings()
@@ -1196,6 +1198,7 @@ void UserInterface::save_personal_settings()
 
     personal_settings["removeMusic"] = _remove_music;
     personal_settings["swapOverworldMusic"] = _swap_overworld_music;
+    personal_settings["winterTheme"] = _winter_theme;
 
     std::ofstream output_file("./personal_settings.json");
     if(output_file.is_open())
