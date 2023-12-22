@@ -27,6 +27,8 @@ static json build_game_settings_json(const json& slot_data)
     game_settings["consumableSpellBook"] = false;
 
     game_settings["removeGumiBoulder"] = (slot_data["remove_gumi_boulder"] == 1);
+    game_settings["openGreenmazeShortcut"] = (slot_data.value("open_greenmaze_shortcut", 0) == 1);
+    game_settings["allowWhistleUsageBehindTrees"] = (slot_data["allow_whistle_usage_behind_trees"] == 1);
 
     game_settings["removeTiborRequirement"] = ((slot_data["teleport_tree_requirements"] == 0)
                                             || (slot_data["teleport_tree_requirements"] == 2));
@@ -64,8 +66,6 @@ static json build_randomizer_settings_json(const json& slot_data)
     rando_settings["enemyJumpingInLogic"] = (slot_data["handle_enemy_jumping_in_logic"] == 1);
     rando_settings["damageBoostingInLogic"] = (slot_data["handle_damage_boosting_in_logic"] == 1);
     rando_settings["treeCuttingGlitchInLogic"] = (slot_data["handle_tree_cutting_glitch_in_logic"] == 1);
-    rando_settings["allowWhistleUsageBehindTrees"] = (slot_data["allow_whistle_usage_behind_trees"] == 1);
-    rando_settings["openGreenmazeShortcut"] = (slot_data.value("open_greenmaze_shortcut", 0) == 1);
 
     return rando_settings;
 }
