@@ -70,6 +70,9 @@ void update_map_tracker_logic()
     logic_solve_preset["gameSettings"]["jewelCount"] = ui.tracker_config().jewel_count;
     logic_solve_preset["gameSettings"]["allTreesVisitedAtStart"] = ui.tracker_config().open_trees;
     logic_solve_preset["gameSettings"]["removeTiborRequirement"] = !(ui.tracker_config().tibor_required);
+    logic_solve_preset["gameSettings"]["removeGumiBoulder"] = ui.tracker_config().remove_gumi_boulder;
+    logic_solve_preset["gameSettings"]["openGreenmazeShortcut"] = ui.tracker_config().open_greenmaze_shortcut;
+    logic_solve_preset["gameSettings"]["allowWhistleUsageBehindTrees"] = ui.tracker_config().allow_whistle_usage_behind_trees;
 
     for(TrackableItem* item : ui.trackable_items())
         if(game_state.owned_item_quantity(item->item_id()) > 0)

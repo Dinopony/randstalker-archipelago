@@ -109,6 +109,24 @@ void TrackerConfig::build_from_preset(const nlohmann::json& preset_json)
             tibor_required = !(bool) (preset_json["gameSettings"]["removeTiborRequirement"]);
         }
 
+        if(preset_json["gameSettings"].contains("removeGumiBoulder"))
+        {
+            autofilled_remove_gumi_boulder = true;
+            remove_gumi_boulder = preset_json["gameSettings"]["removeGumiBoulder"];
+        }
+
+        if(preset_json["gameSettings"].contains("openGreenmazeShortcut"))
+        {
+            autofilled_open_greenmaze_shortcut = true;
+            open_greenmaze_shortcut = preset_json["gameSettings"]["openGreenmazeShortcut"];
+        }
+
+        if(preset_json["gameSettings"].contains("allowWhistleUsageBehindTrees"))
+        {
+            autofilled_allow_whistle_usage_behind_trees = true;
+            allow_whistle_usage_behind_trees = preset_json["gameSettings"]["allowWhistleUsageBehindTrees"];
+        }
+
         if(preset_json["gameSettings"].contains("armorUpgrades"))
         {
             progressive_armors = preset_json["gameSettings"]["armorUpgrades"];
@@ -141,6 +159,9 @@ void TrackerConfig::save_to_file() const
     contents["open_trees"] = open_trees;
     contents["autofilled_open_trees"] = autofilled_open_trees;
     contents["tibor_required"] = tibor_required;
+    contents["remove_gumi_boulder"] = remove_gumi_boulder;
+    contents["open_greenmaze_shortcut"] = open_greenmaze_shortcut;
+    contents["allow_whistle_usage_behind_trees"] = allow_whistle_usage_behind_trees;
     contents["autofilled_tibor_required"] = autofilled_tibor_required;
     contents["spawn_location"] = spawn_location;
     contents["autofilled_spawn_location"] = autofilled_spawn_location;
@@ -179,6 +200,9 @@ void TrackerConfig::load_from_file()
         open_trees = contents["open_trees"];
         autofilled_open_trees = contents["autofilled_open_trees"];
         tibor_required = contents["tibor_required"];
+        remove_gumi_boulder = contents["remove_gumi_boulder"];
+        open_greenmaze_shortcut = contents["open_greenmaze_shortcut"];
+        allow_whistle_usage_behind_trees = contents["allow_whistle_usage_behind_trees"];
         autofilled_tibor_required = contents["autofilled_tibor_required"];
         spawn_location = contents["spawn_location"];
         autofilled_spawn_location = contents["autofilled_spawn_location"];

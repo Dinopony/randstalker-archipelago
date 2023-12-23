@@ -36,6 +36,15 @@ struct TrackerConfig
     std::string dark_dungeon = "???";
     bool autofilled_dark_dungeon = false;
 
+    bool remove_gumi_boulder = false;
+    bool autofilled_remove_gumi_boulder = false;
+
+    bool open_greenmaze_shortcut = false;
+    bool autofilled_open_greenmaze_shortcut = false;
+
+    bool allow_whistle_usage_behind_trees = false;
+    bool autofilled_allow_whistle_usage_behind_trees = false;
+
     bool progressive_armors = true;
 
     std::map<std::string, std::string> teleport_tree_connections;
