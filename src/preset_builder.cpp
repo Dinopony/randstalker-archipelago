@@ -66,6 +66,7 @@ static json build_randomizer_settings_json(const json& slot_data)
     rando_settings["enemyJumpingInLogic"] = (slot_data["handle_enemy_jumping_in_logic"] == 1);
     rando_settings["damageBoostingInLogic"] = (slot_data["handle_damage_boosting_in_logic"] == 1);
     rando_settings["treeCuttingGlitchInLogic"] = (slot_data["handle_tree_cutting_glitch_in_logic"] == 1);
+    rando_settings["ensureEkeEkeInShops"] = false;
 
     return rando_settings;
 }
