@@ -188,9 +188,20 @@ void UserInterface::draw_rom_generation_window()
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Swap the music before and after taking boat to Verla");
 
-        ImGui::Checkbox("Winter theme", &_winter_theme);
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Covers the world with snow. Merry Christmas!");
+        const Season SEASONS[] = { Season::SPRING, Season::SUMMER, Season::AUTUMN, Season::WINTER };
+        ImGui::Text("Season");
+        if(ImGui::BeginCombo("##seasonCombo", get_season_pretty_name(_season)))
+        {
+            for(Season season : SEASONS)
+            {
+                bool is_selected = (_season == season);
+                if (ImGui::Selectable(get_season_pretty_name(season), is_selected))
+                    _season = season;
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
 
         ImGui::Dummy(ImVec2(0.f, 2.f));
         ImGui::Separator(); // --------------------------------------------------------
@@ -1134,8 +1145,19 @@ void UserInterface::load_personal_settings()
         _remove_music = personal_settings.at("removeMusic");
     if(personal_settings.contains("swapOverworldMusic"))
         _swap_overworld_music = personal_settings.at("swapOverworldMusic");
-    if(personal_settings.contains("winterTheme"))
-        _winter_theme = personal_settings.at("winterTheme");
+
+    if(personal_settings.contains("season"))
+    {
+        std::string season_str = personal_settings["season"];
+        if(season_str == "winter")
+            _season = Season::WINTER;
+        else if(season_str == "summer")
+            _season = Season::SUMMER;
+        else if(season_str == "autumn" || season_str == "fall")
+            _season = Season::AUTUMN;
+    }
+    else if(personal_settings.contains("winterTheme") && personal_settings.at("winterTheme") == true)
+        _season = Season::WINTER;
 }
 
 void UserInterface::load_client_settings()
@@ -1210,7 +1232,11 @@ void UserInterface::save_personal_settings()
 
     personal_settings["removeMusic"] = _remove_music;
     personal_settings["swapOverworldMusic"] = _swap_overworld_music;
-    personal_settings["winterTheme"] = _winter_theme;
+
+    if(_season == Season::SPRING)       personal_settings["season"] = "winter";
+    else if(_season == Season::SUMMER)  personal_settings["season"] = "summer";
+    else if(_season == Season::AUTUMN)  personal_settings["season"] = "autumn";
+    else if(_season == Season::WINTER)  personal_settings["season"] = "winter";
 
     std::ofstream output_file("./personal_settings.json");
     if(output_file.is_open())
@@ -1302,4 +1328,16 @@ void UserInterface::init_presets_list()
 
     if(_presets.empty())
         _offline_generation_mode = 1; // Force permalink mode if there are no presets
+}
+
+const char* UserInterface::get_season_pretty_name(Season season)
+{
+    if(season == Season::SUMMER)
+        return "Summer";
+    if(season == Season::AUTUMN)
+        return "Autumn";
+    if(season == Season::WINTER)
+        return "Winter";
+    else // if(season == Season::SPRING)
+        return "Spring (Default)";
 }

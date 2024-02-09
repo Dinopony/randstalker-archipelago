@@ -8,6 +8,13 @@
 #include "trackable_region.hpp"
 #include "tracker_config.hpp"
 
+enum class Season {
+    SPRING,
+    SUMMER,
+    AUTUMN,
+    WINTER
+};
+
 class UserInterface {
 private:
     char _host[512] = "archipelago.gg:12345";
@@ -22,7 +29,7 @@ private:
     float _nigel_color_dark[3] = { 0.f, 0.f, 0.f };
     bool _remove_music = false;
     bool _swap_overworld_music = false;
-    bool _winter_theme = false;
+    Season _season = Season::SPRING;
 
     int _offline_generation_mode = 0; ///< 0 = preset, 1 = permalink
     int _selected_preset = 0;
@@ -56,7 +63,6 @@ public:
 
     [[nodiscard]] const char* input_rom_path() const { return _input_rom_path; }
     [[nodiscard]] const char* output_rom_path() const { return _output_rom_path; }
-    [[nodiscard]] bool use_winter_theme() const { return _winter_theme; }
 
     [[nodiscard]] const std::vector<TrackableItem*>& trackable_items() const { return _trackable_items; }
     [[nodiscard]] const std::vector<TrackableRegion*>& trackable_regions() const { return _trackable_regions; }
@@ -72,6 +78,8 @@ private:
     void init_item_tracker();
     void init_map_tracker();
     void init_presets_list();
+
+    static const char* get_season_pretty_name(Season season);
 
     void loop(sf::RenderWindow& window);
 
