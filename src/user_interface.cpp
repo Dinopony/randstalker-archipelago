@@ -1233,7 +1233,7 @@ void UserInterface::save_personal_settings()
     personal_settings["removeMusic"] = _remove_music;
     personal_settings["swapOverworldMusic"] = _swap_overworld_music;
 
-    if(_season == Season::SPRING)       personal_settings["season"] = "winter";
+    if(_season == Season::SPRING)       personal_settings["season"] = "spring";
     else if(_season == Season::SUMMER)  personal_settings["season"] = "summer";
     else if(_season == Season::AUTUMN)  personal_settings["season"] = "autumn";
     else if(_season == Season::WINTER)  personal_settings["season"] = "winter";
