@@ -101,7 +101,19 @@ static json build_world_json(const json& slot_data, const json& locations_data, 
         if(prices.contains(item_source_name))
             output["price"] = prices.at(item_source_name);
         if(data["player"] != player_name)
-            output["player"] = data["player"];
+        {
+            std::string real_player_name = data["player"];
+
+            // This is a hacky fix to extract the alias part from the name in cases where slot name fetched from server
+            // looks like "Player Alias (Real Slot Name Causing A Really Long String)".
+            // This was causing textbox overflows in some places, and you really don't want that to happen for the game
+            // to remain stable.
+            auto pos = real_player_name.find(" (");
+            if (pos != std::string::npos)
+                real_player_name = real_player_name.substr(0, pos);
+
+            output["player"] = real_player_name;
+        }
 
         world["itemSources"][item_source_name] = output;
     }
