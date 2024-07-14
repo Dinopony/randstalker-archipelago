@@ -243,12 +243,6 @@ void connect_emu()
     {
         Logger::error("Could not find a valid emulator process currently running the game to connect to.");
     }
-    else if(!multiworld->is_offline_session() && emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
-    {
-        delete emulator;
-        emulator = nullptr;
-        Logger::error("Invalid seed. Please ensure the right ROM was loaded.");
-    }
 
     session_mutex.unlock();
 }
@@ -290,6 +284,14 @@ void poll_archipelago()
 
 void poll_emulator()
 {
+    if((multiworld && !multiworld->is_offline_session()) && emulator->read_game_long(ADDR_SEED) != game_state.expected_seed())
+    {
+        delete emulator;
+        emulator = nullptr;
+        Logger::error("Invalid seed. Please ensure the right ROM was loaded.");
+        return;
+    }
+
     // If no save file is currently loaded, no need to do anything
     if(emulator->read_game_word(ADDR_IS_IN_GAME) == 0x00)
         return;
