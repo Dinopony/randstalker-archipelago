@@ -206,6 +206,8 @@ void disconnect_ap()
     delete emulator;
     emulator = nullptr;
     game_state.reset();
+    ui.tracker_config().save_to_file();
+    ui.tracker_config().file_path = "";
     session_mutex.unlock();
 }
 
@@ -675,14 +677,13 @@ int main()
             session_mutex.unlock();
             std::this_thread::sleep_for(std::chrono::milliseconds(150));
         }
-
-        ui.tracker_config().save_to_file();
     });
 
     // UI thread
     ui.open();
 
     // When UI is closed, tell the other thread to stop working
+    ui.tracker_config().save_to_file();
     keep_working = false;
     process_thread.join();
     return EXIT_SUCCESS;
