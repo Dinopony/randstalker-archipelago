@@ -488,6 +488,18 @@ float UserInterface::draw_tracker_config_window(float y)
             if(ImGui::Checkbox("Allow Whistle usage behind trees", &_tracker_config.allow_whistle_usage_behind_trees))
                 update_map_tracker_logic();
 
+        if(!_tracker_config.autofilled_damage_boosting_in_logic)
+            if(ImGui::Checkbox("Damage boosting in logic", &_tracker_config.damage_boosting_in_logic))
+                update_map_tracker_logic();
+
+        if(!_tracker_config.autofilled_enemy_jumping_in_logic)
+            if(ImGui::Checkbox("Enemy jumping in logic", &_tracker_config.enemy_jumping_in_logic))
+                update_map_tracker_logic();
+
+        if(!_tracker_config.autofilled_tree_cutting_glitch_in_logic)
+            if(ImGui::Checkbox("Tree-cutting glitch in logic", &_tracker_config.tree_cutting_glitch_in_logic))
+                update_map_tracker_logic();
+
         if(!_map_tracker_open)
         {
             ImGui::Dummy(ImVec2(0.f, 2.f));
