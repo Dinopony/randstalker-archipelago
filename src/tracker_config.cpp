@@ -140,6 +140,24 @@ void TrackerConfig::build_from_preset(const nlohmann::json& preset_json)
             autofilled_shuffled_trees = true;
             shuffled_trees = preset_json["randomizerSettings"]["shuffleTrees"];
         }
+
+        if(preset_json["randomizerSettings"].contains("damageBoostingInLogic"))
+        {
+            autofilled_damage_boosting_in_logic = true;
+            damage_boosting_in_logic = preset_json["randomizerSettings"]["damageBoostingInLogic"];
+        }
+
+        if(preset_json["randomizerSettings"].contains("enemyJumpingInLogic"))
+        {
+            autofilled_enemy_jumping_in_logic = true;
+            enemy_jumping_in_logic = preset_json["randomizerSettings"]["enemyJumpingInLogic"];
+        }
+
+        if(preset_json["randomizerSettings"].contains("treeCuttingGlitchInLogic"))
+        {
+            autofilled_tree_cutting_glitch_in_logic = true;
+            tree_cutting_glitch_in_logic = preset_json["randomizerSettings"]["treeCuttingGlitchInLogic"];
+        }
     }
 }
 
@@ -159,13 +177,19 @@ void TrackerConfig::save_to_file() const
     contents["open_trees"] = open_trees;
     contents["autofilled_open_trees"] = autofilled_open_trees;
     contents["tibor_required"] = tibor_required;
-    contents["autofilled_remove_gumi_boulder"] = autofilled_remove_gumi_boulder;
-    contents["remove_gumi_boulder"] = remove_gumi_boulder;
-    contents["autofilled_open_greenmaze_shortcut"] = autofilled_open_greenmaze_shortcut;
-    contents["open_greenmaze_shortcut"] = open_greenmaze_shortcut;
-    contents["autofilled_allow_whistle_usage_behind_trees"] = autofilled_allow_whistle_usage_behind_trees;
-    contents["allow_whistle_usage_behind_trees"] = allow_whistle_usage_behind_trees;
     contents["autofilled_tibor_required"] = autofilled_tibor_required;
+    contents["remove_gumi_boulder"] = remove_gumi_boulder;
+    contents["autofilled_remove_gumi_boulder"] = autofilled_remove_gumi_boulder;
+    contents["open_greenmaze_shortcut"] = open_greenmaze_shortcut;
+    contents["autofilled_open_greenmaze_shortcut"] = autofilled_open_greenmaze_shortcut;
+    contents["allow_whistle_usage_behind_trees"] = allow_whistle_usage_behind_trees;
+    contents["autofilled_allow_whistle_usage_behind_trees"] = autofilled_allow_whistle_usage_behind_trees;
+    contents["damage_boosting_in_logic"] = damage_boosting_in_logic;
+    contents["autofilled_damage_boosting_in_logic"] = autofilled_damage_boosting_in_logic;
+    contents["enemy_jumping_in_logic"] = enemy_jumping_in_logic;
+    contents["autofilled_enemy_jumping_in_logic"] = autofilled_enemy_jumping_in_logic;
+    contents["tree_cutting_glitch_in_logic"] = tree_cutting_glitch_in_logic;
+    contents["autofilled_tree_cutting_glitch_in_logic"] = autofilled_tree_cutting_glitch_in_logic;
     contents["spawn_location"] = spawn_location;
     contents["autofilled_spawn_location"] = autofilled_spawn_location;
     contents["dark_dungeon"] = dark_dungeon;
@@ -203,13 +227,19 @@ void TrackerConfig::load_from_file()
         open_trees = contents["open_trees"];
         autofilled_open_trees = contents["autofilled_open_trees"];
         tibor_required = contents["tibor_required"];
-        autofilled_remove_gumi_boulder = contents["autofilled_remove_gumi_boulder"];
-        remove_gumi_boulder = contents["remove_gumi_boulder"];
-        autofilled_open_greenmaze_shortcut = contents["autofilled_open_greenmaze_shortcut"];
-        open_greenmaze_shortcut = contents["open_greenmaze_shortcut"];
-        autofilled_allow_whistle_usage_behind_trees = contents["autofilled_allow_whistle_usage_behind_trees"];
-        allow_whistle_usage_behind_trees = contents["allow_whistle_usage_behind_trees"];
         autofilled_tibor_required = contents["autofilled_tibor_required"];
+        remove_gumi_boulder = contents["remove_gumi_boulder"];
+        autofilled_remove_gumi_boulder = contents["autofilled_remove_gumi_boulder"];
+        open_greenmaze_shortcut = contents["open_greenmaze_shortcut"];
+        autofilled_open_greenmaze_shortcut = contents["autofilled_open_greenmaze_shortcut"];
+        allow_whistle_usage_behind_trees = contents["allow_whistle_usage_behind_trees"];
+        autofilled_allow_whistle_usage_behind_trees = contents["autofilled_allow_whistle_usage_behind_trees"];
+        damage_boosting_in_logic = contents["damage_boosting_in_logic"];
+        autofilled_damage_boosting_in_logic = contents["autofilled_damage_boosting_in_logic"];
+        enemy_jumping_in_logic = contents["enemy_jumping_in_logic"];
+        autofilled_enemy_jumping_in_logic = contents["autofilled_enemy_jumping_in_logic"];
+        tree_cutting_glitch_in_logic = contents["tree_cutting_glitch_in_logic"];
+        autofilled_tree_cutting_glitch_in_logic = contents["autofilled_tree_cutting_glitch_in_logic"];
         spawn_location = contents["spawn_location"];
         autofilled_spawn_location = contents["autofilled_spawn_location"];
         dark_dungeon = contents["dark_dungeon"];

@@ -74,6 +74,10 @@ void update_map_tracker_logic()
     logic_solve_preset["gameSettings"]["openGreenmazeShortcut"] = ui.tracker_config().open_greenmaze_shortcut;
     logic_solve_preset["gameSettings"]["allowWhistleUsageBehindTrees"] = ui.tracker_config().allow_whistle_usage_behind_trees;
 
+    logic_solve_preset["randomizerSettings"]["damageBoostingInLogic"] = ui.tracker_config().damage_boosting_in_logic;
+    logic_solve_preset["randomizerSettings"]["enemyJumpingInLogic"] = ui.tracker_config().enemy_jumping_in_logic;
+    logic_solve_preset["randomizerSettings"]["treeCuttingGlitchInLogic"] = ui.tracker_config().tree_cutting_glitch_in_logic;
+
     for(TrackableItem* item : ui.trackable_items())
         if(game_state.owned_item_quantity(item->item_id()) > 0)
             if(item->name() != "Kazalt Jewel")

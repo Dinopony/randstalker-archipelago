@@ -45,6 +45,15 @@ struct TrackerConfig
     bool allow_whistle_usage_behind_trees = false;
     bool autofilled_allow_whistle_usage_behind_trees = false;
 
+    bool damage_boosting_in_logic = false;
+    bool autofilled_damage_boosting_in_logic = false;
+
+    bool enemy_jumping_in_logic = false;
+    bool autofilled_enemy_jumping_in_logic = false;
+
+    bool tree_cutting_glitch_in_logic = false;
+    bool autofilled_tree_cutting_glitch_in_logic = false;
+
     bool progressive_armors = true;
 
     std::map<std::string, std::string> teleport_tree_connections;
