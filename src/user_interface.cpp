@@ -879,6 +879,7 @@ void UserInterface::draw_console_window(float x, float y)
     ImGui::SetNextWindowPos(ImVec2(x, y));
     ImGui::SetNextWindowSize(ImVec2(width, height));
 
+    int i=0;
     ImGui::Begin("Console", nullptr, WINDOW_FLAGS | ImGuiWindowFlags_AlwaysVerticalScrollbar);
     {
         ImGui::PushStyleColor(ImGuiCol_Separator, IM_COL32(128,128,128,40));
@@ -913,6 +914,17 @@ void UserInterface::draw_console_window(float x, float y)
 
             ImGui::TextWrapped("%s%s", prefix.c_str(), msg.text.c_str());
             ImGui::PopStyleColor();
+
+            std::string popup_id = "CopyCtxMenu" + std::to_string(i++);
+            if(ImGui::BeginPopupContextItem(popup_id.c_str()))
+            {
+                if(ImGui::Button("Copy text"))
+                {
+                    ImGui::SetClipboardText(msg.text.c_str());
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
 
             ImGui::Separator();
         }
