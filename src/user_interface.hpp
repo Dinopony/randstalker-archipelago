@@ -29,6 +29,7 @@ private:
     float _nigel_color_dark[3] = { 0.f, 0.f, 0.f };
     bool _remove_music = false;
     bool _swap_overworld_music = false;
+    bool _skip_received_item_textboxes = false;
     Season _season = Season::SPRING;
 
     int _offline_generation_mode = 0; ///< 0 = preset, 1 = permalink

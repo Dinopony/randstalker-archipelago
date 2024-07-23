@@ -188,6 +188,10 @@ void UserInterface::draw_rom_generation_window()
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Swap the music before and after taking boat to Verla");
 
+        ImGui::Checkbox("Skip received items textboxes", &_skip_received_item_textboxes);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Skip the textbox when receiving an item from another player");
+
         const Season SEASONS[] = { Season::SPRING, Season::SUMMER, Season::AUTUMN, Season::WINTER };
         ImGui::Text("Season");
         if(ImGui::BeginCombo("##seasonCombo", get_season_pretty_name(_season)))
@@ -1169,6 +1173,8 @@ void UserInterface::load_personal_settings()
         _remove_music = personal_settings.at("removeMusic");
     if(personal_settings.contains("swapOverworldMusic"))
         _swap_overworld_music = personal_settings.at("swapOverworldMusic");
+    if(personal_settings.contains("skipReceivedItemTextboxes"))
+        _skip_received_item_textboxes = personal_settings.at("skipReceivedItemTextboxes");
 
     if(personal_settings.contains("season"))
     {
@@ -1256,6 +1262,7 @@ void UserInterface::save_personal_settings()
 
     personal_settings["removeMusic"] = _remove_music;
     personal_settings["swapOverworldMusic"] = _swap_overworld_music;
+    personal_settings["skipReceivedItemTextboxes"] = _skip_received_item_textboxes;
 
     if(_season == Season::SPRING)       personal_settings["season"] = "spring";
     else if(_season == Season::SUMMER)  personal_settings["season"] = "summer";
