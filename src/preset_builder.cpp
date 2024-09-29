@@ -84,12 +84,22 @@ static json build_world_json(const json& slot_data, const json& locations_data, 
     std::map<std::string, json> locations = locations_data;
     for(auto& [item_source_name, data] : locations)
     {
+        // This is a hacky fix to extract the alias part from the name in cases where slot name fetched from server
+        // looks like "Player Alias (Real Slot Name Causing A Really Long String)".
+        // This was causing textbox overflows in some places, and you really don't want that to happen for the game
+        // to remain stable. Also, aliases were conflicting with the "is it my item" detection to determine if an
+        // item should be a local item or a remote AP item.
+        std::string real_player_name = data["player"];
+        auto pos = real_player_name.find(" (");
+        if (pos != std::string::npos)
+            real_player_name = real_player_name.substr(pos + 2, real_player_name.length() - 1 - (pos+2));
+
         // Ignore the fake "End" location which only serves as a win condition
         if(item_source_name == "End")
             continue;
 
         std::string item_name = data["item"];
-        if(data["player"] == player_name)
+        if(real_player_name == player_name)
         {
             if(item_name == "1 Gold")
                 item_name += "s";
@@ -100,20 +110,8 @@ static json build_world_json(const json& slot_data, const json& locations_data, 
         json output = { { "item", item_name } };
         if(prices.contains(item_source_name))
             output["price"] = prices.at(item_source_name);
-        if(data["player"] != player_name)
-        {
-            std::string real_player_name = data["player"];
-
-            // This is a hacky fix to extract the alias part from the name in cases where slot name fetched from server
-            // looks like "Player Alias (Real Slot Name Causing A Really Long String)".
-            // This was causing textbox overflows in some places, and you really don't want that to happen for the game
-            // to remain stable.
-            auto pos = real_player_name.find(" (");
-            if (pos != std::string::npos)
-                real_player_name = real_player_name.substr(0, pos);
-
+        if(real_player_name != player_name)
             output["player"] = real_player_name;
-        }
 
         world["itemSources"][item_source_name] = output;
     }
