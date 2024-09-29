@@ -16,6 +16,7 @@ C++ Archipelago multiworld randomizer client library. See [archipelago.gg](https
 * add dependencies to your project
   * [nlohmann/json](https://github.com/nlohmann/json)
   * [tristanpenman/valijson](https://github.com/tristanpenman/valijson)
+    (unless disabled, see [Build Configuration](#build-configuration))
   * [black-sliver/wswrap](https://github.com/black-sliver/wswrap)
   * for desktop: [zaphoyd/websocketpp](https://github.com/zaphoyd/websocketpp)
   * for desktop: asio (and define ASIO_STANDALONE) or boost::asio
@@ -42,16 +43,29 @@ C++ Archipelago multiworld randomizer client library. See [archipelago.gg](https
   * remove calls to `save_data_package` and don't save data package in `set_data_package_changed_handler`
   * you can still use `set_data_package` or `set_data_package_from_file` during migration to make use of the old cache
     (they are marked as deprecated and will go away in the next version)
-* see [ap-soeclient](https://github.com/black-sliver/ap-soeclient) for an example
+* see [Implementations](#implementations) for examples
 * see [Gotchas](#gotchas)
 
 
-## Additional Configuration
+## Build Configuration
 
-* use `-DWSWRAP_SEND_EXCEPTIONS` or `#define WSWRAP_SEND_EXCEPTIONS` before including anything to get exceptions when
-  a send fails
-* use `-DAP_NO_DEFAULT_DATA_PACKAGE_STORE` or `#define AP_NO_DEFAULT_DATA_PACKAGE_STORE` before including to not use
-  DefaultDataPackageStore automatically.
+Some features/behaviors can be disabled/switched using compile time definitions.
+
+Use
+`-D<definition>` (gcc, clang),
+`add_compile_definitions(<definition>)` (cmake),
+`project properties -> C/C++ -> Preprocessor -> Preprocessor Definitions` (VS),
+`/D<definition>` (vc command line) or
+`#define <definition>` (in code, before include).
+
+* `ASIO_STANDALONE` to use asio/`asio.hpp` directly, not via boost.
+* `APCLIENT_DEBUG` write debug output to stdout.
+* `AP_NO_DEFAULT_DATA_PACKAGE_STORE` to not use DefaultDataPackageStore automatically.
+* `AP_NO_SCHEMA` disables schema validation.
+  It's not required, shrinks the built binary and removes dependency on valijson.
+* `AP_PREFER_UNENCRYPTED` try unencrypted connection first. Only useful for testing.
+* `WSWRAP_SEND_EXCEPTIONS` to get exceptions when a send fails.
+* `WSWRAP_NO_SSL` to disable SSL support. Only recommended for testing.
 
 
 ## When using Visual Studio for building
@@ -63,7 +77,8 @@ C++ Archipelago multiworld randomizer client library. See [archipelago.gg](https
     * Add subprojects\websocketpp
     * Add subprojects\wswrap\include
     * Add subprojects\json\include
-    * Add subprojects\valijson\include 
+    * Add subprojects\valijson\include
+      (unless disabled, see [Build Configuration](#build-configuration))
 * Add `/Zc:__cplusplus` to the command line
   * project properties -> C/C++ -> Command Line -> Additional Options
 * Add `_WIN32_WINNT=0x0600` (or higher) to Preprocessor Definitions
@@ -85,6 +100,14 @@ C++ Archipelago multiworld randomizer client library. See [archipelago.gg](https
   VS2019, msvc, Windows
 * [Dark Souls III Archipelago client](https://github.com/Marechal-L/Dark-Souls-III-Archipelago-client) \
   VS2022, msvc, Windows
+* [ap-textclient](https://github.com/black-sliver/ap-textclient) \
+  ap-soeclient as text client
+* [lua-apclientpp](https://github.com/black-sliver/lua-apclientpp) \
+  Lua wrapper for apclientpp \
+  VS2015/VS2017/shell build scripts, msvc/mingw/gcc, Windows/Linux/macos
+* [gm-apclientpp](https://github.com/black-sliver/gm-apclientpp) \
+  Game Maker wrapper for apclientpp \
+  VS2015, msvc, Windows
 
 
 ## SSL Support
@@ -95,7 +118,7 @@ APClient will automatically try both plain and SSL if SSL support is enabled and
 To add SSL/wss support on desktop, the following steps are required:
 
 * update wswrap to the latest version
-* add openssl (libssl and libcrypt) and optionally crypt32 to the "link libraries". Either static or dynamic.
+* add openssl (libssl and libcrypto) and optionally crypt32 to the "link libraries". Either static or dynamic.
 * include the OpenSSL DLLs (if linked dynamically) and license file
 * to make certificate verifaction work cross-platform
   * include a cert store file and its license, e.g. [curl's CA Extract](https://curl.se/docs/caextract.html)
@@ -120,8 +143,8 @@ Once `slot_connected` was received, a `socket_error` or `socket_disconnected` ca
 * slot_connected `(const json&)`: called as reply to `ConnectSlot` when successful. argument is slot data.
 * slot_refused `(const std::string&)`: called as reply to `ConnectSlot` failed. argument is reason.
 * slot_disconnected `(void)`: currently unused
-* items_received `(std::list<NetworkItem>&)`: called when receiving items - previously received after connect and new over time
-* location_info `(std::list<NetworkItem>&)`: called as reply to `LocationScouts`
+* items_received `(const std::list<NetworkItem>&)`: called when receiving items - previously received after connect and new over time
+* location_info `(const std::list<NetworkItem>&)`: called as reply to `LocationScouts`
 * location_checked `(std::list<int64_t>&)`: called when a local location was remoetly checked or was already checked when connecting
 * data_package_changed `(const json&)`: called when data package (texts) were updated from the server
 * print `(const std::string&)`: legacy chat message
