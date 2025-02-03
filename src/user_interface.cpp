@@ -215,8 +215,10 @@ void UserInterface::draw_rom_generation_window()
         {
             if(_presets.empty())
                 ImGui::BeginDisabled();
-
             ImGui::RadioButton("Generate from preset", &_offline_generation_mode, 0);
+            if(_presets.empty())
+                ImGui::EndDisabled();
+
             ImGui::RadioButton("Generate from permalink", &_offline_generation_mode, 1);
 
             ImGui::Dummy(ImVec2(0.f, 2.f));
@@ -251,6 +253,11 @@ void UserInterface::draw_rom_generation_window()
         {
             std::string rom_path = build_rom();
             game_state.built_rom_path(rom_path);
+        }
+
+        if(multiworld->is_offline_session() && ImGui::Button("Skip ROM building"))
+        {
+            game_state.built_rom_path(".");
         }
     }
     ImGui::End();
