@@ -212,16 +212,17 @@ void ArchipelagoInterface::on_item_scouted(int index, int64_t item, int player, 
     if(!_client)
         return;
 
-    std::string item_name = _client->get_item_name(item);
+    std::string location_name = _client->get_location_name(location, GAME_NAME);
+
     std::string player_name = _client->get_player_alias(player);
-    std::string location_name = _client->get_location_name(location);
+    std::string item_game = _client->get_player_game(player);
+    std::string item_name = _client->get_item_name(item, item_game);
 
     _locations_data[location_name] = {
             { "item", item_name },
             { "player", player_name }
     };
 }
-
 
 void ArchipelagoInterface::on_bounced(const json& packet)
 {
