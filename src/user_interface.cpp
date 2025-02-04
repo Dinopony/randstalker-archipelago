@@ -494,9 +494,9 @@ float UserInterface::draw_tracker_config_window(float y)
             if(ImGui::Checkbox("Remove Gumi boulder", &_tracker_config.remove_gumi_boulder))
                 update_map_tracker_logic();
 
-        if(!_tracker_config.autofilled_open_greenmaze_shortcut)
-            if(ImGui::Checkbox("Open Greenmaze shortcut", &_tracker_config.open_greenmaze_shortcut))
-                update_map_tracker_logic();
+        // if(!_tracker_config.autofilled_open_greenmaze_shortcut)
+        //     if(ImGui::Checkbox("Open Greenmaze shortcut", &_tracker_config.open_greenmaze_shortcut))
+        //         update_map_tracker_logic();
 
         if(!_tracker_config.autofilled_allow_whistle_usage_behind_trees)
             if(ImGui::Checkbox("Allow Whistle usage behind trees", &_tracker_config.allow_whistle_usage_behind_trees))
