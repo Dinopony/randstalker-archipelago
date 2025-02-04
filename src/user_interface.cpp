@@ -188,9 +188,12 @@ void UserInterface::draw_rom_generation_window()
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Swap the music before and after taking boat to Verla");
 
-        ImGui::Checkbox("Skip received items textboxes", &_skip_received_item_textboxes);
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Skip the textbox when receiving an item from another player");
+        if(!multiworld->is_offline_session())
+        {
+            ImGui::Checkbox("Skip received items textboxes", &_skip_received_item_textboxes);
+            if(ImGui::IsItemHovered())
+                ImGui::SetTooltip("Skip the textbox when receiving an item from another player");
+        }
 
         const Season SEASONS[] = { Season::SPRING, Season::SUMMER, Season::AUTUMN, Season::WINTER };
         ImGui::Text("Season");
