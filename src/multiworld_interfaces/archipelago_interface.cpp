@@ -167,10 +167,22 @@ void ArchipelagoInterface::on_slot_connected(const json& slot_data)
     game_state.expected_seed(_slot_data["seed"]);
     check_rom_existence(game_state.expected_seed(), _slot_name);
 
+    bool goal_reach_kazalt = (_slot_data["goal"] == 1);
+    const std::vector<int64_t> ENDGAME_IDS = {
+        4019, 4020, 4021, 4108, 4109, 4110, 4111, 4112, 4113, 4114, 4115, 4116, 4117, 4118, 4119, 4120, 4121,
+        4122, 4123, 4124, 4125, 4126, 4127, 4128, 4129, 4130, 4131, 4132, 4133, 4261, 4263, 4265, 4267, 4271,
+        4283, 4284, 4285, 4331, 4332, 4333, 4334, 4335
+    };
+
     // Fetch all of the locations' data to know what to put in item sources when building the ROM
     std::list<int64_t> all_location_ids;
     for(const Location& loc : game_state.locations())
-        all_location_ids.emplace_back(loc.id());
+    {
+        bool is_endgame_location = std::find(ENDGAME_IDS.begin(), ENDGAME_IDS.end(), loc.id()) != ENDGAME_IDS.end();
+        if(!goal_reach_kazalt || !is_endgame_location)
+            all_location_ids.emplace_back(loc.id());
+    }
+
     _client->LocationScouts(all_location_ids);
 }
 
