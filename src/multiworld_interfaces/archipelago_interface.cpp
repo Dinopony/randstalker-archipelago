@@ -23,9 +23,6 @@ ArchipelagoInterface::ArchipelagoInterface(const std::string& uri, std::string s
     Logger::debug("UUID is " + uuid);
 
     _client = new APClient(uuid, GAME_NAME, uri);
-     try {
-         _client->set_data_package_from_file(DATAPACKAGE_CACHE_FILE);
-     } catch (std::exception&) { /* ignore */ }
 
     this->init_handlers();
 }
@@ -56,7 +53,6 @@ void ArchipelagoInterface::init_handlers()
             this->on_item_scouted(i.index, i.item, i.player, i.location);
     });
 
-    _client->set_data_package_changed_handler([this](const json& data) { _client->save_data_package(DATAPACKAGE_CACHE_FILE); });
     _client->set_bounced_handler([this](const json& cmd) { this->on_bounced(cmd); });
 
     _client->set_print_handler([](const std::string& msg) { Logger::message(msg); });
@@ -145,7 +141,7 @@ void ArchipelagoInterface::on_room_info()
     if(!_client)
         return;
 
-    _client->ConnectSlot(_slot_name, _password, 5, {}, {0, 4, 4});
+    _client->ConnectSlot(_slot_name, _password, 5, {}, {0, 6, 0});
 }
 
 void ArchipelagoInterface::on_slot_connected(const json& slot_data)
@@ -211,9 +207,10 @@ void ArchipelagoInterface::on_item_received(int index, int64_t item, int player,
     if(!_client)
         return;
 
-    std::string item_name = _client->get_item_name(item);
+    std::string item_name = _client->get_item_name(item, GAME_NAME);
     std::string player_name = _client->get_player_alias(player);
-    std::string location_name = _client->get_location_name(location);
+    std::string location_game = _client->get_player_game(player);
+    std::string location_name = _client->get_location_name(location, location_game);
 
     Logger::debug("Received " + item_name + " from " + player_name + " (" + location_name + ")");
     game_state.set_received_item(index, item - ITEM_BASE_ID);

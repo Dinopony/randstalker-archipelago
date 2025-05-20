@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(randstalker_archipelago VERSION 1.8.6 LANGUAGES CXX)
+project(randstalker_archipelago VERSION 1.8.7 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,7 +28,9 @@ include_directories("extlibs/websocketpp")
 include_directories("extlibs/wswrap/include")
 include_directories("extlibs/imgui/")
 include_directories("extlibs/openssl/")
+include_directories("extlibs/zlib/include")
 link_directories("extlibs/openssl/lib")
+link_directories("extlibs/zlib/lib")
 
 add_compile_definitions(ASIO_STANDALONE)
 add_compile_definitions(NOMINMAX)
@@ -40,7 +42,6 @@ if (MSVC)
     add_compile_options(/bigobj)
     add_compile_definitions(_WEBSOCKETPP_CPP11_STL_)
     add_compile_definitions(HAS_STD_FILESYSTEM)
-
 else ()
     add_compile_options(-Wa,-mbig-obj)
 endif ()
@@ -108,4 +109,4 @@ set(SOURCES
         src/tracker_config.cpp)
 
 add_executable(randstalker_archipelago "${SOURCES}")
-target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32 libssl libcrypto crypt32)
+target_link_libraries(randstalker_archipelago psapi sfml-graphics opengl32 libssl libcrypto crypt32 zlib)

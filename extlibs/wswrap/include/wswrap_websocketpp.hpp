@@ -11,18 +11,28 @@
 #define WSWRAP_WITH_SSL // default to SSL enabled
 #endif
 
+#if !defined WSWRAP_NO_COMPRESSION && !defined WSWRAP_WITH_COMPRESSION
+#define WSWRAP_WITH_COMPRESSION // default to compression enabled
+#endif
 
 #include <string>
 #include <functional>
 #include <chrono>
 #include <stdarg.h>
 #include <asio.hpp>
+
 #ifdef WSWRAP_WITH_SSL
 #include <websocketpp/config/asio_client.hpp>
 #else
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #endif
+
+#ifndef WSWRAP_NO_COMPRESSION
+#include <websocketpp/extensions/permessage_deflate/enabled.hpp>
+#endif
+
 #include <websocketpp/client.hpp>
+
 #ifdef _WIN32
 #include <wincrypt.h>
 #endif
@@ -33,11 +43,29 @@
 
 namespace wswrap {
 
+    struct client_config: public websocketpp::config::asio_client {
+#ifdef WSWRAP_WITH_COMPRESSION
+        struct permessage_deflate_config {};
+        typedef websocketpp::extensions::permessage_deflate::enabled<permessage_deflate_config>
+            permessage_deflate_type;
+#endif
+    };
+
+#ifdef WSWRAP_WITH_SSL
+    struct tls_client_config: public websocketpp::config::asio_tls_client {
+#ifdef WSWRAP_WITH_COMPRESSION
+        struct permessage_deflate_config {};
+        typedef websocketpp::extensions::permessage_deflate::enabled<permessage_deflate_config>
+            permessage_deflate_type;
+#endif
+    };
+#endif
+
     class WS final {
     private:
         typedef asio::io_service SERVICE;
 #ifdef WSWRAP_WITH_SSL
-        typedef websocketpp::client<websocketpp::config::asio_tls_client> WSSClient;
+        typedef websocketpp::client<tls_client_config> WSSClient;
         typedef asio::ssl::context SSLContext;
         typedef std::shared_ptr<SSLContext> SSLContextPtr;
         struct WSS_IMPL {
@@ -46,7 +74,7 @@ namespace wswrap {
             Client::connection_ptr second;
         };
 #endif
-        typedef websocketpp::client<websocketpp::config::asio_client> WSClient;
+        typedef websocketpp::client<client_config> WSClient;
         struct WS_IMPL {
             typedef WSClient Client;
             Client first;
@@ -252,7 +280,7 @@ namespace wswrap {
             });
             client.set_pong_timeout_handler([this] (websocketpp::connection_hdl hdl, const std::string&) {
                 T* impl = (T*)_impl;
-                if (impl->second) {
+                if (impl->second && impl->second->get_state() < websocketpp::session::state::closing) {
                     impl->second->close(websocketpp::close::status::internal_endpoint_error, "ping timeout");
                 }
             });
@@ -388,6 +416,8 @@ namespace wswrap {
                 throw std::runtime_error("Cannot delete WS from a callback unless WSWRAP_ASYNC_CLEANUP is defined!");
             }
             #endif
+            if (_ping_timer)
+                _ping_timer.reset(nullptr);
             T* impl = (T*)_impl;
             auto& client = impl->first;
             auto& conn = impl->second;
@@ -506,10 +536,10 @@ namespace wswrap {
         bool _polling = false;
         std::unique_ptr<asio::high_resolution_timer> _ping_timer;
         int _ping_interval = 25000;
-        onerror_ex_handler _herror;
-        onclose_handler _hclose;
         onopen_handler _hopen;
+        onclose_handler _hclose;
         onmessage_handler _hmessage;
+        onerror_ex_handler _herror;
 #ifndef __cpp_exceptions
         bool _connect_error = false;
         std::string _connect_error_message;

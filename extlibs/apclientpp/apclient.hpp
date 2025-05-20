@@ -11,6 +11,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #define _APCLIENT_HPP
 
 
+#define APCLIENTPP_VERSION_INITIALIZER {0, 6, 0}
+
+
 #if defined _WSWRAP_HPP && !defined WSWRAP_SEND_EXCEPTIONS
 #warning "Can't set exception behavior. wswrap already included"
 #elif !defined WSWRAP_SEND_EXCEPTIONS
@@ -25,10 +28,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 #include <wswrap.hpp>
-#include <string>
 #include <list>
-#include <set>
 #include <map>
+#include <set>
+#include <string>
+#include <tuple>
 #if defined(_MSC_VER) && _MSC_VER < 1910 // older msvc doesn't like the has_include
 #define NO_OPTIONAL
 #else
@@ -57,6 +61,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #ifndef WSWRAP_VERSION
 #define WSWRAP_VERSION 10000 // 1.0 did not have this define
+#endif
+
+#ifndef __EMSCRIPTEN__
+#if WSWRAP_VERSION < 10300
+#warning "Please update wswrap to enable compression! Archipelago will require compression in the future."
+#elif defined WSWRAP_NO_COMPRESSION
+#warning "Don't disable it in prod! Archipelago will require compression in the future."
+#endif
 #endif
 
 
@@ -225,6 +237,14 @@ public:
         FLAG_TRAP = 4,
     };
 
+    enum HintStatus {
+        HINT_UNSPECIFIED = 0,  ///< The receiving player has not specified any status
+        HINT_NO_PRIORITY = 10, ///< The receiving player has specified that the item is unneeded
+        HINT_AVOID = 20,       ///< The receiving player has specified that the item is detrimental
+        HINT_PRIORITY = 30,    ///< The receiving player has specified that the item is needed
+        HINT_FOUND = 40,       ///< The location has been collected. Status cannot be changed once found.
+    };
+
     enum class SlotType : int {
         SPECTATOR = 0,
         PLAYER = 1,
@@ -269,6 +289,7 @@ public:
         std::string text;
         int player = 0;
         unsigned flags = FLAG_NONE;
+        unsigned hintStatus = HINT_UNSPECIFIED;
 
         static TextNode from_json(const json& j)
         {
@@ -278,6 +299,7 @@ public:
             node.text = j.value("text", "");
             node.player = j.value("player", 0);
             node.flags = j.value("flags", 0U);
+            node.hintStatus = j.value("hint_status", 0U);
             return node;
         }
     };
@@ -318,6 +340,9 @@ public:
 
         static Version from_json(const nlohmann::json& j)
         {
+            if (j.is_null()) {
+                return {0, 0, 0};
+            }
             return {
                 j.value("major", 0),
                 j.value("minor", 0),
@@ -383,6 +408,11 @@ public:
     void set_room_info_handler(std::function<void(void)> f)
     {
         _hOnRoomInfo = f;
+    }
+
+    void set_room_update_handler(std::function<void(void)> f)
+    {
+        _hOnRoomUpdate = f;
     }
 
     void set_items_received_handler(std::function<void(const std::list<NetworkItem>&)> f)
@@ -569,68 +599,6 @@ public:
         });
     }
 
-    [[deprecated("Data package is handled through APDataPackageStore now")]]
-    void set_data_package(const json& data)
-    {
-        // only apply from cache if not updated and it looks valid
-        if (!_dataPackageValid && data.find("games") != data.end())
-            _set_data_package(data);
-    }
-
-    [[deprecated("Data package is handled through APDataPackageStore now")]]
-    bool set_data_package_from_file(const std::string& path)
-    {
-        FILE* f;
-
-        if (!_dataPackageValid)
-            return true;
-
-#ifdef _MSC_VER
-        if ((fopen_s(&f, path.c_str(), "rb")) != 0)
-#else
-        if ((f = fopen(path.c_str(), "rb")) == NULL)
-#endif
-            return false;
-        char* buf = nullptr;
-        size_t len = (size_t)0;
-        if ((0 == fseek(f, 0, SEEK_END)) &&
-            ((len = ftell(f)) > 0) &&
-            ((buf = (char*)malloc(len+1))) &&
-            (0 == fseek(f, 0, SEEK_SET)) &&
-            (len == fread(buf, 1, len, f)))
-        {
-            buf[len] = 0;
-            try {
-                auto data = json::parse(buf);
-                if (data.find("games") != data.end())
-                    _set_data_package(data);
-            } catch (const std::exception&) {
-                free(buf);
-                fclose(f);
-                throw;
-            }
-        }
-        free(buf);
-        fclose(f);
-        return true;
-    }
-
-    [[deprecated("Data package is handled through APDataPackageStore now")]]
-    bool save_data_package(const std::string& path)
-    {
-        FILE* f;
-#ifdef _MSC_VER
-        if ((fopen_s(&f, path.c_str(), "wb")) != 0)
-#else
-        if ((f = fopen(path.c_str(), "wb")) == NULL)
-#endif
-            return false;
-        std::string s = _dataPackage.dump();
-        fwrite(s.c_str(), 1, s.length(), f);
-        fclose(f);
-        return true;
-    }
-
     const std::set<int64_t> get_checked_locations() const
     {
         return _checkedLocations;
@@ -675,7 +643,13 @@ public:
         return BLANK;
     }
 
-    std::string get_location_name(int64_t code, const std::string& game="")
+    /// Get the currently played game name or an empty string
+    const std::string& get_game()
+    {
+        return get_player_game(get_player_number());
+    }
+
+    std::string get_location_name(int64_t code, const std::string& game)
     {
         if (game.empty()) { // old code path ("global" ids)
             auto it = _locations.find(code);
@@ -693,9 +667,11 @@ public:
         return "Unknown";
     }
 
-    /*Usage is not recommended
-    * Return the id associated with the location name
-    * Return APClient::INVALID_NAME_ID when undefined*/
+    /**
+     * Usage is not recommended
+     * Return the id associated with the location name
+     * Return APClient::INVALID_NAME_ID when undefined
+     */
     int64_t get_location_id(const std::string& name) const
     {
         if (_dataPackage["games"].contains(_game)) {
@@ -707,7 +683,7 @@ public:
         return INVALID_NAME_ID;
     }
 
-    std::string get_item_name(int64_t code, const std::string& game="")
+    std::string get_item_name(int64_t code, const std::string& game)
     {
         if (game.empty()) { // old code path ("global" ids)
             auto it = _items.find(code);
@@ -725,9 +701,11 @@ public:
         return "Unknown";
     }
 
-    /*Usage is not recommended
-    * Return the id associated with the item name
-    * Return APClient::INVALID_NAME_ID when undefined*/
+    /**
+     * Usage is not recommended
+     * Return the id associated with the item name
+     * Return APClient::INVALID_NAME_ID when undefined
+     */
     int64_t get_item_id(const std::string& name) const
     {
         if (_dataPackage["games"].contains(_game)) {
@@ -768,6 +746,14 @@ public:
                 int64_t id = stoi64(node.text);
                 if (color.empty()) color = "blue";
                 text = get_location_name(id, get_player_game(node.player));
+            } else if (node.type == "hint_status") {
+                text = node.text;
+                if (node.hintStatus == HINT_FOUND) color = "green";
+                else if (node.hintStatus == HINT_UNSPECIFIED) color = "grey";
+                else if (node.hintStatus == HINT_NO_PRIORITY) color = "slateblue";
+                else if (node.hintStatus == HINT_AVOID) color = "salmon";
+                else if (node.hintStatus == HINT_PRIORITY) color = "plum";
+                else color = "red";  // unknown status -> red
             } else {
                 text = node.text;
             }
@@ -828,6 +814,28 @@ public:
         return true;
     }
 
+    /**
+     * Sends UpdateHint to the server to update hint status/priority.
+     * Returns true if hint update was sent or queued.
+     */
+    bool UpdateHint(int player, int64_t location, HintStatus status)
+    {
+        if (_state == State::SLOT_CONNECTED) {
+            auto packet = json{{
+                {"cmd", "UpdateHint"},
+                {"player", player},
+                {"location", location},
+                {"status", status},
+            }};
+
+            debug("> " + packet[0]["cmd"].get<std::string>() + ": " + packet.dump());
+            _ws->send(packet.dump());
+        } else {
+            _updateHintQueue.emplace_back(player, location, status);
+        }
+        return true;
+    }
+
     bool StatusUpdate(ClientStatus status)
     {
         // returns true if status update was sent or queued
@@ -847,7 +855,7 @@ public:
     }
 
     bool ConnectSlot(const std::string& name, const std::string& password, int items_handling,
-                     const std::list<std::string>& tags = {}, const Version& ver = {0, 2, 6})
+                     const std::list<std::string>& tags = {}, const Version& ver = APCLIENTPP_VERSION_INITIALIZER)
     {
         if (_state < State::SOCKET_CONNECTED)
             return false;
@@ -916,24 +924,45 @@ public:
         return true;
     }
 
-    bool GetDataPackage(const std::list<std::string>& exclude = {}, const std::list<std::string>& include = {})
+    bool GetDataPackage(const std::list<std::string>& include)
     {
         if (_state < State::ROOM_INFO)
             return false;
 
-        auto packet = json{{
-            {"cmd", "GetDataPackage"},
-        }};
-
-        if (_serverVersion >= Version{0, 3, 2}) {
-            if (!include.empty()) packet[0]["games"] = include; // new since 0.3.2
-        } else {
-            if (!exclude.empty()) packet[0]["exclusions"] = exclude; // backward compatibility; deprecated in 0.3.2
+        if (_serverVersion < Version{0, 3, 2}) {
+            const char* msg = "GetDataPackage for AP before 0.3.2 is not supported anymore";
+            fprintf(stderr, "APClient: %s!\n", msg);
+#ifdef __cpp_exceptions
+            throw std::runtime_error(msg);
+#else
+            return false;
+#endif
         }
-        // TODO: drop support for "exclusions" 2023
 
-        debug("> " + packet[0]["cmd"].get<std::string>() + ": " + packet.dump());
-        _ws->send(packet.dump());
+        // optimized data package fetching:
+        // fetch in multiple packets for better streaming / less blocking
+        // fetch in at least 2 steps if more than 1 game needs to be fetched
+        // prefer to fetch 2 games at once for better use of compression window
+        // if it's an odd number, the last fetch should be 1 game
+        size_t n = 0;
+        size_t count = include.size();
+        std::vector<std::string> games;
+        for (const auto& game: include) {
+            games.push_back(game);
+            n++;
+            if (count > 2 && n != count && (n % 2) != 0) {
+                continue;
+            }
+            auto packet = json{{
+                {"cmd", "GetDataPackage"},
+                {"games", games}, // since 0.3.2
+            }};
+            debug("> " + packet[0]["cmd"].get<std::string>() + ": " + packet.dump());
+            _ws->send(packet.dump());
+            _pendingDataPackageRequests++;
+            games.clear();
+        }
+
         return true;
     }
 
@@ -1101,6 +1130,18 @@ public:
         return _serverConnectTime + td.count();
     }
 
+    /// Get the version of the server currently connected to
+    Version get_server_version() const
+    {
+        return _serverVersion;
+    }
+
+    /// Get the version of AP that generated the game connected to
+    Version get_generator_version() const
+    {
+        return _generatorVersion;
+    }
+
     /**
      * Poll the network layer and dispatch callbacks.
      * This has to be called repeatedly (i.e. once per frame) while this object exists.
@@ -1128,6 +1169,7 @@ public:
     {
         _checkQueue.clear();
         _scoutQueues.clear();
+        _updateHintQueue.clear();
         _clientStatus = ClientStatus::UNKNOWN;
         _seed.clear();
         _slot.clear();
@@ -1172,6 +1214,8 @@ private:
         debug("onopen()");
         log("Server connected");
         _state = State::SOCKET_CONNECTED;
+        _pendingDataPackageRequests = 0;
+        _serverVersion = _generatorVersion = Version{0, 0, 0};
         if (_hOnSocketConnected) _hOnSocketConnected();
         _socketReconnectInterval = 1500;
     }
@@ -1220,6 +1264,7 @@ private:
                     _localConnectTime = std::chrono::steady_clock::now();
                     _serverConnectTime = command["time"].get<double>();
                     _serverVersion = Version::from_json(command["version"]);
+                    _generatorVersion = Version::from_json(command["generator_version"]);
                     _seed = command["seed_name"];
                     _hintCostPercent = command.value("hint_cost", 0);
                     _hasPassword = command.value("password", false);
@@ -1314,7 +1359,7 @@ private:
 
                     if (!exclude.empty())
                         _set_data_package(_dataPackage);  // apply loaded strings
-                    if (!_dataPackageValid) GetDataPackage(exclude, include);
+                    if (!_dataPackageValid) GetDataPackage(include);
                     else debug("Data package up to date");
                 }
                 else if (cmd == "ConnectionRefused") {
@@ -1388,6 +1433,11 @@ private:
                         }
                         _scoutQueues.clear();
                     }
+                    // send queued hint updates, if any
+                    auto hintUpdates = std::move(_updateHintQueue);
+                    for (auto& hintUpdate: hintUpdates) {
+                        UpdateHint(std::get<0>(hintUpdate), std::get<1>(hintUpdate), std::get<2>(hintUpdate));
+                    }
                 }
                 else if (cmd == "ReceivedItems") {
                     std::list<NetworkItem> items;
@@ -1420,9 +1470,10 @@ private:
                     std::list<int64_t> checkedLocations;
                     for (const auto& j: command["checked_locations"]) {
                         int64_t location = j.get<int64_t>();
-                        checkedLocations.push_back(location);
-                        _checkedLocations.insert(location);
-                        _missingLocations.erase(location);
+                        if (_checkedLocations.emplace(location).second) {
+                            checkedLocations.push_back(location);
+                            _missingLocations.erase(location);
+                        }
                     }
                     if (_hOnLocationChecked && !checkedLocations.empty())
                         _hOnLocationChecked(checkedLocations);
@@ -1439,6 +1490,8 @@ private:
                             });
                         }
                     }
+                    if (_hOnRoomUpdate)
+                        _hOnRoomUpdate();
                 }
                 else if (cmd == "DataPackage") {
                     auto data = _dataPackage;
@@ -1452,8 +1505,13 @@ private:
                     data["version"] = command["data"].value<int>("version", -1); // -1 for backwards compatibility
                     _dataPackageValid = false;
                     _set_data_package(data);
-                    _dataPackageValid = true;
-                    if (_hOnDataPackageChanged) _hOnDataPackageChanged(_dataPackage);
+                    if (_pendingDataPackageRequests > 0) {
+                        _pendingDataPackageRequests--;
+                        if (_pendingDataPackageRequests == 0) {
+                            _dataPackageValid = true;
+                            if (_hOnDataPackageChanged) _hOnDataPackageChanged(_dataPackage);
+                        }
+                    }
                 }
                 else if (cmd == "Print") {
                     if (_hOnPrint) _hOnPrint(command["text"].get<std::string>());
@@ -1579,6 +1637,8 @@ private:
         if (color == "plum") return "\x1b[38:5:219m";
         if (color == "slateblue") return "\x1b[38:5:62m";
         if (color == "salmon") return "\x1b[38:5:210m";
+        if (color == "gray") return "\x1b[90m";
+        if (color == "grey") return "\x1b[90m";
         return "\x1b[0m";
     }
 
@@ -1616,6 +1676,7 @@ private:
     std::function<void(void)> _hOnSlotDisconnected = nullptr;
     std::function<void(const std::list<std::string>&)> _hOnSlotRefused = nullptr;
     std::function<void(void)> _hOnRoomInfo = nullptr;
+    std::function<void(void)> _hOnRoomUpdate = nullptr;
     std::function<void(const std::list<NetworkItem>&)> _hOnItemsReceived = nullptr;
     std::function<void(const std::list<NetworkItem>&)> _hOnLocationInfo = nullptr;
     std::function<void(const json&)> _hOnDataPackageChanged = nullptr;
@@ -1631,6 +1692,7 @@ private:
     bool _reconnectNow = false;
     std::set<int64_t> _checkQueue;
     std::map<int, std::set<int64_t>> _scoutQueues;
+    std::vector<std::tuple<int, int64_t, HintStatus>> _updateHintQueue;
     ClientStatus _clientStatus = ClientStatus::UNKNOWN;
     std::string _seed;
     std::string _slot; // currently connected slot, if any
@@ -1643,10 +1705,12 @@ private:
     std::map<std::string, std::map<int64_t, std::string>> _gameLocations;
     std::map<std::string, std::map<int64_t, std::string>> _gameItems;
     bool _dataPackageValid = false;
+    size_t _pendingDataPackageRequests = 0;
     json _dataPackage;
     double _serverConnectTime = 0;
     std::chrono::steady_clock::time_point _localConnectTime;
     Version _serverVersion = {0,0,0};
+    Version _generatorVersion = {0,0,0};
     int _locationCount = 0;
     int _hintCostPercent = 0;
     int _hintPoints = 0;
